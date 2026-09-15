@@ -248,6 +248,15 @@ body.dark .preset-chip{background:#1e293b}
   </div>
   <div class="card">
     <h3>⚙️ AI 识别设置（可选）</h3>
+    <label>接口格式</label>
+    <select id="ai-format">
+      <option value="responses">OpenAI Responses（默认）</option>
+      <option value="chat">OpenAI 兼容 /chat/completions</option>
+    </select>
+    <div class="row" style="margin:10px 0 2px">
+      <button class="btn small ghost" id="ai-preset-zhipu">🎁 一键填：智谱免费模型</button>
+      <button class="btn small ghost" id="ai-preset-sf">🎁 一键填：硅基流动</button>
+    </div>
     <label>API Key（只保存在本机浏览器）</label>
     <input type="password" id="ai-key" placeholder="sk-…">
     <label>接口地址</label>
@@ -255,7 +264,7 @@ body.dark .preset-chip{background:#1e293b}
     <label>模型</label>
     <input id="ai-model" value="gpt-4o-mini">
     <button class="btn" id="ai-save" style="width:100%;margin-top:12px">保存设置</button>
-    <p class="note">默认 OpenAI 接口（需支持 /responses），也可填兼容服务地址。识别一张照片约消耗几分钱。</p>
+    <p class="note">💡 免费方案：注册 bigmodel.cn（智谱）领取免费 Key → 点「一键填：智谱免费模型」→ 填 Key 保存，拍照识别和 AI 教练都免费。也可用硅基流动的免费额度。</p>
   </div>
   <div class="card">
     <h3>✋ 手动估算（离线）</h3>
@@ -526,13 +535,15 @@ function dayOfYear(){var n=new Date(),s=new Date(n.getFullYear(),0,0);return Mat
 function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
 
 function defaultState(){
- return {profile:{sex:'male',age:28,height:170,weight:80,target:63,activity:1.375},planIndex:0,logs:{},body:[],water:{},ai:{key:'',base:'https://api.openai.com/v1',model:'gpt-4o-mini'},photo:null,checkins:{},favs:[],photos:[],settings:{dark:false,reminders:{water:['10:00','15:00','20:00'],train:'19:00'},customPlan:null,sync:{url:'',key:'',code:'',auto:true,lastSync:0}}};
+ return {profile:{sex:'male',age:28,height:170,weight:80,target:63,activity:1.375},planIndex:0,logs:{},body:[],water:{},ai:{key:'',base:'https://api.openai.com/v1',model:'gpt-4o-mini',format:'responses'},photo:null,checkins:{},favs:[],photos:[],settings:{dark:false,reminders:{water:['10:00','15:00','20:00'],train:'19:00'},customPlan:null,sync:{url:'',key:'',code:'',auto:true,lastSync:0}}};
 }
 function normalizeState(s){
  var d=defaultState();
  if(s&&s.profile){
   d.profile=s.profile;d.planIndex=s.planIndex||0;d.logs=s.logs||{};d.body=s.body||[];d.water=s.water||{};
-  d.ai=s.ai||d.ai;d.photo=s.photo||null;
+  var sa=s.ai||{};
+  d.ai={key:sa.key||'',base:sa.base||'https://api.openai.com/v1',model:sa.model||'gpt-4o-mini',format:sa.format||sa.apiFormat||'responses'};
+  d.photo=s.photo||null;
   d.checkins=s.checkins||{};d.favs=s.favs||[];d.photos=s.photos||[];
   var st=s.settings||{};
   d.settings.dark=!!st.dark;
@@ -828,6 +839,26 @@ function parseFoodJson(text){
  return null;
 }
 
+function aiFormat(){return state.ai.format==='chat'?'chat':'responses';}
+function aiFetch(payload){
+ var format=aiFormat();
+ var base=String(state.ai.base||'').replace(/\/+$/,'');
+ if(format==='responses'&&!/\/v1$/.test(base))base+='/v1';
+ var path=format==='responses'?'/responses':'/chat/completions';
+ var headers={'Content-Type':'application/json','Authorization':'Bearer '+state.ai.key};
+ if(format==='responses')headers['Dangerously-Allow-Browser']='true';
+ return fetch(base+path,{method:'POST',headers:headers,body:JSON.stringify(payload)});
+}
+function aiExtractText(d){
+ if(aiFormat()==='chat'){
+  var msg=(d.choices&&d.choices[0])?d.choices[0].message:null;
+  var c=msg?msg.content:'';
+  if(Array.isArray(c))return c.map(function(x){return x&&typeof x==='object'?(x.text||''):String(x||'');}).join('');
+  return String(c||'');
+ }
+ return d.output_text||'';
+}
+
 function recognize(){
  if(!state.ai.key){
   photoError='未配置 AI Key。照片已保存，你可以对照下面的手掌估量法，在「手动估算」里把食物加入记录；或填写 API Key 后点「重新识别」。';
@@ -835,17 +866,20 @@ function recognize(){
   return;
  }
  photoBusy=true;
- $('photo-foods').innerHTML='<div class="loading">🤖 正在识别…（约 5-10 秒）</div>';
- var base=state.ai.base.replace(/\/+$/,'');
- if(!/\/v1$/.test(base))base+='/v1';
- var payload={model:state.ai.model,input:[{role:'user',content:[{type:'input_text',text:PHOTO_PROMPT},{type:'input_image',image_url:state.photo}]}]};
- fetch(base+'/responses',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+state.ai.key,'Dangerously-Allow-Browser':'true'},body:JSON.stringify(payload)}).then(function(r){
+ $('photo-foods').innerHTML='<div class="loading">🤖 正在识别…（免费模型可能需 5-30 秒）</div>';
+ var payload;
+ if(aiFormat()==='chat'){
+  payload={model:state.ai.model,messages:[{role:'system',content:'你是专业营养师，只输出 JSON 对象，不要任何其他文字。'},{role:'user',content:[{type:'text',text:PHOTO_PROMPT},{type:'image_url',image_url:{url:state.photo}}]}],temperature:0.2,max_tokens:2000};
+ }else{
+  payload={model:state.ai.model,input:[{role:'user',content:[{type:'input_text',text:PHOTO_PROMPT},{type:'input_image',image_url:state.photo}]}]};
+ }
+ aiFetch(payload).then(function(r){
   return r.json().then(function(d){
    if(!r.ok)throw new Error('HTTP '+r.status+': '+(d.error&&d.error.message?d.error.message:JSON.stringify(d).slice(0,120)));
    return d;
   });
  }).then(function(d){
-  var text=d.output_text||'';
+  var text=aiExtractText(d);
   var obj=parseFoodJson(text);
   if(!obj||!obj.foods||!obj.foods.length)throw new Error('识别结果解析失败');
   photoItems=obj.foods.map(function(f){
@@ -881,6 +915,7 @@ function renderPhotoTab(){
  $('ai-key').value=state.ai.key;
  $('ai-base').value=state.ai.base;
  $('ai-model').value=state.ai.model;
+ $('ai-format').value=state.ai.format;
  renderMealPicker('photo-meal',photoMeal,function(m){photoMeal=m;});
  renderMealPicker('photo-meal2',manualMeal,function(m){manualMeal=m;});
  if(!$('mp-food').dataset.filled){
@@ -1083,13 +1118,16 @@ function coachSend(q){
  box.className='bubble ai';
  box.textContent='正在思考…';
  $('coach-msgs').appendChild(box);
- var base=state.ai.base.replace(/\/+$/,'');
- if(!/\/v1$/.test(base))base+='/v1';
- var payload={model:state.ai.model,instructions:coachSysPrompt(),input:[{role:'user',content:[{type:'input_text',text:text}]}]};
- fetch(base+'/responses',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+state.ai.key,'Dangerously-Allow-Browser':'true'},body:JSON.stringify(payload)}).then(function(r){
+ var payload;
+ if(aiFormat()==='chat'){
+  payload={model:state.ai.model,messages:[{role:'system',content:coachSysPrompt()},{role:'user',content:text}],temperature:0.6,max_tokens:1500};
+ }else{
+  payload={model:state.ai.model,instructions:coachSysPrompt(),input:[{role:'user',content:[{type:'input_text',text:text}]}]};
+ }
+ aiFetch(payload).then(function(r){
   return r.json().then(function(d){if(!r.ok)throw new Error('HTTP '+r.status+': '+(d.error&&d.error.message?d.error.message:JSON.stringify(d).slice(0,120)));return d;});
  }).then(function(d){
-  box.textContent=d.output_text||'（没有回复内容）';
+  box.textContent=aiExtractText(d)||'（没有回复内容）';
  }).catch(function(e){
   box.textContent='请求失败：'+e.message+'。可以到「拍照识别 → AI 设置」检查 Key / 接口地址 / 模型名。';
  }).then(function(){
@@ -1446,10 +1484,22 @@ $('mp-add').addEventListener('click',function(){
  addEntry(name,grams,f.k,f.p,f.c,f.f,manualMeal);
 });
 $('ai-save').addEventListener('click',function(){
- state.ai={key:$('ai-key').value.trim(),base:$('ai-base').value.trim()||'https://api.openai.com/v1',model:$('ai-model').value.trim()||'gpt-4o-mini'};
+ state.ai={key:$('ai-key').value.trim(),base:$('ai-base').value.trim()||'https://api.openai.com/v1',model:$('ai-model').value.trim()||'gpt-4o-mini',format:$('ai-format').value};
  save();
  alert('AI 设置已保存');
  if(state.ai.key&&state.photo&&!photoItems){photoError=null;renderPhotoTab();}
+});
+$('ai-preset-zhipu').addEventListener('click',function(){
+ $('ai-base').value='https://open.bigmodel.cn/api/paas/v4';
+ $('ai-model').value='glm-4.6v-flash';
+ $('ai-format').value='chat';
+ alert('已填入智谱配置：请粘贴你的智谱 API Key（在 bigmodel.cn 的 API Keys 页面创建），点「保存设置」即可免费使用。');
+});
+$('ai-preset-sf').addEventListener('click',function(){
+ $('ai-base').value='https://api.siliconflow.cn/v1';
+ $('ai-model').value='Qwen/Qwen2.5-VL-7B-Instruct';
+ $('ai-format').value='chat';
+ alert('已填入硅基流动配置：请粘贴你在 cloud.siliconflow.cn 创建的 API Key，点「保存设置」即可使用免费额度。');
 });
 
 $('training').addEventListener('click',function(e){
