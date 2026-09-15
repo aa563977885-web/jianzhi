@@ -4,6 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0d9488">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="减脂助手">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
 <title>减脂助手 · 饮食与训练管家</title>
 <style>
 :root{--bg:#f2f6f4;--card:#fff;--ink:#1f2937;--sub:#6b7280;--green:#0d9488;--green2:#10b981;--line:#e5e7eb;--red:#ef4444;--amber:#f59e0b}
@@ -85,17 +92,88 @@ ul.tips li,ul.training li{margin-bottom:6px}
 .video-zone .vc-row{display:flex;gap:6px;margin-bottom:6px}
 .video-zone .vc-input{flex:1;min-width:140px;font-size:12.5px;padding:7px 9px}
 .video-zone .vc-msg{font-size:12px;color:#c0392b;margin:0 0 6px;min-height:0}
+.hrow{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.hrow .btn{background:rgba(255,255,255,.18);color:#fff;padding:6px 10px}
+.streak-card{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.flame{font-size:32px;line-height:1}
+.streak-dots{display:flex;gap:4px;margin-top:8px;flex-wrap:wrap}
+.day-dot{width:30px;height:34px;border-radius:8px;background:#f3f4f6;color:#9ca3af;font-size:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.15}
+.day-dot.ok{background:#d1fae5;color:#047857;font-weight:700}
+.day-dot.today{outline:2px solid var(--green)}
+.cat-chip{padding:5px 12px;border:1px solid var(--line);background:#fff;border-radius:99px;font-size:12px;color:var(--sub);cursor:pointer}
+.cat-chip.on{background:var(--green);color:#fff;border-color:var(--green)}
+.star{border:0;background:none;cursor:pointer;font-size:16px;padding:0 2px;color:#d1d5db}
+.star.on{color:#f59e0b}
+.fav-line{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #f3f4f6;font-size:13.5px}
+.fav-line .nm{flex:1;min-width:0}
+.fav-line .nm b{display:block;font-size:13.5px}
+.fav-line .nm span{font-size:11px;color:var(--sub)}
+.fav-line input{width:62px;padding:5px 6px;font-size:12.5px;text-align:center;flex:none}
+.badges{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.badge{border:1px solid var(--line);border-radius:12px;padding:10px 6px;text-align:center;font-size:11.5px;color:var(--ink);background:var(--card)}
+.badge .ico{font-size:24px;display:block;margin-bottom:2px}
+.badge .nm{display:block}
+.badge.lock{opacity:.35;filter:grayscale(1)}
+.stat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:8px}
+.stat{background:#f9fafb;border-radius:12px;padding:10px;text-align:center}
+.stat b{font-size:18px;color:var(--green);display:block}
+.stat span{font-size:11px;color:var(--sub)}
+.chat-msgs{display:flex;flex-direction:column;gap:8px;max-height:430px;overflow:auto;margin-bottom:10px}
+.bubble{max-width:86%;padding:9px 12px;border-radius:12px;font-size:13.5px;white-space:pre-wrap;word-break:break-word}
+.bubble.ai{background:#f0fdfa;border:1px solid #ccfbf1;align-self:flex-start}
+.bubble.user{background:var(--green);color:#fff;align-self:flex-end}
+.chat-row{display:flex;gap:8px}
+.chat-row input{flex:1}
+.qchip{padding:5px 10px;border:1px solid var(--line);background:#fff;border-radius:99px;font-size:12px;color:var(--sub);cursor:pointer;margin:0 6px 6px 0}
+.cmp-wrap{position:relative;width:100%;margin-top:10px;border-radius:12px;overflow:hidden;background:#000}
+.cmp-wrap img.base{display:block;width:100%;height:auto}
+.cmp-wrap img.over{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.cmp-divider{position:absolute;top:0;bottom:0;width:2px;background:#fff;box-shadow:0 0 6px rgba(0,0,0,.6);pointer-events:none}
+.cmp-range{width:100%;margin:6px 0 2px}
+.cmp-labels{display:flex;justify-content:space-between;font-size:11px;color:var(--sub)}
+.editor-day{border:1px solid var(--line);border-radius:12px;padding:10px;margin-bottom:8px}
+.editor-day .eh{display:flex;gap:6px;align-items:center;margin-bottom:6px;flex-wrap:wrap}
+.editor-day .eh .dl{font-size:12.5px;font-weight:700;color:var(--green);width:34px}
+.editor-day .eh input{font-size:12.5px;padding:6px 8px;flex:1;min-width:110px}
+.ex-chip{padding:5px 10px;border:1px solid var(--line);background:#fff;border-radius:99px;font-size:12px;color:var(--sub);cursor:pointer}
+.ex-chip.on{background:#d1fae5;color:#047857;border-color:#6ee7b7}
+.preset-chip{padding:3px 8px;border:1px solid var(--line);background:#f3f4f6;border-radius:6px;font-size:11px;color:var(--sub);cursor:pointer}
+#toast{position:fixed;left:50%;bottom:80px;transform:translateX(-50%);background:#111827;color:#fff;padding:10px 16px;border-radius:12px;font-size:13px;z-index:99;opacity:0;pointer-events:none;transition:opacity .3s;max-width:90%;box-shadow:0 4px 16px rgba(0,0,0,.35);text-align:center}
+#toast.show{opacity:1}
+body.dark{--bg:#0b1220;--card:#141f33;--ink:#e5e7eb;--sub:#8fa3bb;--line:#26334d;--green:#2dd4bf;--green2:#34d399;--red:#f87171;--amber:#fbbf24}
+body.dark input,body.dark select,body.dark textarea{background:#0f1a2e;color:var(--ink);border-color:var(--line)}
+body.dark .chip{background:#0f2a26;border-color:#14532d}
+body.dark .totals{background:#0f2a26;border-color:#14532d;color:#5eead4}
+body.dark .meal{background:#101c33}
+body.dark .stat{background:#101c33}
+body.dark .tag{background:#1e293b}
+body.dark .bar{background:#1e293b}
+body.dark .btn.ghost{background:#172554;color:#93c5fd}
+body.dark .btn.danger{background:#450a0a;color:#fca5a5}
+body.dark .cup{background:#0f1a2e;border-color:#334155}
+body.dark .cup.full{background:#172554;border-color:#1d4ed8}
+body.dark .food-row,body.dark .fav-line,body.dark .log-item,body.dark .photo-food{border-color:#1f2c45}
+body.dark .ex-wrap details{background:#101c33}
+body.dark .meal-btn{background:#0f1a2e}
+body.dark .cat-chip,body.dark .ex-chip,body.dark .qchip{background:#0f1a2e}
+body.dark .bubble.ai{background:#0f2a26;border-color:#14532d}
+body.dark .day-dot{background:#1e293b;color:#64748b}
+body.dark .day-dot.ok{background:#14532d;color:#6ee7b7}
+body.dark .editor-day{background:#101c33}
+body.dark .preset-chip{background:#1e293b}
 @media (max-width:420px){.chips{grid-template-columns:repeat(2,1fr)}}
-@media (max-width:420px){nav button{font-size:12.5px}}
+@media (max-width:420px){nav button{font-size:11px}}
 </style>
 </head>
 <body>
-<header><div class="wrap"><h1>🔥 减脂助手</h1><div class="sub">你的私人饮食与训练管家 · 数据仅保存在本机浏览器</div></div></header>
+<header><div class="wrap hrow"><div><h1>🔥 减脂助手</h1><div class="sub">你的私人饮食与训练管家 · 数据默认保存在本机浏览器</div></div><button class="btn" id="dark-toggle" title="深色模式">🌙</button></div></header>
 <nav id="tabs">
   <button data-tab="today" class="on">今日计划</button>
   <button data-tab="log">饮食记录</button>
   <button data-tab="body">身体数据</button>
   <button data-tab="photo">拍照识别</button>
+  <button data-tab="coach">AI教练</button>
+  <button data-tab="report">周报</button>
   <button data-tab="profile">我的档案</button>
 </nav>
 <main class="wrap">
@@ -108,7 +186,8 @@ ul.tips li,ul.training li{margin-bottom:6px}
   </div>
   <div class="card"><h3>💧 今日饮水（8杯 × 250ml）</h3><div class="row" id="water-row"></div></div>
   <div class="card"><h3>📌 今日小贴士</h3><p id="tip" style="font-size:13.5px"></p></div>
-  <div class="card"><h3>🏋️ 本周训练模板 · 点动作看教程</h3><div id="training"></div></div>
+  <div class="card"><h3>✅ 今日打卡</h3><div id="checkin-box"></div></div>
+  <div class="card"><h3>🏋️ 本周训练模板 · 点动作看教程 <button class="btn small ghost" id="plan-edit">✏️ 编辑计划</button></h3><div id="plan-editor" style="display:none"></div><div id="training"></div></div>
 </section>
 <section id="tab-log">
   <div class="card" id="log-summary"></div>
@@ -121,6 +200,8 @@ ul.tips li,ul.training li{margin-bottom:6px}
       <button class="meal-btn" data-meal="加餐">加餐</button>
     </div>
     <input id="food-search" placeholder="🔍 搜索：鸡胸肉 / 米饭 / 苹果…">
+    <div class="row" id="food-cats" style="margin:8px 0 2px"></div>
+    <div id="fav-list" style="margin-top:6px"></div>
     <div id="food-list" style="max-height:400px;overflow:auto"></div>
     <details style="margin-top:10px">
       <summary class="dim" style="cursor:pointer">+ 自定义食物（包装食品按营养成分表填写）</summary>
@@ -149,6 +230,7 @@ ul.tips li,ul.training li{margin-bottom:6px}
   </div>
   <div class="card" id="b-summary"></div>
   <div class="card"><h3>📉 体重趋势</h3><svg id="chart" viewBox="0 0 600 180" style="width:100%;height:180px"></svg></div>
+  <div class="card"><h3>📸 身材对比（建议每月拍一张正面照）</h3><input type="file" id="shape-input" accept="image/*" capture="user" style="display:none"><button class="btn" id="shape-take" style="width:100%">📷 拍 / 选照片</button><div id="shape-view"></div></div>
   <div class="card"><h3>📋 历史记录</h3><div id="b-list"></div></div>
 </section>
 <section id="tab-photo">
@@ -198,6 +280,13 @@ ul.tips li,ul.training li{margin-bottom:6px}
     </ul>
   </div>
 </section>
+<section id="tab-coach">
+  <div class="card"><h3>🤖 AI 教练</h3><div class="chat-msgs" id="coach-msgs"></div><div class="chat-row"><input id="coach-in" placeholder="问我任何减脂问题…"><button class="btn" id="coach-send">发送</button></div><div id="coach-chips" style="margin-top:8px"></div><p class="note">AI 教练会结合你的身高体重、目标、今日饮食和打卡情况来回答。需要先在「拍照识别 → AI 设置」里填好 API Key。</p></div>
+</section>
+<section id="tab-report">
+  <div class="card"><h3>📊 本周周报</h3><div id="report-box"></div></div>
+  <div class="card"><h3>🏅 成就徽章</h3><div class="badges" id="badge-box"></div></div>
+</section>
 <section id="tab-profile">
   <div class="card">
     <h3>👤 基本信息</h3>
@@ -216,6 +305,38 @@ ul.tips li,ul.training li{margin-bottom:6px}
     </select>
     <button class="btn" id="p-save" style="width:100%;margin-top:14px">保存并重新计算</button>
     <button class="btn danger" id="p-reset" style="width:100%;margin-top:8px">恢复默认 / 清空全部数据</button>
+  </div>
+  <div class="card">
+    <h3>⏰ 提醒设置</h3>
+    <label>喝水提醒（最多 4 个时间，留空不提醒）</label>
+    <div class="small-grid"><input type="time" id="rm-w1"><input type="time" id="rm-w2"><input type="time" id="rm-w3"><input type="time" id="rm-w4"></div>
+    <label>训练提醒（留空不提醒）</label>
+    <input type="time" id="rm-train">
+    <div class="row" style="margin-top:10px">
+      <button class="btn" id="rm-save" style="flex:1">保存提醒</button>
+      <button class="btn ghost" id="notify-ask" style="flex:1">🔔 开启系统通知</button>
+    </div>
+    <p class="note">网页打开着才会提醒；把网址「添加到主屏幕」后体验最好。系统通知需要浏览器授权。</p>
+  </div>
+  <div class="card">
+    <h3>☁️ 云同步（手机 ↔ 电脑自动）</h3>
+    <label>Supabase 网址（形如 https://xxxx.supabase.co）</label><input id="sy-url" placeholder="https://xxxx.supabase.co">
+    <label>anon 公钥（公开可填，不是密码）</label><input id="sy-key" placeholder="eyJhbGciOi…">
+    <label>同步码（自己设一段复杂的，两台设备填一样的）</label><input id="sy-code" placeholder="例如：jz-2026-x9K2mQ">
+    <div class="row" style="margin-top:10px">
+      <button class="btn" id="sy-push" style="flex:1">⬆️ 上传到云端</button>
+      <button class="btn ghost" id="sy-pull" style="flex:1">⬇️ 从云端恢复</button>
+    </div>
+    <p class="note" id="sy-msg"></p>
+    <details><summary class="dim" style="cursor:pointer">如何开通（一次性，约 3 分钟）</summary>
+      <ol class="tips" style="margin-top:6px">
+        <li>注册/登录 supabase.com，新建一个项目（Free 免费档）</li>
+        <li>打开项目的 SQL Editor，粘贴下面的 SQL 并点 Run</li>
+        <li>到 Project Settings → API，复制 Project URL 和 anon public key 填到上面</li>
+        <li>设一个只有自己知道的同步码，两台设备填相同内容即可互相同步</li>
+      </ol>
+      <textarea id="sy-sql" readonly style="height:150px;font-size:11px;margin-top:6px"></textarea>
+    </details>
   </div>
   <div class="card">
     <h3>💾 数据备份（手机 ↔ 电脑）</h3>
@@ -241,6 +362,7 @@ ul.tips li,ul.training li{margin-bottom:6px}
   </div>
 </section>
 </main>
+<div id="toast"></div>
 <script>
 'use strict';
 var LS_KEY='fatloss_app_v1';
@@ -286,6 +408,51 @@ var FOODS=[
  {n:'橄榄油',hint:'1勺约5g',k:884,p:0,c:0,f:100},
  {n:'乳清蛋白粉',hint:'1勺约30g',k:400,p:75,c:8,f:6}
 ];
+var FOODS_EXT=[
+ {n:'黄焖鸡米饭',hint:'1份约700g',k:130,p:6,c:11,f:6.5,cat:'外卖'},
+ {n:'兰州牛肉拉面',hint:'1碗约600g',k:120,p:5,c:17,f:4,cat:'外卖'},
+ {n:'沙县拌面',hint:'1碗约400g',k:190,p:6,c:26,f:7,cat:'外卖'},
+ {n:'蛋炒饭',hint:'1份约500g',k:165,p:4.5,c:22,f:6.5,cat:'外卖'},
+ {n:'盖浇饭(鱼香肉丝)',hint:'1份约550g',k:150,p:5,c:19,f:6,cat:'外卖'},
+ {n:'重庆小面',hint:'1碗约450g',k:195,p:6,c:24,f:8,cat:'外卖'},
+ {n:'酸辣粉',hint:'1碗约500g',k:145,p:3,c:25,f:4,cat:'外卖'},
+ {n:'螺蛳粉',hint:'1碗约550g',k:150,p:4.5,c:22,f:5.5,cat:'外卖'},
+ {n:'过桥米线',hint:'1碗约650g',k:115,p:5,c:16,f:3.5,cat:'外卖'},
+ {n:'猪肉饺子',hint:'10个约250g',k:220,p:8.5,c:24,f:9.5,cat:'外卖'},
+ {n:'猪肉包子',hint:'2个约200g',k:230,p:8,c:28,f:9,cat:'外卖'},
+ {n:'煎饼果子',hint:'1个约300g',k:235,p:8,c:27,f:10,cat:'外卖'},
+ {n:'肉夹馍',hint:'1个约200g',k:255,p:10,c:27,f:11,cat:'外卖'},
+ {n:'凉皮',hint:'1份约500g',k:125,p:4.5,c:20,f:3.5,cat:'外卖'},
+ {n:'肠粉',hint:'1份约400g',k:120,p:3.5,c:19,f:3,cat:'外卖'},
+ {n:'云吞面',hint:'1碗约600g',k:130,p:6,c:18,f:4,cat:'外卖'},
+ {n:'皮蛋瘦肉粥',hint:'1碗约400g',k:65,p:3.5,c:10,f:1.2,cat:'外卖'},
+ {n:'关东煮(蔬菜为主)',hint:'1份约400g',k:90,p:5,c:9,f:3.5,cat:'外卖'},
+ {n:'麻辣烫(清汤少油)',hint:'1碗约600g',k:100,p:6,c:9,f:4.5,cat:'外卖'},
+ {n:'麻辣香锅',hint:'1份约500g',k:190,p:9,c:10,f:13,cat:'外卖'},
+ {n:'汉堡(牛肉)',hint:'1个约200g',k:290,p:13,c:24,f:15,cat:'外卖'},
+ {n:'炸鸡(原味)',hint:'2块约200g',k:260,p:18,c:10,f:16,cat:'外卖'},
+ {n:'薯条',hint:'中份约120g',k:310,p:4,c:40,f:15,cat:'外卖'},
+ {n:'披萨(芝士)',hint:'2片约180g',k:260,p:11,c:28,f:11,cat:'外卖'},
+ {n:'寿司',hint:'8个约250g',k:145,p:6,c:24,f:2.5,cat:'外卖'},
+ {n:'烤羊肉串',hint:'10串约200g',k:210,p:19,c:3,f:13,cat:'外卖'},
+ {n:'麻辣鸭脖',hint:'1份约200g',k:180,p:16,c:6,f:10,cat:'外卖'},
+ {n:'豆浆(甜)',hint:'1杯约400g',k:45,p:2.5,c:6,f:1.2,cat:'饮品'},
+ {n:'奶茶(全糖)',hint:'中杯约500g',k:90,p:0.8,c:12,f:3,cat:'饮品'},
+ {n:'奶茶(半糖)',hint:'中杯约500g',k:70,p:0.8,c:9,f:2.8,cat:'饮品'},
+ {n:'奶茶(无糖)',hint:'中杯约500g',k:55,p:0.8,c:6,f:2.6,cat:'饮品'},
+ {n:'珍珠奶茶',hint:'中杯约550g',k:100,p:1,c:15,f:3.2,cat:'饮品'},
+ {n:'橙汁(鲜榨)',hint:'1杯约400g',k:45,p:0.6,c:10,f:0.2,cat:'饮品'},
+ {n:'可乐',hint:'1罐约330g',k:43,p:0,c:10.6,f:0,cat:'饮品'},
+ {n:'啤酒',hint:'1瓶约500g',k:43,p:0.5,c:3.5,f:0,cat:'饮品'},
+ {n:'拿铁咖啡',hint:'中杯约400g',k:45,p:2.6,c:3.8,f:2.2,cat:'饮品'},
+ {n:'蛋挞',hint:'1个约60g',k:375,p:5.5,c:41,f:21,cat:'零食'},
+ {n:'薯片',hint:'1包约70g',k:530,p:5,c:52,f:33,cat:'零食'},
+ {n:'巧克力',hint:'1块约50g',k:550,p:6,c:54,f:33,cat:'零食'},
+ {n:'混合坚果',hint:'1把约30g',k:600,p:18,c:22,f:52,cat:'零食'},
+ {n:'雪糕',hint:'1支约80g',k:180,p:3,c:22,f:8,cat:'零食'},
+ {n:'奶油蛋糕',hint:'1块约100g',k:350,p:5,c:40,f:18,cat:'零食'}
+];
+var ALL_FOODS=FOODS.concat(FOODS_EXT);
 var PLAN_VARIANTS=[
  {name:'清爽低油版',meals:{
   早餐:[['燕麦片',40],['鸡蛋',100],['纯牛奶',250]],
@@ -314,6 +481,21 @@ var TIPS=[
  '外食技巧：涮水去油、优先蒸煮、酱料减半，油炸食物剥皮再吃。',
  '晚上 8 点后不进食，睡够 7-8 小时；睡眠不足会直接拖慢减脂。',
  '每周同一时间称重取平均，别被单日波动影响心情，趋势才重要。'
+];
+var ACHIEVEMENTS=[
+ {ico:'🎬',nm:'初次打卡',cond:function(){return Object.keys(state.checkins).length>0;}},
+ {ico:'🔥',nm:'连续打卡3天',cond:function(){return maxStreak()>=3;}},
+ {ico:'🌋',nm:'连续打卡7天',cond:function(){return maxStreak()>=7;}},
+ {ico:'🏆',nm:'连续打卡21天',cond:function(){return maxStreak()>=21;}},
+ {ico:'🥉',nm:'减重1kg',cond:function(){return totalChange()<=-1;}},
+ {ico:'🥈',nm:'减重3kg',cond:function(){return totalChange()<=-3;}},
+ {ico:'🥇',nm:'减重5kg',cond:function(){return totalChange()<=-5;}},
+ {ico:'🍗',nm:'蛋白达标1天',cond:function(){return proteinDays()>=1;}},
+ {ico:'💪',nm:'蛋白达标5天',cond:function(){return proteinDays()>=5;}},
+ {ico:'💧',nm:'一天8杯水',cond:function(){return waterDays()>=1;}},
+ {ico:'📝',nm:'记录饮食7天',cond:function(){return logDays()>=7;}},
+ {ico:'📷',nm:'拍照记录1次',cond:function(){return !!state.photo||state.photos.length>0;}},
+ {ico:'⏳',nm:'坚持30天',cond:function(){return persistDays()>=30;}}
 ];
 var TRAINING=[
  {day:'周一',title:'全身力量 + 腹肌',items:['深蹲','俯卧撑(卧推)','哑铃俯身划船','哑铃推举','平板支撑','卷腹']},
@@ -344,11 +526,22 @@ function dayOfYear(){var n=new Date(),s=new Date(n.getFullYear(),0,0);return Mat
 function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
 
 function defaultState(){
- return {profile:{sex:'male',age:28,height:170,weight:80,target:63,activity:1.375},planIndex:0,logs:{},body:[],water:{},ai:{key:'',base:'https://api.openai.com/v1',model:'gpt-4o-mini'},photo:null};
+ return {profile:{sex:'male',age:28,height:170,weight:80,target:63,activity:1.375},planIndex:0,logs:{},body:[],water:{},ai:{key:'',base:'https://api.openai.com/v1',model:'gpt-4o-mini'},photo:null,checkins:{},favs:[],photos:[],settings:{dark:false,reminders:{water:['10:00','15:00','20:00'],train:'19:00'},customPlan:null,sync:{url:'',key:'',code:'',auto:true,lastSync:0}}};
 }
 function normalizeState(s){
  var d=defaultState();
- if(s&&s.profile){d.profile=s.profile;d.planIndex=s.planIndex||0;d.logs=s.logs||{};d.body=s.body||[];d.water=s.water||{};d.ai=s.ai||d.ai;d.photo=s.photo||null;}
+ if(s&&s.profile){
+  d.profile=s.profile;d.planIndex=s.planIndex||0;d.logs=s.logs||{};d.body=s.body||[];d.water=s.water||{};
+  d.ai=s.ai||d.ai;d.photo=s.photo||null;
+  d.checkins=s.checkins||{};d.favs=s.favs||[];d.photos=s.photos||[];
+  var st=s.settings||{};
+  d.settings.dark=!!st.dark;
+  var r=st.reminders||{};
+  d.settings.reminders={water:(r.water&&r.water.length)?r.water:['10:00','15:00','20:00'],train:r.train||'19:00'};
+  d.settings.customPlan=st.customPlan||null;
+  var sy=st.sync||{};
+  d.settings.sync={url:sy.url||'',key:sy.key||'',code:sy.code||'',auto:sy.auto!==false,lastSync:sy.lastSync||0};
+ }
  return d;
 }
 function load(){
@@ -358,7 +551,7 @@ function load(){
  }catch(e){}
  return defaultState();
 }
-function save(){try{localStorage.setItem(LS_KEY,JSON.stringify(state));}catch(e){}}
+function save(){try{localStorage.setItem(LS_KEY,JSON.stringify(state));scheduleAutoPush();}catch(e){}}
 var state=load();
 var currentMeal='早餐';
 var photoMeal='午餐';
@@ -447,8 +640,9 @@ function renderTip(){$('tip').textContent=TIPS[dayOfYear()%TIPS.length];}
 
 function renderTraining(){
  var h='<p class="note" style="margin:0 0 4px">每次训练前动态热身 5 分钟（开合跳、高抬腿、肩绕环），训练后拉伸每个部位 20-30 秒。</p>';
- for(var i=0;i<TRAINING.length;i++){
-  var d=TRAINING[i];
+ var plan=state.settings.customPlan&&state.settings.customPlan.length?state.settings.customPlan:TRAINING;
+ for(var i=0;i<plan.length;i++){
+  var d=plan[i];
   h+='<div class="day-head">'+d.day+' · '+d.title+'</div>';
   if(d.note){h+='<p class="note" style="margin-top:2px">'+d.note+'</p>';}
   for(var j=0;j<d.items.length;j++){
@@ -529,14 +723,6 @@ function renderLogSummary(){
   '<p class="note">'+(left>0?'还能再吃约 '+Math.round(left)+' 千卡。':'今日已超预算，明天恢复正常即可，别自责。')+'</p>';
 }
 
-function renderFoodList(){
- var q=$('food-search').value.trim();
- var list=FOODS.filter(function(f){return f.n.indexOf(q)>=0;});
- $('food-list').innerHTML=list.map(function(f){
-  return '<div class="food-row" data-name="'+esc(f.n)+'"><div class="nm"><b>'+esc(f.n)+'</b><span>'+f.k+'千卡/100g · '+esc(f.hint)+'</span></div><input type="text" inputmode="numeric" class="g" value="100" onfocus="this.select()"><button class="btn small add">添加</button></div>';
- }).join('')||'<p class="dim">没有找到，试试上面的「自定义食物」。</p>';
-}
-
 function renderLogEntries(){
  var d=todayStr();
  var items=state.logs[d]||[];
@@ -564,7 +750,7 @@ function addEntry(name,grams,kPer100,pPer100,cPer100,fPer100,meal){
  save();renderLog();
 }
 
-function renderLog(){renderLogSummary();renderFoodList();renderLogEntries();}
+function renderLog(){renderLogSummary();renderFavs();renderFoodList();renderLogEntries();}
 
 function renderBodySummary(){
  var b=state.body.slice().sort(function(a,c){return a.date<c.date?-1:1;});
@@ -698,7 +884,7 @@ function renderPhotoTab(){
  renderMealPicker('photo-meal',photoMeal,function(m){photoMeal=m;});
  renderMealPicker('photo-meal2',manualMeal,function(m){manualMeal=m;});
  if(!$('mp-food').dataset.filled){
-  $('mp-food').innerHTML=FOODS.map(function(f){return '<option value="'+esc(f.n)+'">'+esc(f.n)+'</option>';}).join('');
+  $('mp-food').innerHTML=ALL_FOODS.map(function(f){return '<option value="'+esc(f.n)+'">'+esc(f.n)+'</option>';}).join('');
   $('mp-food').dataset.filled='1';
  }
  $('photo-preview').innerHTML=state.photo?'<img src="'+state.photo+'" alt="食物照片">':'';
@@ -709,7 +895,376 @@ function renderPhotoTab(){
  else if(!state.photo)$('photo-foods').innerHTML='';
 }
 
-function renderToday(){renderTarget();renderPlan();renderWater();renderTip();}
+function dateStr(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());}
+function lastNDays(n){
+ var out=[],d=new Date();
+ for(var i=n-1;i>=0;i--){var x=new Date(d);x.setDate(d.getDate()-i);out.push(dateStr(x));}
+ return out;
+}
+function maxStreak(){
+ var ks=Object.keys(state.checkins).filter(function(k){return state.checkins[k];}).sort();
+ var best=0,cur=0,prev=null;
+ for(var i=0;i<ks.length;i++){
+  var day=ks[i];
+  if(prev){
+   var diff=Math.round((new Date(day)-new Date(prev))/86400000);
+   cur=(diff===1)?cur+1:1;
+  }else{cur=1;}
+  if(cur>best)best=cur;
+  prev=day;
+ }
+ return best;
+}
+function currentStreak(){
+ var d=new Date();
+ if(!state.checkins[dateStr(d)])d.setDate(d.getDate()-1);
+ var s=0;
+ while(state.checkins[dateStr(d)]){s++;d.setDate(d.getDate()-1);}
+ return s;
+}
+function renderCheckin(){
+ var today=todayStr();
+ var done=!!state.checkins[today];
+ var days=lastNDays(7);
+ var wd=['日','一','二','三','四','五','六'];
+ var dots=days.map(function(ds){
+  var dd=new Date(ds);
+  return '<div class="day-dot'+(state.checkins[ds]?' ok':'')+(ds===today?' today':'')+'">'+(state.checkins[ds]?'✓':'·')+'<span>周'+wd[dd.getDay()]+'</span></div>';
+ }).join('');
+ var week=days.filter(function(ds){return state.checkins[ds];}).length;
+ var h='<div class="streak-card"><span class="flame">'+(done?'🔥':'⚪')+'</span>'+
+  '<div><b>'+(done?'今天已打卡':'今天还没打卡')+'</b><div class="dim">连续 '+currentStreak()+' 天 · 本周 '+week+'/7 天</div></div>'+
+  '<button class="btn small'+(done?' ghost':'')+'" id="checkin-toggle">'+(done?'取消打卡':'✅ 打卡完成')+'</button></div>'+
+  '<div class="streak-dots">'+dots+'</div>';
+ $('checkin-box').innerHTML=h;
+}
+function totalChange(){
+ var b=state.body.slice().sort(function(a,c){return a.date<c.date?-1:1;});
+ if(b.length<2)return 0;
+ return +(b[b.length-1].weight-b[0].weight).toFixed(1);
+}
+function logDays(){return Object.keys(state.logs).filter(function(d){return (state.logs[d]||[]).length>0;}).length;}
+function proteinDays(){
+ var t=calc(state.profile);
+ return Object.keys(state.logs).filter(function(d){
+  var arr=state.logs[d]||[];
+  if(!arr.length)return false;
+  var p=0;
+  for(var i=0;i<arr.length;i++)p+=arr[i].p;
+  return p>=t.protein;
+ }).length;
+}
+function waterDays(){return Object.keys(state.water).filter(function(d){return (state.water[d]||0)>=8;}).length;}
+function persistDays(){
+ var ks=Object.keys(state.logs);
+ if(!ks.length)return 0;
+ ks.sort();
+ return Math.round((new Date()-new Date(ks[0]))/86400000)+1;
+}
+function renderReport(){
+ var days=lastNDays(7);
+ var t=calc(state.profile);
+ var ck=days.filter(function(d){return state.checkins[d];}).length;
+ var logd=days.filter(function(d){return (state.logs[d]||[]).length>0;}).length;
+ var kcalSum=0,kcalDays=0;
+ var ph=days.filter(function(d){
+  var arr=state.logs[d]||[];
+  if(!arr.length)return false;
+  var p=0,k=0;
+  for(var i=0;i<arr.length;i++){p+=arr[i].p;k+=arr[i].k;}
+  kcalSum+=k;kcalDays++;
+  return p>=t.protein;
+ }).length;
+ var avgK=kcalDays?Math.round(kcalSum/kcalDays):0;
+ var water=days.filter(function(d){return (state.water[d]||0)>=8;}).length;
+ var b=state.body.slice().sort(function(a,c){return a.date<c.date?-1:1;});
+ var wTxt='还没有记录';
+ if(b.length){
+  var last=b[b.length-1],weekAgo=null;
+  for(var i=b.length-1;i>=0;i--){if(b[i].date<=days[0]){weekAgo=b[i];break;}}
+  if(weekAgo){var dd=+(last.weight-weekAgo.weight).toFixed(1);wTxt=last.weight+'kg（本周'+(dd>0?'+':'')+dd+'kg）';}
+  else{wTxt=last.weight+'kg（最新）';}
+ }
+ var advice='';
+ if(ck===0)advice='这周还没有训练打卡。今天从最小的目标开始：完成 10 分钟快走就算赢。';
+ else if(ck>=5&&ph>=4)advice='训练和蛋白质都做得很好，保持这个节奏，腹肌只是时间问题。';
+ else if(ph<=1)advice='蛋白质达标天数偏少。每餐先夹「一掌心」的肉/蛋/豆制品，再吃别的。';
+ else if(water<=3)advice='饮水偏少。把水杯放在看得见的地方，每小时喝两口。';
+ else advice='整体在轨道上，继续记录、继续打卡，下周会比这周更好。';
+ var h='<div class="stat-grid">'+
+  '<div class="stat"><b>'+ck+'/7</b><span>训练打卡天数</span></div>'+
+  '<div class="stat"><b>'+ph+'</b><span>蛋白质达标天数</span></div>'+
+  '<div class="stat"><b>'+(avgK||'—')+'</b><span>日均摄入（千卡）</span></div>'+
+  '<div class="stat"><b>'+water+'</b><span>8杯水达标天数</span></div>'+
+  '<div class="stat"><b>'+logd+'</b><span>记录饮食天数</span></div>'+
+  '<div class="stat"><b>'+wTxt+'</b><span>体重情况</span></div>'+
+  '</div><p class="note">💬 '+advice+'</p>';
+ $('report-box').innerHTML=h;
+}
+function renderBadges(){
+ var h='';
+ for(var i=0;i<ACHIEVEMENTS.length;i++){
+  var a=ACHIEVEMENTS[i];
+  var got=false;
+  try{got=!!a.cond();}catch(e){}
+  h+='<div class="badge'+(got?'':' lock')+'"><span class="ico">'+a.ico+'</span><span class="nm">'+a.nm+'</span></div>';
+ }
+ $('badge-box').innerHTML=h;
+}
+function applyDark(){
+ document.body.classList.toggle('dark',!!state.settings.dark);
+ $('dark-toggle').textContent=state.settings.dark?'☀️':'🌙';
+}
+function toggleDark(){state.settings.dark=!state.settings.dark;save();applyDark();}
+
+var catFilter='全部';
+function renderFoodCats(){
+ var cats=['全部','家常','外卖','饮品','零食'];
+ $('food-cats').innerHTML=cats.map(function(c){return '<button class="cat-chip'+(catFilter===c?' on':'')+'" data-cat="'+c+'">'+c+'</button>';}).join('');
+}
+function isFav(name){return state.favs.indexOf(name)>=0;}
+function foodRowHtml(f,defGrams){
+ return '<div class="food-row" data-name="'+esc(f.n)+'"><button class="star'+(isFav(f.n)?' on':'')+'" data-fav="'+esc(f.n)+'" title="收藏到常用">'+(isFav(f.n)?'★':'☆')+'</button><div class="nm"><b>'+esc(f.n)+'</b><span>'+f.k+'千卡/100g · '+esc(f.hint||'')+'</span></div><input type="text" inputmode="numeric" class="g" value="'+defGrams+'" onfocus="this.select()"><button class="btn small add">添加</button></div>';
+}
+function renderFavs(){
+ var list=state.favs.slice();
+ if(!list.length){$('fav-list').innerHTML='';return;}
+ var h='<p class="dim" style="margin-bottom:4px">⭐ 常用食物（点 ☆ 收藏，点添加直接记）</p>';
+ for(var i=0;i<list.length;i++){
+  var f=ALL_FOODS.find(function(x){return x.n===list[i];});
+  if(!f)continue;
+  h+='<div class="fav-line" data-name="'+esc(f.n)+'"><div class="nm"><b>'+esc(f.n)+'</b><span>'+f.k+'千卡/100g · '+esc(f.hint||'')+'</span></div><input type="text" inputmode="numeric" class="g" value="100" onfocus="this.select()"><button class="btn small add">添加</button></div>';
+ }
+ $('fav-list').innerHTML=h;
+}
+function renderFoodList(){
+ var q=$('food-search').value.trim();
+ var list=ALL_FOODS.filter(function(f){
+  var cat=f.cat||'家常';
+  if(catFilter!=='全部'&&cat!==catFilter)return false;
+  return f.n.indexOf(q)>=0;
+ });
+ $('food-list').innerHTML=list.map(function(f){return foodRowHtml(f,100);}).join('')||'<p class="dim">没有找到，试试上面的「自定义食物」。</p>';
+}
+
+var coachBusy=false;
+var COACH_CHIPS=['今天吃超了300千卡，怎么补救？','想快速瘦肚子，怎么做？','训练后特别饿怎么办？','平台期了，体重不动怎么办？','给我安排明天的三餐'];
+function coachSysPrompt(){
+ var p=state.profile,t=calc(p),c=consumed();
+ var b=state.body.slice().sort(function(a,c){return a.date<c.date?-1:1;});
+ var lastW=b.length?b[b.length-1].weight+'kg（'+b[b.length-1].date+'）':'暂无记录';
+ var done=state.checkins[todayStr()]?'已完成':'未完成';
+ return '你是资深减脂教练和注册营养师。用户：男，'+p.age+'岁，身高'+p.height+'cm，体重'+p.weight+'kg，目标体重'+p.target+'kg。每日目标：'+t.intake+'千卡、蛋白质'+t.protein+'g、脂肪'+t.fat+'g、碳水'+t.carbs+'g。今天已摄入'+Math.round(c.k)+'千卡（蛋白质'+Math.round(c.p)+'g）。今日训练打卡：'+done+'。最近体重：'+lastW+'。请用中文简洁回答，给具体可执行的建议，不超过300字。不构成医疗建议。';
+}
+function coachAdd(text,who){
+ var div=document.createElement('div');
+ div.className='bubble '+who;
+ div.textContent=text;
+ $('coach-msgs').appendChild(div);
+ $('coach-msgs').scrollTop=$('coach-msgs').scrollHeight;
+}
+function coachBoot(){
+ if($('coach-msgs').dataset.on!=='1'){
+  $('coach-msgs').dataset.on='1';
+  $('coach-chips').innerHTML=COACH_CHIPS.map(function(c){return '<button class="qchip" data-q="'+esc(c)+'">'+esc(c)+'</button>';}).join('');
+  if(!state.ai.key)coachAdd('你好！我是你的 AI 教练 🤖 先去「拍照识别 → AI 设置」填好 API Key，我就能结合你的体重、目标和今日饮食给你建议。','ai');
+  else coachAdd('你好！我是你的 AI 教练 🤖 我已经能读取你的体重目标、今日饮食和打卡情况。想问什么直接说，或点下面的快捷问题。','ai');
+ }
+}
+function coachSend(q){
+ var text=(q||$('coach-in').value).trim();
+ if(!text)return;
+ if(coachBusy)return;
+ coachAdd(text,'user');
+ $('coach-in').value='';
+ if(!state.ai.key){coachAdd('还没有配置 API Key：请到「拍照识别 → AI 设置」填写，然后回来再问我。','ai');return;}
+ coachBusy=true;
+ var box=document.createElement('div');
+ box.className='bubble ai';
+ box.textContent='正在思考…';
+ $('coach-msgs').appendChild(box);
+ var base=state.ai.base.replace(/\/+$/,'');
+ if(!/\/v1$/.test(base))base+='/v1';
+ var payload={model:state.ai.model,instructions:coachSysPrompt(),input:[{role:'user',content:[{type:'input_text',text:text}]}]};
+ fetch(base+'/responses',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+state.ai.key,'Dangerously-Allow-Browser':'true'},body:JSON.stringify(payload)}).then(function(r){
+  return r.json().then(function(d){if(!r.ok)throw new Error('HTTP '+r.status+': '+(d.error&&d.error.message?d.error.message:JSON.stringify(d).slice(0,120)));return d;});
+ }).then(function(d){
+  box.textContent=d.output_text||'（没有回复内容）';
+ }).catch(function(e){
+  box.textContent='请求失败：'+e.message+'。可以到「拍照识别 → AI 设置」检查 Key / 接口地址 / 模型名。';
+ }).then(function(){
+  coachBusy=false;
+  $('coach-msgs').scrollTop=$('coach-msgs').scrollHeight;
+ });
+}
+
+function renderShape(){
+ var arr=state.photos.slice().sort(function(a,c){return a.date<c.date?-1:1;});
+ if(!arr.length){$('shape-view').innerHTML='<p class="dim" style="margin-top:8px">还没有照片。建议今晚拍第一张，以后每月同角度、同光线拍一张，对比会很有成就感。</p>';return;}
+ var newer=arr[arr.length-1];
+ var older=arr.length>1?arr[arr.length-2]:null;
+ var h='<div class="cmp-labels"><span>📅 '+(older?older.date:'—')+'（旧）</span><span>📅 '+newer.date+'（新）</span></div>';
+ h+='<div class="cmp-wrap"><img class="base" src="'+(older?older.data:newer.data)+'" alt="对比底图">'+
+  (older?'<img class="over" src="'+newer.data+'" alt="对比顶层" style="clip-path:inset(0 0 0 50%)"><div class="cmp-divider" style="left:50%"></div>':'')+
+  '</div>';
+ if(older)h+='<input type="range" class="cmp-range" min="0" max="100" value="50" oninput="shapeSlide(this.value)"><p class="dim">拖动滑杆：左边旧照片，右边新照片。</p>';
+ h+='<div class="row" style="margin-top:8px">'+arr.map(function(x){return '<button class="btn small ghost" data-shape-x="'+x.date+'">'+x.date+' ✕</button>';}).join('')+'</div>';
+ $('shape-view').innerHTML=h;
+}
+function shapeSlide(v){
+ var wrap=$('shape-view').querySelector('.cmp-wrap');
+ if(!wrap)return;
+ var over=wrap.querySelector('.over'),line=wrap.querySelector('.cmp-divider');
+ if(over)over.style.clipPath='inset(0 0 0 '+v+'%)';
+ if(line)line.style.left=v+'%';
+}
+var editPlan=null;
+function openEditor(){
+ editPlan=JSON.parse(JSON.stringify(state.settings.customPlan&&state.settings.customPlan.length?state.settings.customPlan:TRAINING));
+ $('plan-editor').style.display='block';
+ renderPlanEditor();
+}
+function renderPlanEditor(){
+ var names=Object.keys(EXERCISES);
+ var h='<p class="note" style="margin:0 0 8px">点动作名选择/取消（可多选），改完点保存。「恢复默认」回到原始计划。</p>';
+ for(var i=0;i<editPlan.length;i++){
+  var d=editPlan[i];
+  h+='<div class="editor-day" data-day="'+i+'"><div class="eh"><span class="dl">'+esc(d.day)+'</span><input class="ed-title" value="'+esc(d.title)+'"><button class="preset-chip" data-preset="rest">休息</button><button class="preset-chip" data-preset="cardio">有氧</button><button class="preset-chip" data-preset="full">全身力量</button></div>';
+  h+='<div class="row">'+names.map(function(n){
+   return '<button class="ex-chip'+(d.items.indexOf(n)>=0?' on':'')+'" data-ex="'+esc(n)+'">'+esc(n)+'</button>';
+  }).join('')+'</div></div>';
+ }
+ h+='<div class="row" style="margin-top:8px"><button class="btn" id="plan-save">保存计划</button><button class="btn ghost" id="plan-reset">恢复默认</button></div>';
+ $('plan-editor').innerHTML=h;
+}
+
+var firedToday={};
+function loadFired(){try{firedToday=JSON.parse(localStorage.getItem('jz_fired_'+todayStr())||'{}');}catch(e){firedToday={};}}
+function saveFired(){try{localStorage.setItem('jz_fired_'+todayStr(),JSON.stringify(firedToday));}catch(e){}}
+function renderReminderForm(){
+ var r=state.settings.reminders;
+ var ws=r.water||[];
+ $('rm-w1').value=ws[0]||'';$('rm-w2').value=ws[1]||'';$('rm-w3').value=ws[2]||'';$('rm-w4').value=ws[3]||'';
+ $('rm-train').value=r.train||'';
+}
+function showToast(msg){
+ var t=$('toast');
+ t.textContent=msg;
+ t.classList.add('show');
+ clearTimeout(showToast._t);
+ showToast._t=setTimeout(function(){t.classList.remove('show');},6000);
+}
+function notify(msg){
+ if('Notification' in window&&Notification.permission==='granted'){
+  try{new Notification('减脂助手',{body:msg});}catch(e){}
+ }
+ showToast(msg);
+}
+function tickReminders(){
+ var d=new Date();
+ var hm=pad(d.getHours())+':'+pad(d.getMinutes());
+ var r=state.settings.reminders;
+ if(r.water&&r.water.indexOf(hm)>=0&&!firedToday['w'+hm]){firedToday['w'+hm]=1;saveFired();notify('💧 该喝水啦！一次一杯（250ml），全天目标 8 杯。');}
+ if(r.train===hm&&!firedToday['t'+hm]){firedToday['t'+hm]=1;saveFired();notify('🏋️ 训练时间到！先热身 5 分钟，再按今日计划练。');}
+}
+var SYNC_SQL='create table if not exists public.fitness_state (\n code text primary key,\n data jsonb,\n updated_at timestamptz default now()\n);\nalter table public.fitness_state enable row level security;\ndrop policy if exists "anon_all" on public.fitness_state;\ncreate policy "anon_all" on public.fitness_state for all to anon using (true) with check (true);';
+function syncCfg(){
+ var s=state.settings.sync;
+ if(s.url&&s.key&&s.code)return s;
+ return null;
+}
+function renderSyncForm(){
+ var s=state.settings.sync;
+ $('sy-url').value=s.url;$('sy-key').value=s.key;$('sy-code').value=s.code;
+ $('sy-sql').value=SYNC_SQL;
+}
+function saveSyncCfg(){
+ var s=state.settings.sync;
+ s.url=$('sy-url').value.trim();s.key=$('sy-key').value.trim();s.code=$('sy-code').value.trim();
+ save();
+ $('sy-msg').textContent=syncCfg()?'✅ 已保存配置，之后的改动会自动上传到云端':'已保存（三个都填好才能同步）';
+}
+function syncPush(){
+ var c=syncCfg();
+ if(!c){$('sy-msg').textContent='请先填写网址、anon 公钥和同步码';return;}
+ $('sy-msg').textContent='⏳ 上传中…';
+ var url=c.url.replace(/\/+$/,'')+'/rest/v1/fitness_state';
+ fetch(url,{method:'POST',headers:{'apikey':c.key,'Authorization':'Bearer '+c.key,'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'},body:JSON.stringify({code:c.code,data:state,updated_at:new Date().toISOString()})}).then(function(r){
+  if(!r.ok)return r.json().then(function(d){throw new Error('HTTP '+r.status+'：'+((d&&d.message)||''));});
+  state.settings.sync.lastSync=Date.now();
+  save();
+  $('sy-msg').textContent='✅ 已上传到云端';
+ }).catch(function(e){
+  $('sy-msg').textContent='❌ 上传失败：'+e.message+'。请检查网址/公钥，以及 SQL 是否已执行。';
+ });
+}
+function syncPull(){
+ var c=syncCfg();
+ if(!c){$('sy-msg').textContent='请先填写网址、anon 公钥和同步码';return;}
+ $('sy-msg').textContent='⏳ 下载中…';
+ var url=c.url.replace(/\/+$/,'')+'/rest/v1/fitness_state?code=eq.'+encodeURIComponent(c.code)+'&select=data';
+ fetch(url,{method:'GET',headers:{'apikey':c.key,'Authorization':'Bearer '+c.key}}).then(function(r){
+  if(!r.ok)return r.json().then(function(){throw new Error('HTTP '+r.status);});
+  return r.json();
+ }).then(function(rows){
+  if(!rows||!rows.length){$('sy-msg').textContent='云端还没有数据。先在另一台设备上点「上传到云端」。';return;}
+  var d=rows[0].data;
+  if(!d||!d.profile)throw new Error('云端数据不完整');
+  if(!confirm('确定用云端数据覆盖本机数据吗？'))return;
+  syncGuard=true;
+  state=normalizeState(d);
+  save();renderAll();renderTraining();applyDark();
+  syncGuard=false;
+  state.settings.sync.lastSync=Date.now();
+  save();
+  $('sy-msg').textContent='✅ 已从云端恢复';
+ }).catch(function(e){
+  $('sy-msg').textContent='❌ 下载失败：'+e.message;
+ });
+}
+var autoPushTimer=null;
+var syncGuard=false;
+function scheduleAutoPush(){
+ if(syncGuard)return;
+ if(!syncCfg()||state.settings.sync.auto===false)return;
+ clearTimeout(autoPushTimer);
+ autoPushTimer=setTimeout(function(){autoPushTimer=null;syncPushSilent();},2500);
+}
+function syncPushSilent(){
+ var c=syncCfg();
+ if(!c)return;
+ var url=c.url.replace(/\/+$/,'')+'/rest/v1/fitness_state';
+ fetch(url,{method:'POST',headers:{'apikey':c.key,'Authorization':'Bearer '+c.key,'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'},body:JSON.stringify({code:c.code,data:state,updated_at:new Date().toISOString()})}).then(function(r){
+  if(!r.ok)throw new Error('push '+r.status);
+  state.settings.sync.lastSync=Date.now();
+ }).catch(function(){});
+}
+function autoPullOnce(){
+ if(!syncCfg()||state.settings.sync.auto===false)return;
+ if(Date.now()-state.settings.sync.lastSync<10*60*1000)return;
+ var c=syncCfg();
+ var url=c.url.replace(/\/+$/,'')+'/rest/v1/fitness_state?code=eq.'+encodeURIComponent(c.code)+'&select=data,updated_at';
+ fetch(url,{method:'GET',headers:{'apikey':c.key,'Authorization':'Bearer '+c.key}}).then(function(r){
+  if(!r.ok)throw new Error('pull '+r.status);
+  return r.json();
+ }).then(function(rows){
+  if(!rows||!rows.length)return;
+  var d=rows[0].data;
+  if(!d||!d.profile)return;
+  var remote=new Date(rows[0].updated_at||0).getTime();
+  if(remote>state.settings.sync.lastSync){
+   syncGuard=true;
+   state=normalizeState(d);
+   save();renderAll();renderTraining();applyDark();
+   syncGuard=false;
+   state.settings.sync.lastSync=Date.now();
+   save();
+   showToast('☁️ 已从云端同步最新数据');
+  }
+ }).catch(function(){});
+}
+
+function renderToday(){renderTarget();renderPlan();renderWater();renderTip();renderCheckin();}
 function renderAll(){renderProfileForm();renderToday();renderLog();renderBody();renderPhotoTab();}
 
 $('tabs').addEventListener('click',function(e){
@@ -722,6 +1277,8 @@ $('tabs').addEventListener('click',function(e){
  if(b.dataset.tab==='log')renderLog();
  if(b.dataset.tab==='body')renderBody();
  if(b.dataset.tab==='photo')renderPhotoTab();
+ if(b.dataset.tab==='coach')coachBoot();
+ if(b.dataset.tab==='report'){renderReport();renderBadges();}
 });
 
 $('swap-plan').addEventListener('click',function(){state.planIndex++;save();renderPlan();});
@@ -743,12 +1300,36 @@ $('meal-picker').addEventListener('click',function(e){
  for(var i=0;i<btns.length;i++)btns[i].classList.toggle('on',btns[i]===b);
 });
 $('food-list').addEventListener('click',function(e){
+ var fav=e.target.closest('button[data-fav]');
+ if(fav){
+  var name=fav.dataset.fav;
+  var idx=state.favs.indexOf(name);
+  if(idx>=0)state.favs.splice(idx,1);else state.favs.push(name);
+  save();renderFavs();renderFoodList();
+  return;
+ }
  var btn=e.target.closest('button.add');
  if(!btn)return;
  var row=btn.closest('.food-row');
- var f=FOODS.find(function(x){return x.n===row.dataset.name;});
+ var f=ALL_FOODS.find(function(x){return x.n===row.dataset.name;});
+ if(!f)return;
  var grams=parseFloat(row.querySelector('.g').value)||100;
  addEntry(f.n,grams,f.k,f.p,f.c,f.f);
+});
+$('fav-list').addEventListener('click',function(e){
+ var btn=e.target.closest('button.add');
+ if(!btn)return;
+ var row=btn.closest('.fav-line');
+ var f=ALL_FOODS.find(function(x){return x.n===row.dataset.name;});
+ if(!f)return;
+ var grams=parseFloat(row.querySelector('.g').value)||100;
+ addEntry(f.n,grams,f.k,f.p,f.c,f.f);
+});
+$('food-cats').addEventListener('click',function(e){
+ var b=e.target.closest('.cat-chip');
+ if(!b)return;
+ catFilter=b.dataset.cat;
+ renderFoodCats();renderFoodList();
 });
 $('c-add').addEventListener('click',function(){
  var name=$('c-name').value.trim();
@@ -792,7 +1373,7 @@ $('p-reset').addEventListener('click',function(){
  if(confirm('确定清空全部数据并恢复默认吗？')){
   localStorage.removeItem(LS_KEY);
   state=defaultState();
-  renderAll();
+  renderAll();renderTraining();applyDark();renderShape();
  }
 });
 
@@ -905,7 +1486,7 @@ $('data-file').addEventListener('change',function(e){
    if(!s||!s.profile)throw new Error('bad file');
    if(!confirm('导入会覆盖本机当前数据，确定继续吗？'))return;
    state=normalizeState(s);
-   save();renderAll();renderTraining();
+   save();renderAll();renderTraining();applyDark();renderShape();
    $('data-msg').textContent='✅ 导入成功，数据已恢复';
   }catch(err){
    $('data-msg').textContent='❌ 文件格式不对，请选择导出的备份文件';
@@ -915,9 +1496,124 @@ $('data-file').addEventListener('change',function(e){
  e.target.value='';
 });
 
+$('dark-toggle').addEventListener('click',toggleDark);
+$('checkin-box').addEventListener('click',function(e){
+ var b=e.target.closest('#checkin-toggle');
+ if(!b)return;
+ var d=todayStr();
+ if(state.checkins[d])delete state.checkins[d];else state.checkins[d]=true;
+ save();renderCheckin();renderReport();
+});
+$('coach-send').addEventListener('click',function(){coachSend();});
+$('coach-in').addEventListener('keydown',function(e){if(e.key==='Enter')coachSend();});
+$('coach-chips').addEventListener('click',function(e){
+ var b=e.target.closest('.qchip');
+ if(!b)return;
+ coachSend(b.dataset.q);
+});
+$('shape-take').addEventListener('click',function(){$('shape-input').click();});
+$('shape-input').addEventListener('change',function(e){
+ var file=e.target.files[0];
+ if(!file)return;
+ var reader=new FileReader();
+ reader.onload=function(ev){
+  var img=new Image();
+  img.onload=function(){
+   var data=resizeImage(img,700);
+   var today=todayStr();
+   state.photos=state.photos.filter(function(x){return x.date!==today;});
+   state.photos.push({date:today,data:data});
+   state.photos.sort(function(a,c){return a.date<c.date?-1:1;});
+   while(state.photos.length>4)state.photos.shift();
+   save();renderShape();
+  };
+  img.onerror=function(){alert('图片读取失败，请换一张');};
+  img.src=ev.target.result;
+ };
+ reader.readAsDataURL(file);
+ e.target.value='';
+});
+$('shape-view').addEventListener('click',function(e){
+ var b=e.target.closest('[data-shape-x]');
+ if(!b)return;
+ state.photos=state.photos.filter(function(x){return x.date!==b.dataset.shapeX;});
+ save();renderShape();
+});
+$('plan-edit').addEventListener('click',openEditor);
+$('plan-editor').addEventListener('click',function(e){
+ var chip=e.target.closest('.ex-chip');
+ if(chip){
+  var day=+chip.closest('.editor-day').dataset.day;
+  var items=editPlan[day].items;
+  var name=chip.dataset.ex;
+  var idx=items.indexOf(name);
+  if(idx>=0)items.splice(idx,1);else items.push(name);
+  renderPlanEditor();
+  return;
+ }
+ var pre=e.target.closest('.preset-chip');
+ if(pre){
+  var day2=+pre.closest('.editor-day').dataset.day;
+  var p=pre.dataset.preset;
+  if(p==='rest'){editPlan[day2].items=[];editPlan[day2].title='完全休息';}
+  else if(p==='cardio'){editPlan[day2].items=['快走/慢跑'];editPlan[day2].title='有氧日';}
+  else if(p==='full'){editPlan[day2].items=['深蹲','俯卧撑(卧推)','哑铃俯身划船','哑铃推举','平板支撑','卷腹'];editPlan[day2].title='全身力量 + 腹肌';}
+  renderPlanEditor();
+  return;
+ }
+ var saveBtn=e.target.closest('#plan-save');
+ if(saveBtn){
+  state.settings.customPlan=editPlan;
+  save();renderTraining();
+  $('plan-editor').style.display='none';
+  return;
+ }
+ var reset=e.target.closest('#plan-reset');
+ if(reset){
+  state.settings.customPlan=null;
+  save();renderTraining();
+  $('plan-editor').style.display='none';
+ }
+});
+$('plan-editor').addEventListener('input',function(e){
+ var inp=e.target.closest('.ed-title');
+ if(!inp||!editPlan)return;
+ var day=+inp.closest('.editor-day').dataset.day;
+ editPlan[day].title=inp.value.trim()||'训练日';
+});
+$('rm-save').addEventListener('click',function(){
+ var ws=[$('rm-w1').value,$('rm-w2').value,$('rm-w3').value,$('rm-w4').value].filter(function(v){return v;});
+ state.settings.reminders={water:ws,train:$('rm-train').value||''};
+ save();
+ showToast('✅ 提醒已保存');
+});
+$('notify-ask').addEventListener('click',function(){
+ if(!('Notification' in window)){showToast('当前浏览器不支持系统通知');return;}
+ Notification.requestPermission().then(function(p){
+  showToast(p==='granted'?'✅ 系统通知已开启，到点会弹提醒':'未获得通知权限，网页内的弹窗提醒仍会生效');
+ });
+});
+$('sy-push').addEventListener('click',syncPush);
+$('sy-pull').addEventListener('click',syncPull);
+$('sy-url').addEventListener('change',saveSyncCfg);
+$('sy-key').addEventListener('change',saveSyncCfg);
+$('sy-code').addEventListener('change',saveSyncCfg);
+
 $('b-date').value=todayStr();
 renderTraining();
 renderAll();
+applyDark();
+renderFoodCats();
+renderSyncForm();
+renderReminderForm();
+renderShape();
+loadFired();
+tickReminders();
+setInterval(tickReminders,30000);
+setTimeout(autoPullOnce,3000);
+if('serviceWorker' in navigator&&location.protocol.indexOf('http')===0){
+ window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){});});
+}
 </script>
 </body>
 </html>
