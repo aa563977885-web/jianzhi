@@ -288,6 +288,7 @@ details.card[open] summary .arrow{transform:rotate(180deg)}
 body.ex-open #ex-mask{opacity:1;pointer-events:auto}
 body.ex-open #ex-drawer{transform:translate(-50%,0)}
 .ex-handle{width:40px;height:4px;border-radius:99px;background:var(--border);margin:6px auto 12px}
+.ex-close{position:absolute;top:12px;right:14px;width:36px;height:36px;border-radius:50%;border:0;background:var(--primary-soft);color:var(--text);font-size:17px;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:3;line-height:1}
 .ex-title{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px}
 .ex-title h3{font-size:17px;margin:0}
 .ex-imgs{position:relative;border-radius:14px;overflow:hidden;background:var(--primary-soft)}
@@ -345,7 +346,7 @@ body.ex-open{overflow:hidden}
 </style>
 </head>
 <body>
-<header><div class="wrap hrow"><div><h1>🔥 减脂助手 <span class="ver-badge">v2.4</span></h1><div class="sub">你的私人饮食与训练管家 · 数据默认保存在本机浏览器</div></div><button class="btn" id="dark-toggle" title="深色模式">🌙</button></div></header>
+<header><div class="wrap hrow"><div><h1>🔥 减脂助手 <span class="ver-badge">v2.4.2</span></h1><div class="sub">你的私人饮食与训练管家 · 数据默认保存在本机浏览器</div></div><button class="btn" id="dark-toggle" title="深色模式">🌙</button></div></header>
 <nav id="tabs">
   <button data-tab="today" class="on">🏠 今日<span class="badge-dot"></span></button>
   <button data-tab="log">🍽️ 记录</button>
@@ -1005,6 +1006,7 @@ function openExDrawer(name){
  $('ex-video-wrap').style.display='none';
  $('ex-video-wrap').innerHTML='';
  $('ex-video-btn').style.display=ex.video_bv?'block':'none';
+ $('ex-video-btn').textContent='▶ 看视频教程';
  $('ex-drawer').scrollTop=0;
  document.body.classList.add('ex-open');
 }
@@ -1014,12 +1016,18 @@ function closeExDrawer(){
 function bindExDrawer(){
 $('ex-mask').addEventListener('click',closeExDrawer);
 $('ex-video-btn').addEventListener('click',function(){
+ var _w=$('ex-video-wrap');
+ if(_w.style.display==='block'){
+  _w.style.display='none';
+  _w.innerHTML='';
+  this.textContent='▶ 看视频教程';
+  return;
+ }
  var ex=exDb(exCur.name);
  if(!ex||!ex.video_bv)return;
- $('ex-video-wrap').innerHTML='<iframe src="https://player.bilibili.com/player.html?bvid='+encodeURIComponent(ex.video_bv)+'&danmaku=0&no_related=1" sandbox="allow-top-navigation allow-same-origin allow-forms allow-scripts" allowfullscreen></iframe>';
- var _w=$('ex-video-wrap');
+ _w.innerHTML='<iframe src="https://player.bilibili.com/player.html?bvid='+encodeURIComponent(ex.video_bv)+'&danmaku=0&no_related=1" sandbox="allow-top-navigation allow-same-origin allow-forms allow-scripts" allowfullscreen></iframe>';
  _w.style.display='block';
- this.style.display='none';
+ this.textContent='✕ 收起视频';
  setTimeout(function(){_w.scrollIntoView({behavior:'smooth',block:'nearest'});},80);
 });
 document.addEventListener('click',function(e){
@@ -2134,6 +2142,7 @@ if('serviceWorker' in navigator&&location.protocol.indexOf('http')===0){
 <div id="ex-mask" data-ex-close="1"></div>
 <div id="ex-drawer" role="dialog" aria-modal="true">
   <div class="ex-handle"></div>
+  <button class="ex-close" data-ex-close="1" aria-label="关闭抽屉">✕</button>
   <div class="ex-title"><h3 id="ex-name"></h3><span class="mtag" id="ex-muscle"></span></div>
   <div class="ex-imgs" id="ex-imgs"><img id="ex-img0" alt=""><img id="ex-img1" alt="" style="display:none"></div>
   <div class="ex-dots"><button class="ex-dot on" data-ex-img="0" aria-label="图1"></button><button class="ex-dot" data-ex-img="1" aria-label="图2"></button></div>
