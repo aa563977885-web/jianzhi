@@ -283,11 +283,10 @@ details.card[open] summary{margin-bottom:12px}
 details.card summary .arrow{color:var(--text-3);transition:transform .2s;font-size:12px}
 details.card[open] summary .arrow{transform:rotate(180deg)}
 /* 动作演示抽屉 */
-#ex-mask{position:fixed;inset:0;background:rgba(0,0,0,.4);opacity:0;pointer-events:none;transition:opacity .3s;z-index:80}
-#ex-drawer{position:fixed;left:50%;transform:translate(-50%,110%);bottom:0;width:100%;max-width:480px;background:var(--card);color:var(--text);border-radius:20px 20px 0 0;z-index:90;max-height:75vh;overflow:auto;transition:transform .3s ease;padding:10px 18px calc(24px + env(safe-area-inset-bottom));box-shadow:var(--shadow)}
-body.ex-open #ex-mask{opacity:1;pointer-events:auto}
-body.ex-open #ex-drawer{transform:translate(-50%,0)}
-.ex-handle{width:40px;height:4px;border-radius:99px;background:var(--border);margin:6px auto 12px}
+#ex-mask{display:none}
+#ex-drawer{display:none;position:relative;left:auto;transform:none;bottom:auto;width:100%;max-width:none;background:#f2f8f6;color:var(--text);border:1px solid var(--line);border-radius:14px;z-index:1;max-height:none;overflow:visible;padding:12px 14px;box-shadow:none;margin-top:10px}
+body.dark #ex-drawer{background:#14201c}
+.ex-handle{display:none}
 .ex-close{position:absolute;top:12px;right:14px;width:36px;height:36px;border-radius:50%;border:0;background:var(--primary-soft);color:var(--text);font-size:17px;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:3;line-height:1}
 .ex-title{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px}
 .ex-title h3{font-size:17px;margin:0}
@@ -300,7 +299,6 @@ body.ex-open #ex-drawer{transform:translate(-50%,0)}
 .ex-bad{color:#dc2626;font-weight:700;margin-top:10px}
 #ex-mistakes{margin:6px 0 0;padding-left:22px;color:var(--text-2);font-size:13.5px}
 .ex-tips{margin:4px 0 0;color:var(--text-2);font-size:13.5px;line-height:1.6}
-body.ex-open{overflow:hidden}
 #ex-video-btn{margin-top:12px}
 .ex-video-wrap{aspect-ratio:16/9;margin-top:10px;border-radius:12px;overflow:hidden;background:#000}
 .ex-video-wrap iframe{width:100%;height:100%;border:0}
@@ -331,13 +329,12 @@ body.ex-open{overflow:hidden}
 #btabs button.needs-checkin .badge-dot{display:block}
  main{padding-bottom:88px}
  .coach-wrap{height:calc(100dvh - 160px)}
- #ex-drawer{max-height:75vh}
+ #ex-drawer{max-height:none}
 }
 @media (min-width:1024px){
  .wrap{max-width:1100px}
  .td-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;align-items:start}
- #ex-drawer{bottom:50%;transform:translate(-50%,110%);border-radius:20px;max-height:80vh;padding-bottom:24px}
- body.ex-open #ex-drawer{transform:translate(-50%,50%)}
+ #ex-drawer{max-height:none}
 }
 .render-err{color:#dc2626;font-size:13px;padding:8px 10px;border-radius:8px;background:rgba(220,38,38,.08);margin:4px 0}
 .ver-badge{display:inline-block;font-size:11px;font-weight:600;color:var(--primary);background:var(--primary-soft);border:1px solid var(--primary);border-radius:99px;padding:1px 8px;vertical-align:middle;margin-left:6px}
@@ -346,7 +343,7 @@ body.ex-open{overflow:hidden}
 </style>
 </head>
 <body>
-<header><div class="wrap hrow"><div><h1>🔥 减脂助手 <span class="ver-badge">v2.4.2</span></h1><div class="sub">你的私人饮食与训练管家 · 数据默认保存在本机浏览器</div></div><button class="btn" id="dark-toggle" title="深色模式">🌙</button></div></header>
+<header><div class="wrap hrow"><div><h1>🔥 减脂助手 <span class="ver-badge">v2.4.3</span></h1><div class="sub">你的私人饮食与训练管家 · 数据默认保存在本机浏览器</div></div><button class="btn" id="dark-toggle" title="深色模式">🌙</button></div></header>
 <nav id="tabs">
   <button data-tab="today" class="on">🏠 今日<span class="badge-dot"></span></button>
   <button data-tab="log">🍽️ 记录</button>
@@ -970,9 +967,15 @@ function exPlaceholder(name){
  var svg='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 400"><rect width="640" height="400" fill="#e6f4f1"/><text x="320" y="188" font-size="30" text-anchor="middle" fill="#14a085" font-family="sans-serif">演示图准备中</text><text x="320" y="232" font-size="22" text-anchor="middle" fill="#6b7a76" font-family="sans-serif">'+esc(name)+'</text></svg>';
  return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
 }
-function openExDrawer(name){
+function openExDrawer(name,anchor){
  var ex=exDb(name);
  if(!ex)return;
+ var panel=$('ex-drawer');
+ var row=anchor?anchor.closest('.ex-wrap'):null;
+ if(row&&panel.parentElement===row&&panel.style.display==='block'&&exCur.name===name){
+  closeExDrawer();
+  return;
+ }
  exCur.name=name;
  exCur.img=0;
  $('ex-name').textContent=name;
@@ -1007,14 +1010,14 @@ function openExDrawer(name){
  $('ex-video-wrap').innerHTML='';
  $('ex-video-btn').style.display=ex.video_bv?'block':'none';
  $('ex-video-btn').textContent='▶ 看视频教程';
- $('ex-drawer').scrollTop=0;
- document.body.classList.add('ex-open');
+ if(row)row.appendChild(panel);
+ panel.style.display='block';
 }
 function closeExDrawer(){
- document.body.classList.remove('ex-open');
+ var panel=$('ex-drawer');
+ if(panel)panel.style.display='none';
 }
 function bindExDrawer(){
-$('ex-mask').addEventListener('click',closeExDrawer);
 $('ex-video-btn').addEventListener('click',function(){
  var _w=$('ex-video-wrap');
  if(_w.style.display==='block'){
@@ -1042,12 +1045,6 @@ document.addEventListener('click',function(e){
  var dots=document.querySelectorAll('.ex-dot');
  for(var i=0;i<dots.length;i++)dots[i].classList.toggle('on',i===idx);
 });
- var exTouchY=null;
- $('ex-drawer').addEventListener('touchstart',function(e){exTouchY=e.touches[0].clientY;},{passive:true});
- $('ex-drawer').addEventListener('touchend',function(e){
-  if(exTouchY!=null&&e.changedTouches[0].clientY-exTouchY<-50)closeExDrawer();
-  exTouchY=null;
- });
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bindExDrawer);
 else bindExDrawer();
@@ -1975,7 +1972,7 @@ $('ai-preset-sf').addEventListener('click',function(){
 
 $('training').addEventListener('click',function(e){
  var exBtn=e.target.closest('.ex-name');
- if(exBtn){openExDrawer(exBtn.dataset.ex);return;}
+ if(exBtn){openExDrawer(exBtn.dataset.ex,exBtn);return;}
  var btn=e.target.closest('.play-bili');
  if(!btn)return;
  var zone=btn.closest('.video-zone');
@@ -2139,8 +2136,7 @@ if('serviceWorker' in navigator&&location.protocol.indexOf('http')===0){
  window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){});});
 }
 </script>
-<div id="ex-mask" data-ex-close="1"></div>
-<div id="ex-drawer" role="dialog" aria-modal="true">
+<div id="ex-drawer" role="region" style="display:none">
   <div class="ex-handle"></div>
   <button class="ex-close" data-ex-close="1" aria-label="关闭抽屉">✕</button>
   <div class="ex-title"><h3 id="ex-name"></h3><span class="mtag" id="ex-muscle"></span></div>
