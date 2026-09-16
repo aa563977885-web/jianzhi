@@ -338,10 +338,14 @@ body.ex-open{overflow:hidden}
  #ex-drawer{bottom:50%;transform:translate(-50%,110%);border-radius:20px;max-height:80vh;padding-bottom:24px}
  body.ex-open #ex-drawer{transform:translate(-50%,50%)}
 }
+.render-err{color:#dc2626;font-size:13px;padding:8px 10px;border-radius:8px;background:rgba(220,38,38,.08);margin:4px 0}
+.ver-badge{display:inline-block;font-size:11px;font-weight:600;color:var(--primary);background:var(--primary-soft);border:1px solid var(--primary);border-radius:99px;padding:1px 8px;vertical-align:middle;margin-left:6px}
+.ex-imgs.img-missing{height:240px;aspect-ratio:auto;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--primary-soft),var(--primary));border-radius:14px}
+.ex-imgs.img-missing::after{content:attr(data-name);color:#fff;font-size:17px;font-weight:700;text-shadow:0 1px 3px rgba(0,0,0,.25)}
 </style>
 </head>
 <body>
-<header><div class="wrap hrow"><div><h1>🔥 减脂助手</h1><div class="sub">你的私人饮食与训练管家 · 数据默认保存在本机浏览器</div></div><button class="btn" id="dark-toggle" title="深色模式">🌙</button></div></header>
+<header><div class="wrap hrow"><div><h1>🔥 减脂助手 <span class="ver-badge">v2.4</span></h1><div class="sub">你的私人饮食与训练管家 · 数据默认保存在本机浏览器</div></div><button class="btn" id="dark-toggle" title="深色模式">🌙</button></div></header>
 <nav id="tabs">
   <button data-tab="today" class="on">🏠 今日<span class="badge-dot"></span></button>
   <button data-tab="log">🍽️ 记录</button>
@@ -360,7 +364,7 @@ body.ex-open{overflow:hidden}
 <section id="tab-today" class="on">
   <div class="td-grid">
     <div class="td-col">
-      <div class="card" id="target-card"></div>
+      <div class="card" id="target-card"><h3>🎯 每日目标（自动计算）</h3><div id="target-body"></div></div>
       <div class="card"><h3>💧 今日饮水</h3><p id="water-big"></p><div class="row" id="water-row"></div><p class="note" id="water-note"></p></div>
       <div class="card"><h3>✅ 今日打卡</h3><div id="checkin-box"></div></div>
       <div class="card"><h3>📌 今日小贴士</h3><p id="tip" style="font-size:13.5px"></p></div>
@@ -503,7 +507,7 @@ body.ex-open{overflow:hidden}
   <div class="card"><h3>🏅 成就徽章</h3><div class="badges" id="badge-box"></div></div>
 </section>
 <section id="tab-profile">
-  <div class="card">
+  <div class="card" id="profile-card">
     <h3>👤 基本信息</h3>
     <label>性别</label>
     <select id="p-sex"><option value="male">男</option><option value="female">女</option></select>
@@ -874,7 +878,7 @@ function renderTarget(){
  var foot='<span>本周 '+(wd==null?'待记录':(wd<=0?wd.toFixed(1)+' kg ✅':'+'+wd.toFixed(1)+' kg ⚠️'))+'</span>'+
   '<span>累计已减 '+(lost<0?Math.abs(lost).toFixed(1):'0')+' kg</span>'+
   '<span class="dim">BMI '+t.bmi.toFixed(1)+'</span>';
- $('target-card').innerHTML='<h3>🎯 每日目标（自动计算）</h3><div class="tgt-wrap">'+
+ $('target-body').innerHTML='<div class="tgt-wrap">'+
   '<div class="tgt-ring"><svg viewBox="0 0 132 132">'+
    '<circle cx="66" cy="66" r="'+R+'" fill="none" style="stroke:var(--primary-soft)" stroke-width="11"/>'+
    '<circle cx="66" cy="66" r="'+R+'" fill="none" style="stroke:var(--primary);transition:stroke-dashoffset 1s ease" stroke-width="11" stroke-linecap="round" stroke-dasharray="'+C.toFixed(1)+'" stroke-dashoffset="'+off.toFixed(1)+'"/>'+
@@ -978,9 +982,20 @@ function openExDrawer(name){
  $('ex-mistakes').innerHTML=ex.mistakes.map(function(x){return '<li>'+esc(x)+'</li>';}).join('');
  var imgs=getExerciseImages(name);
  var ph=exPlaceholder(name);
+ var wrap=$('ex-imgs');
+ wrap.classList.remove('img-missing');
+ wrap.setAttribute('data-name',name);
+ if(!$('ex-img0')){
+  var ni=document.createElement('img');ni.id='ex-img0';ni.alt=name;wrap.appendChild(ni);
+ }
+ if(!$('ex-img1')){
+  var nj=document.createElement('img');nj.id='ex-img1';nj.alt=name;nj.style.display='none';wrap.appendChild(nj);
+ }
  var i0=$('ex-img0'),i1=$('ex-img1');
- i0.onerror=function(){this.onerror=null;this.src=ph;};
- i1.onerror=function(){this.onerror=null;this.src=ph;};
+ i0.setAttribute('data-name',name);
+ i1.setAttribute('data-name',name);
+ i0.onerror=function(){this.remove();wrap.classList.add('img-missing');};
+ i1.onerror=function(){this.remove();wrap.classList.add('img-missing');};
  i0.src=imgs?imgs[0]:ph;
  i1.src=imgs?imgs[1]:ph;
  i0.style.display='block';
@@ -1013,8 +1028,9 @@ document.addEventListener('click',function(e){
  if(!dot)return;
  var idx=+dot.dataset.exImg;
  exCur.img=idx;
- $('ex-img0').style.display=idx===0?'block':'none';
- $('ex-img1').style.display=idx===1?'block':'none';
+ var im0=$('ex-img0'),im1=$('ex-img1');
+ if(im0)im0.style.display=idx===0?'block':'none';
+ if(im1)im1.style.display=idx===1?'block':'none';
  var dots=document.querySelectorAll('.ex-dot');
  for(var i=0;i<dots.length;i++)dots[i].classList.toggle('on',i===idx);
 });
@@ -1100,7 +1116,7 @@ function addEntry(name,grams,kPer100,pPer100,cPer100,fPer100,meal){
  var item={name:name,meal:meal||currentMeal,grams:grams,k:Math.round(kPer100*grams/100),p:+(pPer100*grams/100).toFixed(1),c:+(cPer100*grams/100).toFixed(1),f:+(fPer100*grams/100).toFixed(1)};
  state.logs[d]=state.logs[d]||[];
  state.logs[d].push(item);
- save();renderLog();
+ save();safeRender('log-summary',renderLog);
 }
 
 function renderRecent(){
@@ -1554,7 +1570,7 @@ var editPlan=null;
 function openEditor(){
  editPlan=JSON.parse(JSON.stringify(state.settings.customPlan&&state.settings.customPlan.length?state.settings.customPlan:TRAINING));
  $('plan-editor').style.display='block';
- renderPlanEditor();
+ safeRender('plan-editor',renderPlanEditor);
 }
 function renderPlanEditor(){
  var names=Object.keys(EXERCISES);
@@ -1645,7 +1661,7 @@ function syncPull(){
   if(!confirm('确定用云端数据覆盖本机数据吗？'))return;
   syncGuard=true;
   state=normalizeState(d);
-  save();renderAll();renderTraining();applyDark();
+  save();renderAll();safeRender('training',renderTraining);applyDark();
   syncGuard=false;
   state.settings.sync.lastSync=Date.now();
   save();
@@ -1687,7 +1703,7 @@ function autoPullOnce(){
   if(remote>state.settings.sync.lastSync){
    syncGuard=true;
    state=normalizeState(d);
-   save();renderAll();renderTraining();applyDark();
+   save();renderAll();safeRender('training',renderTraining);applyDark();
    syncGuard=false;
    state.settings.sync.lastSync=Date.now();
    save();
@@ -1696,19 +1712,40 @@ function autoPullOnce(){
  }).catch(function(){});
 }
 
-function renderToday(){renderTarget();renderPlan();renderWater();renderTip();renderCheckin();}
-function renderAll(){renderProfileForm();renderToday();renderLog();renderBody();renderPhotoTab();}
+function safeRender(id,fn){
+ try{fn();}
+ catch(e){
+  var el=$(id);
+  if(el){
+   el.innerHTML='<div class="render-err">⚠ 渲染出错：'+esc(e&&e.message?e.message:String(e))+'</div>';
+  }
+ }
+}
+function renderToday(){
+ safeRender('target-body',renderTarget);
+ safeRender('plan-list',renderPlan);
+ safeRender('water-row',renderWater);
+ safeRender('tip',renderTip);
+ safeRender('checkin-box',renderCheckin);
+}
+function renderAll(){
+ safeRender('profile-card',renderProfileForm);
+ renderToday();
+ safeRender('log-summary',renderLog);
+ safeRender('b-summary',renderBody);
+ safeRender('photo-foods',renderPhotoTab);
+}
 
 function switchTab(name){
  var btns=document.querySelectorAll('#tabs button,#btabs button');
  for(var i=0;i<btns.length;i++)btns[i].classList.toggle('on',btns[i].dataset.tab===name);
  var secs=document.querySelectorAll('main section');
  for(var j=0;j<secs.length;j++)secs[j].classList.toggle('on',secs[j].id==='tab-'+name);
- if(name==='log')renderLog();
- if(name==='body')renderBody();
- if(name==='photo')renderPhotoTab();
+ if(name==='log')safeRender('log-summary',renderLog);
+ if(name==='body')safeRender('b-summary',renderBody);
+ if(name==='photo')safeRender('photo-foods',renderPhotoTab);
  if(name==='coach')coachBoot();
- if(name==='report'){renderReport();renderBadges();}
+ if(name==='report'){safeRender('report-box',renderReport);safeRender('badge-box',renderBadges);}
  if(name==='today')renderToday();
  window.scrollTo(0,0);
 }
@@ -1726,7 +1763,7 @@ document.addEventListener('click',function(e){
  if(sw){switchTab(sw.dataset.switch);}
 });
 
-$('swap-plan').addEventListener('click',function(){state.planIndex++;save();renderPlan();});
+$('swap-plan').addEventListener('click',function(){state.planIndex++;save();safeRender('plan-list',renderPlan);});
 $('water-row').addEventListener('click',function(e){
  var b=e.target.closest('.cup');
  if(!b)return;
@@ -1734,7 +1771,7 @@ $('water-row').addEventListener('click',function(e){
  var d=todayStr();
  var cur=state.water[d]||0;
  state.water[d]=cur>=i+1?i:i+1;
- save();renderWater();
+ save();safeRender('water-row',renderWater);
 });
 $('food-search').addEventListener('input',renderFoodList);
 $('meal-picker').addEventListener('click',function(e){
@@ -1784,7 +1821,7 @@ $('food-cats').addEventListener('click',function(e){
  var b=e.target.closest('.cat-chip');
  if(!b)return;
  catFilter=b.dataset.cat;
- renderFoodCats();renderFoodList();
+ safeRender('food-cats',renderFoodCats);renderFoodList();
 });
 $('c-add').addEventListener('click',function(){
  var name=$('c-name').value.trim();
@@ -1801,7 +1838,7 @@ $('log-list').addEventListener('click',function(e){
  var x=e.target.closest('.x');
  if(!x)return;
  state.logs[todayStr()].splice(+x.dataset.i,1);
- save();renderLog();
+ save();safeRender('log-summary',renderLog);
 });
 $('b-add').addEventListener('click',function(){
  var date=$('b-date').value;
@@ -1810,14 +1847,14 @@ $('b-add').addEventListener('click',function(){
  if(!date||!(w>0)){alert('请选择日期并填写体重');return;}
  state.body=state.body.filter(function(x){return x.date!==date;});
  state.body.push({date:date,weight:w,waist:isNaN(waist)?null:waist});
- save();renderBody();renderTarget();
+ save();safeRender('b-summary',renderBody);safeRender('target-body',renderTarget);
  $('b-weight').value='';
 });
 $('b-list').addEventListener('click',function(e){
  var x=e.target.closest('.x');
  if(!x)return;
  state.body=state.body.filter(function(d){return d.date!==x.dataset.date;});
- save();renderBody();renderTarget();
+ save();safeRender('b-summary',renderBody);safeRender('target-body',renderTarget);
 });
 $('p-save').addEventListener('click',function(){
  var v={sex:$('p-sex').value,age:+$('p-age').value,height:+$('p-height').value,weight:+$('p-weight').value,target:+$('p-target').value,activity:+$('p-activity').value};
@@ -1835,7 +1872,7 @@ $('p-reset-do').addEventListener('click',function(){
  if($('p-reset-text').value.trim()!=='清空'){alert('请输入「清空」两个字才能执行');return;}
  localStorage.removeItem(LS_KEY);
  state=defaultState();
- renderAll();renderTraining();applyDark();renderShape();
+ renderAll();safeRender('training',renderTraining);applyDark();safeRender('shape-view',renderShape);
  $('p-reset-confirm').style.display='none';
  alert('已清空全部数据并恢复默认设置');
 });
@@ -1851,7 +1888,7 @@ $('photo-input').addEventListener('change',function(e){
    state.photo=resizeImage(img,1024);
    photoItems=null;photoError=null;photoBusy=false;
    save();
-   renderPhotoTab();
+   safeRender('photo-foods',renderPhotoTab);
   };
   img.onerror=function(){alert('图片读取失败，请换一张图片');};
   img.src=ev.target.result;
@@ -1862,11 +1899,11 @@ $('photo-input').addEventListener('change',function(e){
 $('photo-retry').addEventListener('click',function(){
  if(!state.photo)return;
  photoItems=null;photoError=null;photoBusy=false;
- renderPhotoTab();
+ safeRender('photo-foods',renderPhotoTab);
 });
 $('photo-clear').addEventListener('click',function(){
  state.photo=null;photoItems=null;photoError=null;photoBusy=false;
- save();renderPhotoTab();
+ save();safeRender('photo-foods',renderPhotoTab);
 });
 $('photo-foods').addEventListener('input',function(e){
  var inp=e.target.closest('input.pg');
@@ -1913,7 +1950,7 @@ $('ai-save').addEventListener('click',function(){
  save();
  alert('AI 设置已保存');
  if($('ai-status'))$('ai-status').textContent=state.ai.key?'已配置 ✓':'未配置';
- if(state.ai.key&&state.photo&&!photoItems){photoError=null;renderPhotoTab();}
+ if(state.ai.key&&state.photo&&!photoItems){photoError=null;safeRender('photo-foods',renderPhotoTab);}
 });
 $('ai-preset-zhipu').addEventListener('click',function(){
  $('ai-base').value='https://open.bigmodel.cn/api/paas/v4';
@@ -1964,7 +2001,7 @@ $('data-file').addEventListener('change',function(e){
    if(!s||!s.profile)throw new Error('bad file');
    if(!confirm('导入会覆盖本机当前数据，确定继续吗？'))return;
    state=normalizeState(s);
-   save();renderAll();renderTraining();applyDark();renderShape();
+   save();renderAll();safeRender('training',renderTraining);applyDark();safeRender('shape-view',renderShape);
    $('data-msg').textContent='✅ 导入成功，数据已恢复';
   }catch(err){
    $('data-msg').textContent='❌ 文件格式不对，请选择导出的备份文件';
@@ -1980,7 +2017,7 @@ $('checkin-box').addEventListener('click',function(e){
  if(!b)return;
  var d=todayStr();
  if(state.checkins[d])delete state.checkins[d];else state.checkins[d]=true;
- save();renderCheckin();renderReport();
+ save();safeRender('checkin-box',renderCheckin);safeRender('report-box',renderReport);
 });
 $('coach-send').addEventListener('click',function(){coachSend();});
 $('coach-in').addEventListener('keydown',function(e){if(e.key==='Enter')coachSend();});
@@ -2004,7 +2041,7 @@ $('shape-input').addEventListener('change',function(e){
    state.photos.push({date:today,data:data});
    state.photos.sort(function(a,c){return a.date<c.date?-1:1;});
    while(state.photos.length>4)state.photos.shift();
-   save();renderShape();
+   save();safeRender('shape-view',renderShape);
   };
   img.onerror=function(){alert('图片读取失败，请换一张');};
   img.src=ev.target.result;
@@ -2016,7 +2053,7 @@ $('shape-view').addEventListener('click',function(e){
  var b=e.target.closest('[data-shape-x]');
  if(!b)return;
  state.photos=state.photos.filter(function(x){return x.date!==b.dataset.shapeX;});
- save();renderShape();
+ save();safeRender('shape-view',renderShape);
 });
 $('plan-edit').addEventListener('click',openEditor);
 $('plan-editor').addEventListener('click',function(e){
@@ -2027,7 +2064,7 @@ $('plan-editor').addEventListener('click',function(e){
   var name=chip.dataset.ex;
   var idx=items.indexOf(name);
   if(idx>=0)items.splice(idx,1);else items.push(name);
-  renderPlanEditor();
+  safeRender('plan-editor',renderPlanEditor);
   return;
  }
  var pre=e.target.closest('.preset-chip');
@@ -2037,20 +2074,20 @@ $('plan-editor').addEventListener('click',function(e){
   if(p==='rest'){editPlan[day2].items=[];editPlan[day2].title='完全休息';}
   else if(p==='cardio'){editPlan[day2].items=['快走/慢跑'];editPlan[day2].title='有氧日';}
   else if(p==='full'){editPlan[day2].items=['深蹲','俯卧撑(卧推)','哑铃俯身划船','哑铃推举','平板支撑','卷腹'];editPlan[day2].title='全身力量 + 腹肌';}
-  renderPlanEditor();
+  safeRender('plan-editor',renderPlanEditor);
   return;
  }
  var saveBtn=e.target.closest('#plan-save');
  if(saveBtn){
   state.settings.customPlan=editPlan;
-  save();renderTraining();
+  save();safeRender('training',renderTraining);
   $('plan-editor').style.display='none';
   return;
  }
  var reset=e.target.closest('#plan-reset');
  if(reset){
   state.settings.customPlan=null;
-  save();renderTraining();
+  save();safeRender('training',renderTraining);
   $('plan-editor').style.display='none';
  }
 });
@@ -2079,13 +2116,13 @@ $('sy-key').addEventListener('change',saveSyncCfg);
 $('sy-code').addEventListener('change',saveSyncCfg);
 
 $('b-date').value=todayStr();
-renderTraining();
+safeRender('training',renderTraining);
 renderAll();
 applyDark();
-renderFoodCats();
-renderSyncForm();
+safeRender('food-cats',renderFoodCats);
+safeRender('sy-msg',renderSyncForm);
 renderReminderForm();
-renderShape();
+safeRender('shape-view',renderShape);
 loadFired();
 tickReminders();
 setInterval(tickReminders,30000);
@@ -2098,7 +2135,7 @@ if('serviceWorker' in navigator&&location.protocol.indexOf('http')===0){
 <div id="ex-drawer" role="dialog" aria-modal="true">
   <div class="ex-handle"></div>
   <div class="ex-title"><h3 id="ex-name"></h3><span class="mtag" id="ex-muscle"></span></div>
-  <div class="ex-imgs"><img id="ex-img0" alt=""><img id="ex-img1" alt="" style="display:none"></div>
+  <div class="ex-imgs" id="ex-imgs"><img id="ex-img0" alt=""><img id="ex-img1" alt="" style="display:none"></div>
   <div class="ex-dots"><button class="ex-dot on" data-ex-img="0" aria-label="图1"></button><button class="ex-dot" data-ex-img="1" aria-label="图2"></button></div>
   <div class="ex-ok">✓ 动作要点</div>
   <p class="ex-tips" id="ex-tips"></p>
