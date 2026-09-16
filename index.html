@@ -300,7 +300,7 @@ body.ex-open #ex-drawer{transform:translate(-50%,0)}
 #ex-mistakes{margin:6px 0 0;padding-left:22px;color:var(--text-2);font-size:13.5px}
 .ex-tips{margin:4px 0 0;color:var(--text-2);font-size:13.5px;line-height:1.6}
 body.ex-open{overflow:hidden}
-#ex-video-btn{margin-top:12px}
+#ex-video-btn{position:sticky;bottom:0;z-index:2;margin-top:12px}
 .ex-video-wrap{aspect-ratio:16/9;margin-top:10px;border-radius:12px;overflow:hidden;background:#000}
 .ex-video-wrap iframe{width:100%;height:100%;border:0}
 /* 身体数据引导卡 */
@@ -990,18 +990,22 @@ function openExDrawer(name){
  $('ex-video-wrap').style.display='none';
  $('ex-video-wrap').innerHTML='';
  $('ex-video-btn').style.display=ex.video_bv?'block':'none';
+ $('ex-drawer').scrollTop=0;
  document.body.classList.add('ex-open');
 }
 function closeExDrawer(){
  document.body.classList.remove('ex-open');
 }
+function bindExDrawer(){
 $('ex-mask').addEventListener('click',closeExDrawer);
 $('ex-video-btn').addEventListener('click',function(){
  var ex=exDb(exCur.name);
  if(!ex||!ex.video_bv)return;
  $('ex-video-wrap').innerHTML='<iframe src="https://player.bilibili.com/player.html?bvid='+encodeURIComponent(ex.video_bv)+'&danmaku=0&no_related=1" sandbox="allow-top-navigation allow-same-origin allow-forms allow-scripts" allowfullscreen></iframe>';
- $('ex-video-wrap').style.display='block';
+ var _w=$('ex-video-wrap');
+ _w.style.display='block';
  this.style.display='none';
+ setTimeout(function(){_w.scrollIntoView({behavior:'smooth',block:'nearest'});},80);
 });
 document.addEventListener('click',function(e){
  if(e.target.closest('[data-ex-close]')){closeExDrawer();return;}
@@ -1014,12 +1018,15 @@ document.addEventListener('click',function(e){
  var dots=document.querySelectorAll('.ex-dot');
  for(var i=0;i<dots.length;i++)dots[i].classList.toggle('on',i===idx);
 });
-var exTouchY=null;
-$('ex-drawer').addEventListener('touchstart',function(e){exTouchY=e.touches[0].clientY;},{passive:true});
-$('ex-drawer').addEventListener('touchend',function(e){
- if(exTouchY!=null&&e.changedTouches[0].clientY-exTouchY<-50)closeExDrawer();
- exTouchY=null;
-});
+ var exTouchY=null;
+ $('ex-drawer').addEventListener('touchstart',function(e){exTouchY=e.touches[0].clientY;},{passive:true});
+ $('ex-drawer').addEventListener('touchend',function(e){
+  if(exTouchY!=null&&e.changedTouches[0].clientY-exTouchY<-50)closeExDrawer();
+  exTouchY=null;
+ });
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bindExDrawer);
+else bindExDrawer();
 
 function parseBiliId(input){
  var s=String(input||'').trim();
