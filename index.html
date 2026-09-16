@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#0d9488">
+<meta name="theme-color" content="#14a085">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="减脂助手">
-<link rel="manifest" href="manifest.webmanifest">
+<link rel="manifest" href="./manifest.json">
 <link rel="icon" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 <title>减脂助手 · 饮食与训练管家</title>
@@ -340,10 +340,11 @@ body.dark #ex-drawer{background:#14201c}
 .ver-badge{display:inline-block;font-size:11px;font-weight:600;color:var(--primary);background:var(--primary-soft);border:1px solid var(--primary);border-radius:99px;padding:1px 8px;vertical-align:middle;margin-left:6px}
 .ex-imgs.img-missing{height:240px;aspect-ratio:auto;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--primary-soft),var(--primary));border-radius:14px}
 .ex-imgs.img-missing::after{content:attr(data-name);color:#fff;font-size:17px;font-weight:700;text-shadow:0 1px 3px rgba(0,0,0,.25)}
+.install-tip{color:var(--text-2);font-size:13px;margin:6px 0 10px}
 </style>
 </head>
 <body>
-<header><div class="wrap hrow"><div><h1>🔥 减脂助手 <span class="ver-badge">v2.4.3</span></h1><div class="sub">你的私人饮食与训练管家 · 数据默认保存在本机浏览器</div></div><button class="btn" id="dark-toggle" title="深色模式">🌙</button></div></header>
+<header><div class="wrap hrow"><div><h1>🔥 减脂助手 <span class="ver-badge">v2.5</span></h1><div class="sub">你的私人饮食与训练管家 · 数据默认保存在本机浏览器</div></div><button class="btn" id="dark-toggle" title="深色模式">🌙</button></div></header>
 <nav id="tabs">
   <button data-tab="today" class="on">🏠 今日<span class="badge-dot"></span></button>
   <button data-tab="log">🍽️ 记录</button>
@@ -505,6 +506,11 @@ body.dark #ex-drawer{background:#14201c}
   <div class="card"><h3>🏅 成就徽章</h3><div class="badges" id="badge-box"></div></div>
 </section>
 <section id="tab-profile">
+  <div class="card" id="install-card" style="display:none">
+    <h3>📲 添加到主屏幕</h3>
+    <p class="install-tip" id="install-tip">把减脂助手放到手机桌面，像 App 一样打开。</p>
+    <button class="btn" id="install-btn" style="display:none">立即安装</button>
+  </div>
   <div class="card" id="profile-card">
     <h3>👤 基本信息</h3>
     <label>性别</label>
@@ -1591,6 +1597,42 @@ function renderPlanEditor(){
  $('plan-editor').innerHTML=h;
 }
 
+var deferredInstallPrompt=null;
+function renderInstallCard(){
+ var card=$('install-card');
+ if(!card)return;
+ var standalone=(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches)||(window.navigator&&window.navigator.standalone===true);
+ if(standalone){card.style.display='none';return;}
+ var isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent||'');
+ if(isIOS){
+  card.style.display='block';
+  $('install-tip').textContent='点击 Safari 底部分享按钮 → 添加到主屏幕';
+  $('install-btn').style.display='none';
+  return;
+ }
+ if(deferredInstallPrompt){
+  card.style.display='block';
+  $('install-tip').textContent='把减脂助手放到手机桌面，像 App 一样打开。';
+  $('install-btn').style.display='block';
+ }else{
+  card.style.display='none';
+ }
+}
+window.addEventListener('beforeinstallprompt',function(e){
+ e.preventDefault();
+ deferredInstallPrompt=e;
+ renderInstallCard();
+});
+window.addEventListener('appinstalled',function(){
+ deferredInstallPrompt=null;
+ renderInstallCard();
+});
+var ib=$('install-btn');
+if(ib)ib.addEventListener('click',function(){
+ if(!deferredInstallPrompt)return;
+ deferredInstallPrompt.prompt();
+ deferredInstallPrompt.userChoice.then(function(){deferredInstallPrompt=null;renderInstallCard();});
+});
 var firedToday={};
 function loadFired(){try{firedToday=JSON.parse(localStorage.getItem('jz_fired_'+todayStr())||'{}');}catch(e){firedToday={};}}
 function saveFired(){try{localStorage.setItem('jz_fired_'+todayStr(),JSON.stringify(firedToday));}catch(e){}}
@@ -2127,6 +2169,7 @@ applyDark();
 safeRender('food-cats',renderFoodCats);
 safeRender('sy-msg',renderSyncForm);
 renderReminderForm();
+renderInstallCard();
 safeRender('shape-view',renderShape);
 loadFired();
 tickReminders();
