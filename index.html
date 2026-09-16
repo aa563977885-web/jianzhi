@@ -341,6 +341,9 @@ body.dark #ex-drawer{background:#14201c}
 .ex-imgs.img-missing{height:240px;aspect-ratio:auto;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--primary-soft),var(--primary));border-radius:14px}
 .ex-imgs.img-missing::after{content:attr(data-name);color:#fff;font-size:17px;font-weight:700;text-shadow:0 1px 3px rgba(0,0,0,.25)}
 .install-tip{color:var(--text-2);font-size:13px;margin:6px 0 10px}
+.backup-snap{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--line);border-radius:10px;margin-top:6px;font-size:13px}
+.backup-snap .t{color:var(--text-2)}
+.backup-snap .btn{padding:4px 10px;font-size:12px;flex:none}
 </style>
 </head>
 <body>
@@ -527,6 +530,17 @@ body.dark #ex-drawer{background:#14201c}
       <option value="1.725">重度：每周运动 6-7 次</option>
     </select>
     <button class="btn" id="p-save" style="width:100%;margin-top:14px">保存并重新计算</button>
+  </div>
+  <div class="card" id="backup-card">
+    <h3>🛡️ 数据安全（自动快照）</h3>
+    <p class="note" style="margin:4px 0 0">每次数据变动 3 秒后自动存一份快照到浏览器数据库；清缓存导致数据丢失时可一键找回。</p>
+    <div class="row" style="margin-top:10px;gap:8px">
+      <button class="btn" id="backup-export">📥 导出备份</button>
+      <button class="btn ghost" id="backup-import">📤 导入备份</button>
+      <button class="btn ghost" id="backup-snaps">🕐 查看快照</button>
+    </div>
+    <input type="file" id="backup-file" accept="application/json,.json" style="display:none">
+    <div id="backup-snap-list" style="display:none"></div>
   </div>
   <div class="card">
     <h3>⏰ 提醒设置</h3>
@@ -1633,6 +1647,28 @@ if(ib)ib.addEventListener('click',function(){
  deferredInstallPrompt.prompt();
  deferredInstallPrompt.userChoice.then(function(){deferredInstallPrompt=null;renderInstallCard();});
 });
+var BackupSystem={
+ DB_NAME:'fatloss_backup',STORE:'snapshots',VERSION_KEY:'data_version',
+ openDB:function(){return new Promise(function(resolve,reject){if(typeof indexedDB==='undefined'){reject(new Error('no idb'));return;}var req=indexedDB.open(BackupSystem.DB_NAME,1);req.onupgradeneeded=function(e){e.target.result.createObjectStore(BackupSystem.STORE,{keyPath:'ts'});};req.onsuccess=function(e){resolve(e.target.result);};req.onerror=function(e){reject(e.target.error);};});},
+ lsToObj:function(){var o={};for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);if(k!=null)o[k]=localStorage.getItem(k);}return o;},
+ snapshot:function(){var data=BackupSystem.lsToObj();data.ts=Date.now();data.__ts=data.ts;data.__ver=BackupSystem.getVersion();if(typeof indexedDB==='undefined')return Promise.resolve(false);return BackupSystem.openDB().then(function(db){return new Promise(function(resolve,reject){var tx=db.transaction(BackupSystem.STORE,'readwrite');tx.objectStore(BackupSystem.STORE).put(data);tx.oncomplete=function(){resolve(true);};tx.onerror=function(){reject(tx.error);};});}).catch(function(){return false;});},
+ latest:function(){if(typeof indexedDB==='undefined')return Promise.resolve(null);return BackupSystem.openDB().then(function(db){return new Promise(function(resolve){var req=db.transaction(BackupSystem.STORE).objectStore(BackupSystem.STORE).openCursor(null,'prev');req.onsuccess=function(e){resolve(e.target.result?e.target.result.value:null);};req.onerror=function(){resolve(null);};});}).catch(function(){return null;});},
+ lastN:function(n){if(typeof indexedDB==='undefined')return Promise.resolve([]);return BackupSystem.openDB().then(function(db){return new Promise(function(resolve){var out=[];var req=db.transaction(BackupSystem.STORE).objectStore(BackupSystem.STORE).openCursor(null,'prev');req.onsuccess=function(e){var cur=e.target.result;if(cur&&out.length<(n||5)){out.push(cur.value);cur.continue();}else{resolve(out);}};req.onerror=function(){resolve(out);};});}).catch(function(){return [];});},
+ exportJSON:function(){var data=BackupSystem.lsToObj();data.__ts=Date.now();var blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='fatloss-backup-'+new Date().toISOString().slice(0,10)+'.json';document.body.appendChild(a);a.click();a.remove();},
+ importJSON:function(file){var reader=new FileReader();reader.onload=function(e){try{var data=JSON.parse(e.target.result);var n=Object.keys(data).filter(function(k){return k.indexOf('__')!==0;}).length;if(!confirm('将导入 '+n+' 条数据，覆盖当前数据，确认？'))return;Object.keys(data).forEach(function(k){if(k.indexOf('__')!==0&&data[k]!=null)localStorage.setItem(k,data[k]);});location.reload();}catch(err){alert('文件格式错误');}};reader.readAsText(file);},
+ restore:function(snap){if(!snap)return;Object.keys(snap).forEach(function(k){if(k.indexOf('__')!==0&&snap[k]!=null)localStorage.setItem(k,snap[k]);});location.reload();},
+ getVersion:function(){return localStorage.getItem(BackupSystem.VERSION_KEY)||'1';},
+ initVersion:function(){if(!localStorage.getItem(BackupSystem.VERSION_KEY)){_origSetItem(BackupSystem.VERSION_KEY,'1');}},
+ maybeOfferRestore:function(){BackupSystem.latest().then(function(snap){if(!snap)return;var snapMain=snap[LS_KEY];var localRaw=localStorage.getItem(LS_KEY);var localEmpty=!localRaw||localRaw==='{}';if(!localEmpty||!snapMain||snapMain==='{}')return;var mins=Math.max(1,Math.round((Date.now()-snap.__ts)/60000));if(confirm('检测到云端快照比本地数据更新（'+mins+' 分钟前），是否恢复？')){BackupSystem.restore(snap);}});}
+};
+var _snapshotTimer=null;
+var _origSetItem=localStorage.setItem.bind(localStorage);
+localStorage.setItem=function(k,v){
+ _origSetItem(k,String(v));
+ _origSetItem('__lastWrite',String(Date.now()));
+ clearTimeout(_snapshotTimer);
+ _snapshotTimer=setTimeout(function(){BackupSystem.snapshot();},3000);
+};
 var firedToday={};
 function loadFired(){try{firedToday=JSON.parse(localStorage.getItem('jz_fired_'+todayStr())||'{}');}catch(e){firedToday={};}}
 function saveFired(){try{localStorage.setItem('jz_fired_'+todayStr(),JSON.stringify(firedToday));}catch(e){}}
@@ -2161,6 +2197,35 @@ $('sy-pull').addEventListener('click',syncPull);
 $('sy-url').addEventListener('change',saveSyncCfg);
 $('sy-key').addEventListener('change',saveSyncCfg);
 $('sy-code').addEventListener('change',saveSyncCfg);
+$('backup-export').addEventListener('click',function(){BackupSystem.exportJSON();});
+$('backup-import').addEventListener('click',function(){$('backup-file').click();});
+$('backup-file').addEventListener('change',function(e){var f=e.target.files[0];if(!f)return;BackupSystem.importJSON(f);e.target.value='';});
+$('backup-snaps').addEventListener('click',function(){
+ var list=$('backup-snap-list');
+ if(list.style.display!=='none'){list.style.display='none';return;}
+ list.style.display='block';
+ list.innerHTML='<p class="note">读取中…</p>';
+ BackupSystem.lastN(5).then(function(snaps){
+  if(!snaps.length){list.innerHTML='<p class="note">还没有快照。改动数据后 3 秒会自动生成。</p>';return;}
+  list.innerHTML=snaps.map(function(s){
+   var d=new Date(s.__ts);
+   var when=(d.getMonth()+1)+'月'+d.getDate()+'日 '+pad(d.getHours())+':'+pad(d.getMinutes());
+   return '<div class="backup-snap"><span class="t">🕐 '+when+(s.__ver?' · v'+s.__ver:'')+'</span><button class="btn ghost" data-ts="'+s.__ts+'">恢复</button></div>';
+  }).join('');
+ });
+});
+$('backup-snap-list').addEventListener('click',function(e){
+ var b=e.target.closest('[data-ts]');
+ if(!b)return;
+ var ts=Number(b.dataset.ts);
+ BackupSystem.lastN(20).then(function(snaps){
+  var snap=null;
+  for(var i=0;i<snaps.length;i++){if(snaps[i].__ts===ts){snap=snaps[i];break;}}
+  if(!snap)return;
+  if(!confirm('恢复到该时间点的快照？当前数据会被覆盖。'))return;
+  BackupSystem.restore(snap);
+ });
+});
 
 $('b-date').value=todayStr();
 safeRender('training',renderTraining);
@@ -2170,6 +2235,8 @@ safeRender('food-cats',renderFoodCats);
 safeRender('sy-msg',renderSyncForm);
 renderReminderForm();
 renderInstallCard();
+BackupSystem.initVersion();
+BackupSystem.maybeOfferRestore();
 safeRender('shape-view',renderShape);
 loadFired();
 tickReminders();
