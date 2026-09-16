@@ -348,10 +348,65 @@ body.dark #ex-drawer{background:#14201c}
 .hist-wrap{display:flex;flex-wrap:wrap;gap:6px}
 .hist-chip{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border:1px solid var(--line);background:var(--card);border-radius:99px;font-size:12px;cursor:pointer;color:var(--text)}
 .hist-chip .hk{color:var(--text-2)}
+/* ===== 批次4-7 新增 ===== */
+.new-badge-dot{display:inline-block;font-size:11px;font-weight:600;color:#fff;background:linear-gradient(135deg,var(--amber),#f97316);border-radius:99px;padding:2px 8px;margin-left:8px;vertical-align:middle;animation:ndot-pop .4s ease}
+@keyframes ndot-pop{0%{transform:scale(.5);opacity:0}100%{transform:scale(1);opacity:1}}
+.badge-wall{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:12px}
+.badge-cell{display:flex;flex-direction:column;align-items:center;gap:4px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:12px 4px;cursor:pointer;transition:transform .15s ease;font-variant-numeric:tabular-nums}
+.badge-cell:active{transform:scale(.96)}
+.badge-cell .bico{font-size:26px}
+.badge-cell .bnm{font-size:11px;color:var(--text-2);text-align:center;line-height:1.3}
+.badge-cell.lock{opacity:.45;filter:grayscale(1)}
+.badge-progress{height:8px;border-radius:99px;background:var(--border);overflow:hidden;margin-top:10px}
+.badge-progress span{display:block;height:100%;background:linear-gradient(90deg,var(--primary),var(--green2));width:0;transition:width .6s ease}
+#badge-wall-count{font-size:12px;font-weight:400}
+#badge-modal{position:fixed;inset:0;z-index:10000;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.55);backdrop-filter:blur(2px)}
+.badge-modal-card{width:min(320px,86vw);background:var(--card);border-radius:20px;padding:28px 20px 22px;text-align:center;box-shadow:var(--shadow);animation:bm-pop .35s cubic-bezier(.34,1.56,.64,1)}
+@keyframes bm-pop{0%{transform:scale(.6);opacity:0}100%{transform:scale(1);opacity:1}}
+.bm-ico{font-size:64px;line-height:1;animation:bm-ico .5s ease}
+@keyframes bm-ico{0%{transform:scale(.4) rotate(-20deg)}60%{transform:scale(1.15) rotate(6deg)}100%{transform:scale(1) rotate(0)}}
+.bm-name{font-size:20px;font-weight:700;margin-top:12px;color:var(--text)}
+.bm-desc{font-size:13px;color:var(--text-2);margin-top:4px}
+#bm-ok{margin-top:18px;width:100%}
+.confetti-overlay{position:fixed;inset:0;pointer-events:none;z-index:9999;overflow:hidden}
+.confetti-piece{position:absolute;top:-14px;border-radius:2px;animation:confetti-fall linear forwards}
+@keyframes confetti-fall{to{transform:translateY(110vh) rotate(720deg);opacity:0}}
+#badge-drawer{position:fixed;left:50%;bottom:0;transform:translateX(-50%);width:min(560px,100%);background:var(--card);border-radius:20px 20px 0 0;box-shadow:var(--shadow);z-index:9998;padding:14px 20px 26px;display:none;animation:drawer-up .25s ease}
+@keyframes drawer-up{from{transform:translate(-50%,100%)}to{transform:translate(-50%,0)}}
+.bd-ico{font-size:56px;text-align:center;margin-top:8px}
+#badge-drawer h3{text-align:center;margin-top:8px}
+#badge-drawer .bd-desc{text-align:center;color:var(--text-2);font-size:13px}
+.bd-meta{text-align:center}
+.hm-nav{float:right;display:flex;align-items:center;gap:6px;font-size:13px;font-weight:500;color:var(--text-2)}
+.hm-btn{width:28px;height:28px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);cursor:pointer;font-size:15px;line-height:1}
+.hm-btn:disabled{opacity:.35;cursor:not-allowed}
+.hm-week{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin:10px 0 6px}
+.hm-week span{text-align:center;font-size:11px;color:var(--text-3)}
+.hm-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.hm-cell{aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:12px;border-radius:8px;background:var(--border);color:var(--text-2);font-variant-numeric:tabular-nums}
+.hm-cell.empty{background:transparent}
+.hm-cell.lvl1{background:color-mix(in srgb,var(--primary) 30%,transparent);color:var(--text)}
+.hm-cell.lvl2{background:color-mix(in srgb,var(--primary) 60%,transparent);color:var(--text)}
+.hm-cell.lvl3{background:var(--primary);color:#fff;font-weight:700}
+.hm-cell.today{outline:2px solid var(--text);outline-offset:-2px}
+.hm-cell.future{background:transparent;color:transparent;pointer-events:none}
+body.dark .hm-cell.lvl3{color:#06281f}
+.sr-row{display:flex;justify-content:space-between;align-items:center;padding:10px 2px;border-bottom:1px solid var(--border)}
+.sr-row:last-of-type{border-bottom:none}
+.sr-row span{font-size:14px}
+.sr-row.off{opacity:.5}
+.switch{position:relative;display:inline-block;width:46px;height:26px;flex:none}
+.switch input{opacity:0;width:0;height:0}
+.sl{position:absolute;inset:0;background:var(--border);border-radius:99px;transition:.2s}
+.sl:before{content:"";position:absolute;left:3px;top:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:.2s;box-shadow:0 1px 2px rgba(0,0,0,.2)}
+.switch input:checked+.sl{background:var(--primary)}
+.switch input:checked+.sl:before{transform:translateX(20px)}
+#poster-wrap{margin-top:12px}
+#poster-img{width:100%;border-radius:var(--radius);border:1px solid var(--border);display:block}
 </style>
 </head>
 <body>
-<header><div class="wrap hrow"><div><h1>🔥 减脂助手 <span class="ver-badge">v2.6</span></h1><div class="sub">你的私人饮食与训练管家 · 数据默认保存在本机浏览器</div></div><button class="btn" id="dark-toggle" title="深色模式">🌙</button></div></header>
+<header><div class="wrap hrow"><div><h1>🔥 减脂助手 <span class="ver-badge">v2.7</span></h1><div class="sub">你的私人饮食与训练管家 · 数据默认保存在本机浏览器</div></div><button class="btn" id="dark-toggle" title="深色模式">🌙</button></div></header>
 <nav id="tabs">
   <button data-tab="today" class="on">🏠 今日<span class="badge-dot"></span></button>
   <button data-tab="log">🍽️ 记录</button>
@@ -427,6 +482,18 @@ body.dark #ex-drawer{background:#14201c}
     <span class="etxt"><b>本周周报</b><span>本周趋势、打卡与成就徽章</span></span>
     <span class="earrow">›</span>
   </button>
+  <div class="card" id="heatmap-card">
+    <h3>🗓️ 本月坚持<span class="hm-nav"><button class="hm-btn" id="hm-prev" aria-label="上个月">‹</button><span id="hm-title">—</span><button class="hm-btn" id="hm-next" aria-label="下个月">›</button></span></h3>
+    <div class="hm-week"><span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span></div>
+    <div class="hm-grid" id="heatmap"></div>
+    <p class="note" id="heatmap-stats"></p>
+  </div>
+  <div class="card" id="poster-card">
+    <h3>🎨 周报分享图</h3>
+    <button class="btn" id="poster-gen" style="width:100%">生成周报海报（长按保存）</button>
+    <p class="note" id="poster-hint">先记录几天数据再生成吧（打卡 / 饮水 / 饮食 / 体重任一即可）。</p>
+    <div id="poster-wrap" style="display:none"><img id="poster-img" alt="周报海报"><p class="note">👆 长按图片保存到相册</p></div>
+  </div>
   <div class="card">
     <h3>📏 记录身体数据</h3>
     <div class="small-grid">
@@ -519,6 +586,11 @@ body.dark #ex-drawer{background:#14201c}
     <p class="install-tip" id="install-tip">把减脂助手放到手机桌面，像 App 一样打开。</p>
     <button class="btn" id="install-btn" style="display:none">立即安装</button>
   </div>
+  <div class="card" id="badge-wall-card">
+    <h3>🏅 成就墙 <span class="dim" id="badge-wall-count"></span></h3>
+    <div class="badge-progress"><span id="badge-progress-fill"></span></div>
+    <div class="badge-wall" id="badge-wall"></div>
+  </div>
   <div class="card" id="profile-card">
     <h3>👤 基本信息</h3>
     <label>性别</label>
@@ -558,6 +630,14 @@ body.dark #ex-drawer{background:#14201c}
       <button class="btn ghost" id="notify-ask" style="flex:1">🔔 开启系统通知</button>
     </div>
     <p class="note">网页打开着才会提醒；把网址「添加到主屏幕」后体验最好。系统通知需要浏览器授权。</p>
+  </div>
+  <div class="card" id="smart-remind-card">
+    <h3>🔔 智能提醒</h3>
+    <p class="note" id="smart-ios-hint" style="display:none">⚠️ iOS 需先添加到主屏幕才能收到通知</p>
+    <div class="sr-row" id="sr-row-water"><span>💧 喝水提醒（8:00-22:00，一天一次）</span><label class="switch"><input type="checkbox" id="sr-water"><span class="sl"></span></label></div>
+    <div class="sr-row" id="sr-row-checkin"><span>🔥 晚间打卡（每天 21:00 未打卡提醒）</span><label class="switch"><input type="checkbox" id="sr-checkin"><span class="sl"></span></label></div>
+    <div class="sr-row" id="sr-row-photo"><span>📷 周日对比照（每周日 20:00）</span><label class="switch"><input type="checkbox" id="sr-photo"><span class="sl"></span></label></div>
+    <p class="note" id="smart-note">网页打开着才会提醒，建议「添加到主屏幕」。每类提醒每天最多一次。</p>
   </div>
   <div class="card">
     <h3>☁️ 云同步（手机 ↔ 电脑自动）</h3>
@@ -616,6 +696,24 @@ body.dark #ex-drawer{background:#14201c}
 </section>
 </main>
 <div id="toast"></div>
+<div id="badge-modal" style="display:none">
+  <div class="badge-modal-card">
+    <div class="bm-ico" id="bm-ico">🏅</div>
+    <div class="bm-name" id="bm-name"></div>
+    <div class="bm-desc" id="bm-desc"></div>
+    <button class="btn" id="bm-ok">太棒了！</button>
+  </div>
+</div>
+<div class="confetti-overlay" id="confetti-overlay"></div>
+<div id="badge-drawer" role="region" style="display:none">
+  <div class="ex-handle"></div>
+  <button class="ex-close" data-badge-close="1" aria-label="关闭">✕</button>
+  <div class="bd-ico" id="bd-ico">🏅</div>
+  <h3 id="bd-name"></h3>
+  <p class="bd-desc" id="bd-desc"></p>
+  <p class="note bd-meta" id="bd-meta"></p>
+</div>
+
 <script>
 'use strict';
 var LS_KEY='fatloss_app_v1';
@@ -837,7 +935,7 @@ function load(){
  }catch(e){}
  return defaultState();
 }
-function save(){try{localStorage.setItem(LS_KEY,JSON.stringify(state));scheduleAutoPush();}catch(e){}}
+function save(){try{localStorage.setItem(LS_KEY,JSON.stringify(state));scheduleAutoPush();checkBadges();}catch(e){}}
 var state=load();
 var currentMeal='早餐';
 var photoMeal='午餐';
@@ -1859,10 +1957,11 @@ function switchTab(name){
  var secs=document.querySelectorAll('main section');
  for(var j=0;j<secs.length;j++)secs[j].classList.toggle('on',secs[j].id==='tab-'+name);
  if(name==='log')safeRender('log-summary',renderLog);
- if(name==='body')safeRender('b-summary',renderBody);
+ if(name==='body'){safeRender('b-summary',renderBody);safeRender('heatmap',renderHeatmap);renderPosterState();}
  if(name==='photo')safeRender('photo-foods',renderPhotoTab);
  if(name==='coach')coachBoot();
  if(name==='report'){safeRender('report-box',renderReport);safeRender('badge-box',renderBadges);}
+ if(name==='profile'){safeRender('badge-wall',renderBadgeWall);renderSmartReminder();}
  if(name==='today')renderToday();
  window.scrollTo(0,0);
 }
@@ -2026,8 +2125,9 @@ $('p-reset-cancel').addEventListener('click',function(){$('p-reset-confirm').sty
 $('p-reset-do').addEventListener('click',function(){
  if($('p-reset-text').value.trim()!=='清空'){alert('请输入「清空」两个字才能执行');return;}
  localStorage.removeItem(LS_KEY);
+ localStorage.removeItem('unlockedBadges');localStorage.removeItem('unlockedBadgeTimes');localStorage.removeItem('badge_checkin_times');
  state=defaultState();
- renderAll();safeRender('training',renderTraining);applyDark();safeRender('shape-view',renderShape);
+ renderAll();safeRender('training',renderTraining);applyDark();safeRender('shape-view',renderShape);safeRender('badge-wall',renderBadgeWall);
  $('p-reset-confirm').style.display='none';
  alert('已清空全部数据并恢复默认设置');
 });
@@ -2172,6 +2272,7 @@ $('checkin-box').addEventListener('click',function(e){
  if(!b)return;
  var d=todayStr();
  if(state.checkins[d])delete state.checkins[d];else state.checkins[d]=true;
+ if(state.checkins[d]){var _ckn=new Date();if(_ckn.getHours()<7){try{var _cts=JSON.parse(localStorage.getItem('badge_checkin_times')||'{}');_cts[d]=pad(_ckn.getHours())+':'+pad(_ckn.getMinutes());localStorage.setItem('badge_checkin_times',JSON.stringify(_cts));}catch(_e){}}}
  save();safeRender('checkin-box',renderCheckin);safeRender('report-box',renderReport);
 });
 $('coach-send').addEventListener('click',function(){coachSend();});
@@ -2299,6 +2400,438 @@ $('backup-snap-list').addEventListener('click',function(e){
  });
 });
 
+/* ===================== 批次4：成就徽章 ===================== */
+var BADGES=[
+ {id:'streak_7',icon:'🔥',name:'七日之约',desc:'连续打卡 7 天',check:function(d){return d.streak>=7;},remain:function(d){return Math.max(0,7-d.streak)+' 天';}},
+ {id:'streak_30',icon:'💎',name:'月度自律',desc:'连续打卡 30 天',check:function(d){return d.streak>=30;},remain:function(d){return Math.max(0,30-d.streak)+' 天';}},
+ {id:'streak_100',icon:'👑',name:'百日传奇',desc:'连续打卡 100 天',check:function(d){return d.streak>=100;},remain:function(d){return Math.max(0,100-d.streak)+' 天';}},
+ {id:'water_7',icon:'💧',name:'水润周',desc:'饮水连续 7 天达标',check:function(d){return d.waterStreak>=7;},remain:function(d){return Math.max(0,7-d.waterStreak)+' 天';}},
+ {id:'weight_1',icon:'📉',name:'突破 1kg',desc:'累计减重 1kg',check:function(d){return d.totalLoss>=1;},remain:function(d){return Math.max(0,1-d.totalLoss).toFixed(1)+' kg';}},
+ {id:'weight_5',icon:'🏅',name:'里程碑 5kg',desc:'累计减重 5kg',check:function(d){return d.totalLoss>=5;},remain:function(d){return Math.max(0,5-d.totalLoss).toFixed(1)+' kg';}},
+ {id:'weight_10',icon:'🏆',name:'目标 10kg',desc:'累计减重 10kg',check:function(d){return d.totalLoss>=10;},remain:function(d){return Math.max(0,10-d.totalLoss).toFixed(1)+' kg';}},
+ {id:'log_first',icon:'📝',name:'第一次记录',desc:'记录第一笔体重',check:function(d){return d.weightCount>=1;},remain:function(d){return '在「数据」页记录一次体重即可解锁';}},
+ {id:'log_100',icon:'📚',name:'记录百笔',desc:'累计记录 100 笔',check:function(d){return d.totalLogs>=100;},remain:function(d){return Math.max(0,100-d.totalLogs)+' 笔';}},
+ {id:'photo_first',icon:'📷',name:'对比照起点',desc:'拍下第一张对比照',check:function(d){return d.photoCount>=1;},remain:function(d){return '在「数据」页拍一张对比照即可解锁';}},
+ {id:'all_week',icon:'🌟',name:'全勤周',desc:'一周打卡全部完成',check:function(d){return d.weekFull;},remain:function(d){return '完成任意一整周（周一至周日）的打卡';}},
+ {id:'early_bird',icon:'🌅',name:'晨型人',desc:'早上 7 点前完成打卡',check:function(d){return d.earlyCheck;},remain:function(d){return '早上 7:00 前完成一次打卡即可解锁';}}
+];
+var badgeCelebrateQueue=[];
+var badgeModalOpen=false;
+function badgeGetUnlocked(){try{return JSON.parse(localStorage.getItem('unlockedBadges')||'[]');}catch(e){return [];}}
+function badgeGetTimes(){try{return JSON.parse(localStorage.getItem('unlockedBadgeTimes')||'{}');}catch(e){return {};}}
+function waterStreakNow(){
+ var d=new Date();
+ if((state.water[dateStr(d)]||0)<8)d.setDate(d.getDate()-1);
+ var s=0;
+ while((state.water[dateStr(d)]||0)>=8){s++;d.setDate(d.getDate()-1);}
+ return s;
+}
+function weekFullEver(){
+ var ks=Object.keys(state.checkins).filter(function(k){return state.checkins[k];}).sort();
+ if(!ks.length)return false;
+ var start=new Date(ks[0]);
+ var end=new Date();
+ var cur=new Date(start);
+ cur.setDate(cur.getDate()-((cur.getDay()+6)%7));
+ while(cur<=end){
+  var full=true;
+  for(var i=0;i<7;i++){
+   var x=new Date(cur);x.setDate(x.getDate()+i);
+   if(!state.checkins[dateStr(x)]){full=false;break;}
+  }
+  if(full)return true;
+  cur.setDate(cur.getDate()+7);
+ }
+ return false;
+}
+function badgeStats(){
+ var totalLogs=0;
+ Object.keys(state.logs).forEach(function(d){totalLogs+=(state.logs[d]||[]).length;});
+ var early=false;
+ try{
+  var cts=JSON.parse(localStorage.getItem('badge_checkin_times')||'{}');
+  Object.keys(cts).forEach(function(k){if((cts[k]||'')<'07:00')early=true;});
+ }catch(e){}
+ return {
+  streak:currentStreak(),
+  waterStreak:waterStreakNow(),
+  totalLoss:Math.max(0,-totalChange()),
+  weightCount:state.body.length,
+  totalLogs:totalLogs,
+  photoCount:state.photos.length,
+  weekFull:weekFullEver(),
+  earlyCheck:early
+ };
+}
+function checkBadges(){
+ try{
+  var got=badgeGetUnlocked();
+  var times=badgeGetTimes();
+  var d=badgeStats();
+  var fresh=[];
+  for(var i=0;i<BADGES.length;i++){
+   var b=BADGES[i];
+   if(got.indexOf(b.id)<0&&b.check(d)){
+    got.push(b.id);times[b.id]=Date.now();fresh.push(b);
+   }
+  }
+  if(fresh.length){
+   localStorage.setItem('unlockedBadges',JSON.stringify(got));
+   localStorage.setItem('unlockedBadgeTimes',JSON.stringify(times));
+   badgeCelebrateQueue=badgeCelebrateQueue.concat(fresh);
+   if(!badgeModalOpen)showNextBadgeCelebration();
+   markNewAchievementDot();
+   safeRender('badge-wall',renderBadgeWall);
+  }
+ }catch(e){}
+}
+function showNextBadgeCelebration(){
+ var b=badgeCelebrateQueue.shift();
+ if(!b)return;
+ badgeModalOpen=true;
+ $('bm-ico').textContent=b.icon;
+ $('bm-name').textContent=b.name;
+ $('bm-desc').textContent=b.desc;
+ $('badge-modal').style.display='flex';
+ spawnConfetti();
+ clearTimeout(showNextBadgeCelebration._t);
+ showNextBadgeCelebration._t=setTimeout(closeBadgeModal,4000);
+}
+function closeBadgeModal(){
+ badgeModalOpen=false;
+ $('badge-modal').style.display='none';
+ if(badgeCelebrateQueue.length)setTimeout(showNextBadgeCelebration,350);
+}
+function spawnConfetti(){
+ var ov=$('confetti-overlay');
+ var colors=['#ff5f6d','#ffc371','#34d399','#60a5fa','#a78bfa','#fbbf24','#f472b6','#2dd4bf'];
+ for(var i=0;i<50;i++){
+  var p=document.createElement('div');
+  p.className='confetti-piece';
+  var c=colors[Math.floor(Math.random()*colors.length)];
+  p.style.left=Math.random()*100+'vw';
+  p.style.width=(6+Math.random()*8)+'px';
+  p.style.height=(6+Math.random()*8)+'px';
+  p.style.background=c;
+  p.style.animationDuration=(1.8+Math.random()*0.9)+'s';
+  p.style.animationDelay=(Math.random()*0.4)+'s';
+  p.addEventListener('animationend',function(){this.remove();});
+  ov.appendChild(p);
+ }
+ setTimeout(function(){ov.innerHTML='';},3000);
+}
+function markNewAchievementDot(){
+ var card=$('target-card');
+ if(!card)return;
+ var h3=card.querySelector('h3');
+ if(!h3)return;
+ var dot=card.querySelector('.new-badge-dot');
+ if(!dot){dot=document.createElement('span');dot.className='new-badge-dot';dot.textContent='🎉 新成就';h3.appendChild(dot);}
+ clearTimeout(dot._t);
+ dot._t=setTimeout(function(){if(dot.parentNode)dot.parentNode.removeChild(dot);},6000);
+}
+function badgeRemainText(b){
+ var d=badgeStats();
+ try{return b.remain?b.remain(d):b.desc;}catch(e){return b.desc;}
+}
+function renderBadgeWall(){
+ var got=badgeGetUnlocked();
+ var fill=document.getElementById('badge-progress-fill');
+ if(fill)fill.style.width=Math.round(got.length/BADGES.length*100)+'%';
+ var cnt=$('badge-wall-count');
+ if(cnt)cnt.textContent='已解锁 '+got.length+' / '+BADGES.length+' 枚';
+ var h='';
+ for(var i=0;i<BADGES.length;i++){
+  var b=BADGES[i];
+  var un=got.indexOf(b.id)>=0;
+  h+='<div class="badge-cell'+(un?'':' lock')+'" data-badge="'+b.id+'"><span class="bico">'+b.icon+'</span><span class="bnm">'+b.name+'</span></div>';
+ }
+ $('badge-wall').innerHTML=h;
+}
+function openBadgeDetail(id){
+ var b=null;
+ for(var i=0;i<BADGES.length;i++){if(BADGES[i].id===id){b=BADGES[i];break;}}
+ if(!b)return;
+ var got=badgeGetUnlocked();
+ var times=badgeGetTimes();
+ var un=got.indexOf(id)>=0;
+ $('bd-ico').textContent=b.icon;
+ $('bd-ico').style.filter=un?'none':'grayscale(1)';
+ $('bd-ico').style.opacity=un?'1':'.5';
+ $('bd-name').textContent=b.name;
+ $('bd-desc').textContent=b.desc;
+ if(un){
+  var ts=times[id]||Date.now();
+  var d=new Date(ts);
+  $('bd-meta').textContent='✅ 解锁于 '+(d.getMonth()+1)+'月'+d.getDate()+'日 '+pad(d.getHours())+':'+pad(d.getMinutes());
+ }else{
+  var _rm=badgeRemainText(b);
+  if(/^[\d.]+/.test(_rm))_rm='还差 '+_rm;
+  $('bd-meta').textContent='🔒 未解锁 · '+_rm;
+ }
+ $('badge-drawer').style.display='block';
+}
+$('badge-wall').addEventListener('click',function(e){
+ var c=e.target.closest('.badge-cell');
+ if(c)openBadgeDetail(c.dataset.badge);
+});
+$('bm-ok').addEventListener('click',closeBadgeModal);
+$('badge-modal').addEventListener('click',function(e){if(e.target===this)closeBadgeModal();});
+$('badge-drawer').addEventListener('click',function(e){
+ if(e.target.closest('[data-badge-close]'))this.style.display='none';
+});
+
+/* ===================== 批次5：月度热力图 ===================== */
+var heatmapY=new Date().getFullYear();
+var heatmapM=new Date().getMonth();
+function heatmapDone(ds){
+ var n=0;
+ if(state.checkins[ds])n++;
+ if((state.water[ds]||0)>=8)n++;
+ if((state.logs[ds]||[]).length>0)n++;
+ return n;
+}
+function renderHeatmap(){
+ var today=new Date();
+ var lead=new Date(heatmapY,heatmapM,1).getDay();
+ var daysIn=new Date(heatmapY,heatmapM+1,0).getDate();
+ var h='';
+ for(var i=0;i<lead;i++)h+='<span class="hm-cell empty"></span>';
+ var kept=0,full=0;
+ var tds=todayStr();
+ for(var d=1;d<=daysIn;d++){
+  var ds=heatmapY+'-'+pad(heatmapM+1)+'-'+pad(d);
+  var isFuture=new Date(heatmapY,heatmapM,d).getTime()>new Date(today.getFullYear(),today.getMonth(),today.getDate()).getTime();
+  var n=heatmapDone(ds);
+  var cls='hm-cell';
+  if(isFuture)cls+=' future';
+  else{
+   if(n===3)cls+=' lvl3';
+   else if(n===2)cls+=' lvl2';
+   else if(n===1)cls+=' lvl1';
+   if(ds===tds)cls+=' today';
+   if(n>0)kept++;
+   if(n===3)full++;
+  }
+  h+='<span class="'+cls+'" title="'+ds+'">'+d+'</span>';
+ }
+ $('heatmap').innerHTML=h;
+ $('hm-title').textContent=heatmapY+'年'+(heatmapM+1)+'月';
+ $('heatmap-stats').textContent='本月坚持 '+kept+' 天 · 满勤 '+full+' 天';
+ var cur=new Date();
+ $('hm-next').disabled=(heatmapY>cur.getFullYear())||(heatmapY===cur.getFullYear()&&heatmapM>=cur.getMonth());
+}
+$('hm-prev').addEventListener('click',function(){heatmapM--;if(heatmapM<0){heatmapM=11;heatmapY--;}renderHeatmap();});
+$('hm-next').addEventListener('click',function(){
+ var cur=new Date();
+ if((heatmapY>cur.getFullYear())||(heatmapY===cur.getFullYear()&&heatmapM>=cur.getMonth()))return;
+ heatmapM++;if(heatmapM>11){heatmapM=0;heatmapY++;}
+ renderHeatmap();
+});
+
+/* ===================== 批次6：智能提醒 ===================== */
+function smartCfg(){try{var c=JSON.parse(localStorage.getItem('smartReminders')||'{}');return {water:!!c.water,checkin:!!c.checkin,photo:!!c.photo};}catch(e){return {water:false,checkin:false,photo:false};}}
+function smartSaveCfg(c){try{localStorage.setItem('smartReminders',JSON.stringify(c));}catch(e){}}
+function smartPerm(){
+ if(!('Notification' in window))return 'unsupported';
+ return Notification.permission;
+}
+function isIOSStandalone(){
+ var ios=false;
+ try{ios=/iPhone|iPad|iPod/.test(navigator.userAgent);}catch(e){}
+ if(!ios)return false;
+ try{
+  if(window.navigator.standalone===true)return true;
+  if(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches)return true;
+ }catch(e){}
+ return false;
+}
+function renderSmartReminder(){
+ var cfg=smartCfg();
+ var perm=smartPerm();
+ var map=[['sr-water','sr-row-water','water'],['sr-checkin','sr-row-checkin','checkin'],['sr-photo','sr-row-photo','photo']];
+ for(var i=0;i<map.length;i++){
+  var el=$(map[i][0]);
+  if(el)el.checked=!!cfg[map[i][2]];
+  var row=$(map[i][1]);
+  if(row)row.classList.toggle('off',perm==='denied'||perm==='unsupported');
+ }
+ var note=$('smart-note');
+ if(note){
+  note.textContent=perm==='unsupported'?'当前环境不支持通知，开关已停用。':(perm==='denied'?'通知权限被拒绝：请在浏览器设置里允许通知后重试。':'网页打开着才会提醒，建议「添加到主屏幕」。每类提醒每天最多一次。');
+ }
+ var hint=$('smart-ios-hint');
+ if(hint){
+  var ios=false;
+  try{ios=/iPhone|iPad|iPod/.test(navigator.userAgent);}catch(e){}
+  hint.style.display=(ios&&!isIOSStandalone())?'block':'none';
+ }
+}
+function smartToggle(k){
+ var cfg=smartCfg();
+ var next=!cfg[k];
+ if(next&&('Notification' in window)&&Notification.permission==='default'){
+  Notification.requestPermission().then(function(){renderSmartReminder();});
+ }
+ cfg[k]=next;
+ smartSaveCfg(cfg);
+ renderSmartReminder();
+}
+$('sr-water').addEventListener('change',function(){smartToggle('water');});
+$('sr-checkin').addEventListener('change',function(){smartToggle('checkin');});
+$('sr-photo').addEventListener('change',function(){smartToggle('photo');});
+function tickSmartReminders(){
+ var cfg=smartCfg();
+ if(!('Notification' in window)||Notification.permission!=='granted')return;
+ var d=new Date();
+ var h=d.getHours();
+ var td=todayStr();
+ function fire(k,msg){
+  if(localStorage.getItem('lastNotified_'+k)===td)return;
+  try{new Notification('减脂助手',{body:msg,icon:'./icons/icon-192.png'});}catch(e){}
+  try{localStorage.setItem('lastNotified_'+k,td);}catch(e){}
+  showToast(msg);
+ }
+ if(cfg.water&&h>=8&&h<=22)fire('water','💧 该喝水了！一次一杯（250ml），全天目标 8 杯。');
+ if(cfg.checkin&&h>=21&&!state.checkins[td])fire('checkin','🔥 今日还未打卡，睡前完成今天的打卡吧。');
+ if(cfg.photo&&d.getDay()===0&&h>=20)fire('photo','📷 本周对比照时间到！同角度同光线拍一张，见证变化。');
+}
+
+/* ===================== 批次7：周报分享图 ===================== */
+function weekDayList(){
+ var out=[];
+ var d=new Date();
+ d.setDate(d.getDate()-((d.getDay()+6)%7));
+ for(var i=0;i<7;i++){
+  var x=new Date(d);x.setDate(d.getDate()+i);
+  out.push(dateStr(x));
+ }
+ return out;
+}
+function weekHasData(){
+ var days=weekDayList();
+ for(var i=0;i<days.length;i++){
+  var ds=days[i];
+  if(state.checkins[ds])return true;
+  if((state.water[ds]||0)>0)return true;
+  if((state.logs[ds]||[]).length>0)return true;
+ }
+ for(var j=0;j<state.body.length;j++){
+  if(days.indexOf(state.body[j].date)>=0)return true;
+ }
+ return false;
+}
+function renderPosterState(){
+ var btn=$('poster-gen');
+ var ok=weekHasData();
+ if(btn)btn.disabled=!ok;
+ $('poster-hint').textContent=ok?'本周有记录，可以生成分享图。':'先记录几天数据再生成吧（打卡 / 饮水 / 饮食 / 体重任一即可）。';
+}
+function posterStats(){
+ var days=weekDayList();
+ var ck=0,water=0,kcalSum=0,kcalDays=0;
+ for(var i=0;i<days.length;i++){
+  var ds=days[i];
+  if(state.checkins[ds])ck++;
+  if((state.water[ds]||0)>=8)water++;
+  var arr=state.logs[ds]||[];
+  if(arr.length){
+   var k=0;
+   for(var j=0;j<arr.length;j++)k+=arr[j].k;
+   kcalSum+=k;kcalDays++;
+  }
+ }
+ var b=state.body.slice().sort(function(a,c){return a.date<c.date?-1:1;});
+ var wTxt='—';
+ if(b.length){
+  var firstW=null,lastW=null;
+  for(var x=b.length-1;x>=0;x--){if(b[x].date<days[0]){firstW=b[x];break;}}
+  if(!firstW){for(var y=0;y<b.length;y++){if(b[y].date>=days[0]&&b[y].date<=days[6]){firstW=b[y];break;}}}
+  for(var z=b.length-1;z>=0;z--){if(b[z].date>=days[0]&&b[z].date<=days[6]){lastW=b[z];break;}}
+  if(lastW&&firstW&&lastW.date!==firstW.date){
+   var dl=+(lastW.weight-firstW.weight).toFixed(1);
+   wTxt=(dl>0?'+':'')+dl.toFixed(1)+' kg';
+  }else if(lastW){
+   wTxt=lastW.weight+'kg（新起点）';
+  }
+ }
+ return {range:days[0].replace(/-/g,'.')+' - '+days[6].replace(/-/g,'.'),weight:wTxt,ck:ck,water:water,kcal:kcalDays?Math.round(kcalSum/kcalDays):'—'};
+}
+function cssVar(n){
+ try{return getComputedStyle(document.body).getPropertyValue(n).trim();}catch(e){return '';}
+}
+function posterRoundRect(ctx,x,y,w,h,r){
+ ctx.beginPath();
+ ctx.moveTo(x+r,y);
+ ctx.arcTo(x+w,y,x+w,y+h,r);
+ ctx.arcTo(x+w,y+h,x,y+h,r);
+ ctx.arcTo(x,y+h,x,y,r);
+ ctx.arcTo(x,y,x+w,y,r);
+ ctx.closePath();
+}
+function genPoster(){
+ try{
+  var s=posterStats();
+  var W=1080,H=1350;
+  var bg=cssVar('--bg')||'#f6f8f7';
+  var card=cssVar('--card')||'#ffffff';
+  var text=cssVar('--text')||'#1a2b28';
+  var text2=cssVar('--text-2')||'#6b7a76';
+  var primary=cssVar('--primary')||'#14a085';
+  var border=cssVar('--border')||'#e8ecea';
+  var canvas=document.createElement('canvas');
+  canvas.width=W;canvas.height=H;
+  var ctx=canvas.getContext('2d');
+  ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
+  ctx.save();ctx.globalAlpha=.08;ctx.fillStyle=primary;
+  ctx.beginPath();ctx.arc(920,140,240,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.arc(160,1200,200,0,Math.PI*2);ctx.fill();
+  ctx.restore();
+  ctx.fillStyle=text;ctx.font='bold 88px sans-serif';ctx.textAlign='center';
+  ctx.fillText('🔥 减脂助手',W/2,180);
+  ctx.fillStyle=text2;ctx.font='40px sans-serif';
+  ctx.fillText('管住嘴 · 迈开腿 · 每周进步一点点',W/2,250);
+  ctx.strokeStyle=primary;ctx.lineWidth=6;ctx.lineCap='round';
+  ctx.beginPath();ctx.moveTo(W/2-120,300);ctx.lineTo(W/2+120,300);ctx.stroke();
+  var rows=[
+   ['本周体重变化',s.weight],
+   ['连续打卡',s.ck+' 天'],
+   ['本周饮水达标',s.water+'/7 天'],
+   ['平均每日热量',s.kcal==='—'?'—':s.kcal+' 千卡']
+  ];
+  var y=390,rowH=200,gap=24;
+  for(var i=0;i<rows.length;i++){
+   posterRoundRect(ctx,80,y,W-160,rowH,32);
+   ctx.fillStyle=card;ctx.fill();
+   ctx.strokeStyle=border;ctx.lineWidth=3;ctx.stroke();
+   ctx.textAlign='left';
+   ctx.fillStyle=text2;ctx.font='36px sans-serif';
+   ctx.fillText(rows[i][0],130,y+78);
+   ctx.fillStyle=text;ctx.font='bold 76px sans-serif';ctx.textAlign='right';
+   ctx.fillText(rows[i][1],W-130,y+124);
+   y+=rowH+gap;
+  }
+  ctx.strokeStyle=border;ctx.lineWidth=3;
+  ctx.beginPath();ctx.moveTo(80,1270);ctx.lineTo(W-80,1270);ctx.stroke();
+  ctx.fillStyle=text2;ctx.font='34px sans-serif';ctx.textAlign='center';
+  ctx.fillText('本周 '+s.range,W/2,1315);
+  canvas.toBlob(function(blob){
+   if(!blob)return;
+   var url=URL.createObjectURL(blob);
+   var img=$('poster-img');
+   img.onload=function(){URL.revokeObjectURL(url);};
+   img.src=url;
+   $('poster-wrap').style.display='block';
+  },'image/png');
+ }catch(e){
+  showToast('生成失败：'+e.message);
+ }
+}
+$('poster-gen').addEventListener('click',function(){
+ if(!weekHasData()){showToast('先记录几天数据再生成吧');return;}
+ genPoster();
+});
+
 $('b-date').value=todayStr();
 safeRender('training',renderTraining);
 renderAll();
@@ -2311,8 +2844,13 @@ BackupSystem.initVersion();
 BackupSystem.maybeOfferRestore();
 safeRender('shape-view',renderShape);
 loadFired();
+safeRender('badge-wall',renderBadgeWall);
+renderSmartReminder();
+checkBadges();
 tickReminders();
 setInterval(tickReminders,30000);
+tickSmartReminders();
+setInterval(tickSmartReminders,300000);
 setTimeout(autoPullOnce,3000);
 if('serviceWorker' in navigator&&location.protocol.indexOf('http')===0){
  window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){});});
