@@ -344,10 +344,14 @@ body.dark #ex-drawer{background:#14201c}
 .backup-snap{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--line);border-radius:10px;margin-top:6px;font-size:13px}
 .backup-snap .t{color:var(--text-2)}
 .backup-snap .btn{padding:4px 10px;font-size:12px;flex:none}
+.copy-bk{display:inline-block;font-size:11px;font-weight:500;color:var(--primary);border:1px solid var(--line);border-radius:99px;padding:2px 10px;margin-left:8px;cursor:pointer;vertical-align:middle}
+.hist-wrap{display:flex;flex-wrap:wrap;gap:6px}
+.hist-chip{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border:1px solid var(--line);background:var(--card);border-radius:99px;font-size:12px;cursor:pointer;color:var(--text)}
+.hist-chip .hk{color:var(--text-2)}
 </style>
 </head>
 <body>
-<header><div class="wrap hrow"><div><h1>🔥 减脂助手 <span class="ver-badge">v2.5</span></h1><div class="sub">你的私人饮食与训练管家 · 数据默认保存在本机浏览器</div></div><button class="btn" id="dark-toggle" title="深色模式">🌙</button></div></header>
+<header><div class="wrap hrow"><div><h1>🔥 减脂助手 <span class="ver-badge">v2.6</span></h1><div class="sub">你的私人饮食与训练管家 · 数据默认保存在本机浏览器</div></div><button class="btn" id="dark-toggle" title="深色模式">🌙</button></div></header>
 <nav id="tabs">
   <button data-tab="today" class="on">🏠 今日<span class="badge-dot"></span></button>
   <button data-tab="log">🍽️ 记录</button>
@@ -398,6 +402,7 @@ body.dark #ex-drawer{background:#14201c}
     </div>
     <div id="recent-foods" style="margin-bottom:10px"></div>
     <input id="food-search" placeholder="🔍 搜索：鸡胸肉 / 米饭 / 苹果…">
+    <div id="food-history" style="display:none"></div>
     <div class="row" id="food-cats" style="margin:8px 0 2px"></div>
     <div id="fav-list" style="margin-top:6px"></div>
     <div id="food-list" style="max-height:400px;overflow:auto"></div>
@@ -800,6 +805,7 @@ var PHOTO_PROMPT='你是营养师。识别这张照片里的所有食物，估�
 function $(id){return document.getElementById(id);}
 function pad(n){return String(n).padStart(2,'0');}
 function todayStr(){var d=new Date();return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());}
+function yesterdayStr(){var d=new Date();d.setDate(d.getDate()-1);return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());}
 function dayOfYear(){var n=new Date(),s=new Date(n.getFullYear(),0,0);return Math.floor((n-s)/86400000);}
 function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
 
@@ -1126,8 +1132,10 @@ function renderLogEntries(){
   var m=order[a];
   var sub=[];
   for(var i=0;i<items.length;i++){if(items[i].meal===m)sub.push([items[i],i]);}
-  if(!sub.length)continue;
-  h+='<div class="meal-head" style="margin-top:8px">'+m+'</div>';
+  var ybk=0;
+  if(m==='早餐'&&!sub.length){ybk=(state.logs[yesterdayStr()]||[]).filter(function(x){return x.meal==='早餐';}).length;}
+  if(!sub.length&&!ybk)continue;
+  h+='<div class="meal-head" style="margin-top:8px">'+m+(m==='早餐'?' <span class="copy-bk">📋 复制昨天</span>':'')+'</div>';
   for(var j=0;j<sub.length;j++){
    var x=sub[j][0],idx=sub[j][1];
    h+='<div class="log-item"><span>'+esc(x.name)+' · '+x.grams+'g</span><span>'+x.k+'千卡 <span class="x" data-i="'+idx+'">✕</span></span></div>';
@@ -1141,9 +1149,31 @@ function addEntry(name,grams,kPer100,pPer100,cPer100,fPer100,meal){
  var item={name:name,meal:meal||currentMeal,grams:grams,k:Math.round(kPer100*grams/100),p:+(pPer100*grams/100).toFixed(1),c:+(cPer100*grams/100).toFixed(1),f:+(fPer100*grams/100).toFixed(1)};
  state.logs[d]=state.logs[d]||[];
  state.logs[d].push(item);
+ pushRecent(name,grams);
  save();safeRender('log-summary',renderLog);
 }
 
+function pushRecent(name,grams){
+ try{
+  var arr=JSON.parse(localStorage.getItem('recentFoods')||'[]');
+  arr=arr.filter(function(x){return x&&x.name!==name;});
+  arr.unshift({name:name,grams:grams});
+  if(arr.length>10)arr=arr.slice(0,10);
+  localStorage.setItem('recentFoods',JSON.stringify(arr));
+ }catch(e){}
+}
+function renderHistory(){
+ var box=$('food-history');
+ if(!box)return;
+ try{
+  var arr=JSON.parse(localStorage.getItem('recentFoods')||'[]');
+  if(!arr.length){box.style.display='none';box.innerHTML='';return;}
+  box.innerHTML='<p class="note" style="margin:6px 0 0">🕘 最近吃过（点击填入）</p><div class="hist-wrap">'+arr.map(function(x){
+   return '<span class="hist-chip" data-name="'+esc(x.name)+'" data-g="'+(+x.grams||100)+'"><span>'+esc(x.name)+'</span><span class="hk">'+(+x.grams||100)+'g</span></span>';
+  }).join('')+'</div>';
+  box.style.display='block';
+ }catch(e){}
+}
 function renderRecent(){
  var counts={},lastG={};
  Object.keys(state.logs).forEach(function(d){
@@ -1488,7 +1518,7 @@ function renderFoodCats(){
 }
 function isFav(name){return state.favs.indexOf(name)>=0;}
 function foodRowHtml(f,defGrams){
- return '<div class="food-row" data-name="'+esc(f.n)+'"><button class="star'+(isFav(f.n)?' on':'')+'" data-fav="'+esc(f.n)+'" title="收藏到常用">'+(isFav(f.n)?'★':'☆')+'</button><div class="nm"><b>'+esc(f.n)+'</b><span>'+f.k+'千卡/100g · '+esc(f.hint||'')+'</span></div><input type="text" inputmode="numeric" class="g" value="'+(defGrams!=null?defGrams:defaultGrams(f))+'" placeholder="克数（如 150）" onfocus="this.select()"><button class="btn small add">添加</button></div>';
+ return '<div class="food-row" data-name="'+esc(f.n)+'"><button class="star'+(isFav(f.n)?' on':'')+'" data-fav="'+esc(f.n)+'" title="收藏到常用">'+(isFav(f.n)?'★':'☆')+'</button><div class="nm"><b>'+(isFav(f.n)?'⭐ ':'')+esc(f.n)+'</b><span>'+f.k+'千卡/100g · '+esc(f.hint||'')+'</span></div><input type="text" inputmode="numeric" class="g" value="'+(defGrams!=null?defGrams:defaultGrams(f))+'" placeholder="克数（如 150）" onfocus="this.select()"><button class="btn small add">添加</button></div>';
 }
 function defaultGrams(f){
  var m=String(f.hint||'').match(/约(\d+)g/);
@@ -1511,6 +1541,10 @@ function renderFoodList(){
   var cat=f.cat||'家常';
   if(catFilter!=='全部'&&cat!==catFilter)return false;
   return f.n.indexOf(q)>=0;
+ }).sort(function(a,b){
+  var fa=state.favs.indexOf(a.n)>=0?0:1;
+  var fb=state.favs.indexOf(b.n)>=0?0:1;
+  return fa-fb;
  });
  $('food-list').innerHTML=list.map(function(f){return foodRowHtml(f);}).join('')||'<p class="dim">没有找到，试试上面的「自定义食物」。</p>';
 }
@@ -1922,6 +1956,44 @@ $('log-list').addEventListener('click',function(e){
  if(!x)return;
  state.logs[todayStr()].splice(+x.dataset.i,1);
  save();safeRender('log-summary',renderLog);
+});
+$('log-list').addEventListener('click',function(e){
+ var b=e.target.closest('.copy-bk');
+ if(!b)return;
+ var y=yesterdayStr();
+ var src=(state.logs[y]||[]).filter(function(x){return x.meal==='早餐';});
+ if(!src.length){showToast('昨天没有早餐记录');return;}
+ var d=todayStr();
+ state.logs[d]=state.logs[d]||[];
+ for(var i=0;i<src.length;i++){
+  var x=src[i];
+  state.logs[d].push({name:x.name,meal:'早餐',grams:x.grams,k:x.k,p:x.p,c:x.c,f:x.f});
+  pushRecent(x.name,x.grams);
+ }
+ save();
+ safeRender('log-summary',renderLog);
+ var nb=document.querySelector('#log-list .copy-bk');
+ if(nb){nb.textContent='✓ 已复制';setTimeout(function(){if(nb.isConnected)nb.textContent='📋 复制昨天';},1500);}
+});
+$('food-search').addEventListener('focus',function(){renderHistory();});
+$('food-search').addEventListener('blur',function(){var box=$('food-history');if(box)setTimeout(function(){box.style.display='none';},180);});
+$('food-history').addEventListener('click',function(e){
+ var chip=e.target.closest('.hist-chip');
+ if(!chip)return;
+ var name=chip.dataset.name,g=+chip.dataset.g||100;
+ $('food-search').value=name;
+ renderFoodList();
+ var rows=document.querySelectorAll('#food-list .food-row');
+ for(var i=0;i<rows.length;i++){
+  if(rows[i].dataset.name===name){
+   var gi=rows[i].querySelector('.g');
+   if(gi)gi.value=g;
+   if(rows[i].scrollIntoView)rows[i].scrollIntoView({behavior:'smooth',block:'nearest'});
+   break;
+  }
+ }
+ var box=$('food-history');
+ if(box)box.style.display='none';
 });
 $('b-add').addEventListener('click',function(){
  var date=$('b-date').value;
