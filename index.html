@@ -981,6 +981,7 @@ var TRAINING=WEEK_PLAN_V2.map(function(d){
  for(var i=0;i<d.moves.length;i++)items.push(d.moves[i].name);
  var o={day:d.day,type:d.type,title:d.title,icon:d.icon,minutes:d.minutes,moves:d.moves,items:items};
  if(d.day==='周四')o.note='轻松散步 8000 步，让肌肉和关节恢复';
+ else if(String(d.type).indexOf('力量')>=0)o.note='组间休息 60-90 秒，动作标准优先于重量';
  return o;
 });
 var EXERCISES={
@@ -1004,11 +1005,19 @@ var EXERCISE_DB={
  '悬垂举腿':{muscle:'核心',folder:'Hanging_Leg_Raise',tips:'悬垂时肩部收紧，用腹肌抬起双腿至与躯干成90度，下落要慢',mistakes:['身体前后晃动','只靠惯性摆腿','肩部松弛'],video_bv:'BV1oF41137Mq'},
  '俄罗斯转体':{muscle:'核心',folder:'Russian_Twist',tips:'坐姿屈膝，身体后仰呈V字，双手左右转动躯干（不要只动手臂）',mistakes:['只动手臂不动躯干','圆背','双脚离地不稳'],video_bv:'BV1Uk4y117VV'},
  '快走/慢跑':{muscle:'有氧',folder:'Walking_Treadmill',tips:'保持中等强度（能说话但略喘），姿势挺直，脚后跟先着地过渡到全脚掌',mistakes:['低头看手机','扶手全靠体重支撑','步伐过大'],video_bv:'BV1Y88v6eEfk'},
- '哑铃罗马尼亚硬拉':{muscle:'后链',folder:'Romanian_Deadlift',tips:'膝盖微屈，髋部向后推，哑铃贴着腿面下滑；核心收紧，感受大腿后侧被拉紧；起身时臀腿发力，不要用腰硬拉',mistakes:['弓背弯腰','下放太低导致圆背','用腰发力'],video_bv:''},
- '罗马尼亚硬拉':{muscle:'后链',folder:'Romanian_Deadlift',tips:'膝盖微屈，髋部向后推，哑铃贴着腿面下滑；核心收紧，感受大腿后侧被拉紧；起身时臀腿发力，不要用腰硬拉',mistakes:['弓背弯腰','下放太低导致圆背','用腰发力'],video_bv:''},
- '死虫式':{muscle:'核心',folder:'Dead_Bug',tips:'仰卧，下背全程贴地；对侧手脚缓慢伸展，呼气时收腹；回到起始位再换边，动作慢而稳',mistakes:['下背拱起','憋气','手脚落地太快'],video_bv:''},
- '箭步蹲':{muscle:'腿',folder:'Lunges',tips:'前脚站稳，下蹲时前后膝约90°；前膝与脚尖同方向，不内扣；后膝轻点地，身体保持直立；前脚跟发力蹬回',mistakes:['前膝过度前移','身体前倾','步幅太小'],video_bv:''},
- '臀桥':{muscle:'臀',folder:'Glute_Bridge',tips:'仰卧屈膝，脚跟靠近臀部；臀腿发力把髋顶起，肩到膝一条线；顶点夹臀停1秒再放下；下放时缓慢控制，不塌腰',mistakes:['用腰顶起','顶起幅度不够','下放过快'],video_bv:''}
+ '哑铃罗马尼亚硬拉':{muscle:'后链',folder:'Romanian_Deadlift',tips:'膝盖微屈，髋部向后推，哑铃贴着腿面下滑；核心收紧，感受大腿后侧被拉紧；起身时臀腿发力，不要用腰硬拉',mistakes:['弓背弯腰','下放太低导致圆背','用腰发力'],video_bv:'BV191421477y'},
+ '罗马尼亚硬拉':{muscle:'后链',folder:'Romanian_Deadlift',tips:'膝盖微屈，髋部向后推，哑铃贴着腿面下滑；核心收紧，感受大腿后侧被拉紧；起身时臀腿发力，不要用腰硬拉',mistakes:['弓背弯腰','下放太低导致圆背','用腰发力'],video_bv:'BV191421477y'},
+ '死虫式':{muscle:'核心',folder:'Dead_Bug',tips:'仰卧，下背全程贴地；对侧手脚缓慢伸展，呼气时收腹；回到起始位再换边，动作慢而稳',mistakes:['下背拱起','憋气','手脚落地太快'],video_bv:'BV1q28m63ELB'},
+ '箭步蹲':{muscle:'腿',folder:'Lunges',tips:'前脚站稳，下蹲时前后膝约90°；前膝与脚尖同方向，不内扣；后膝轻点地，身体保持直立；前脚跟发力蹬回',mistakes:['前膝过度前移','身体前倾','步幅太小'],video_bv:'BV1gRbDzSER1'},
+ '臀桥':{muscle:'臀',folder:'Glute_Bridge',tips:'仰卧屈膝，脚跟靠近臀部；臀腿发力把髋顶起，肩到膝一条线；顶点夹臀停1秒再放下；下放时缓慢控制，不塌腰',mistakes:['用腰顶起','顶起幅度不够','下放过快'],video_bv:'BV1zf4y1y7yT'},
+ '高脚杯深蹲':{muscle:'腿',folder:'Goblet_Squat',tips:'双脚略宽于肩，哑铃贴胸抱稳；下蹲时膝盖对准脚尖；蹲到大腿平行地面；脚跟发力站起',mistakes:['膝盖内扣','上身过度前倾','脚跟离地'],video_bv:'BV1aa4y1R7TL'},
+ '哑铃肩上推举':{muscle:'肩',folder:'Dumbbell_Shoulder_Press',tips:'坐姿挺直，哑铃从肩两侧向上推起；核心收紧不挺腰；顶端不锁死，缓慢下放',mistakes:['过度挺腰','耸肩','下放过快'],video_bv:'BV1FT411f7wv'},
+ '哑铃地板卧推 / 上斜俯卧撑':{muscle:'胸',folder:'Dumbbell_Floor_Press',tips:'躺地屈膝，哑铃下放到大臂轻触地；推起时胸部发力，手肘约45°；没哑铃就做上斜俯卧撑（手撑凳子）',mistakes:['手肘张得太开','肩胛离地','下放砸地'],video_bv:'BV1ZdXwBTEry'},
+ '单臂哑铃划船':{muscle:'背',folder:'One_Arm_Dumbbell_Row',tips:'一手撑凳、同侧腿跪凳，背挺直；哑铃贴身拉向腰侧；顶端肩胛后收停1秒；缓慢下放',mistakes:['弓背','耸肩借力','身体旋转'],video_bv:'BV1g9yXYXER8'},
+ '侧平板':{muscle:'核心',folder:'Side_Plank',tips:'手肘在肩正下方；髋部抬起，头肩髋踝一条线；收紧腹部和臀部；撑不住可屈膝着地',mistakes:['塌髋','身体前转','憋气'],video_bv:'BV1eF3tzjEMk'},
+ '热身':{muscle:'全身',folder:'Warmup',tips:'开合跳1分钟+高抬腿1分钟+肩绕环30秒；微微出汗即可；训练前必做，降低受伤风险',mistakes:['跳过热身直接上强度','热身太猛耗尽体力'],video_bv:'BV1YS4y1v7C5'},
+ '拉伸':{muscle:'全身',folder:'Stretch',tips:'训练后每个部位静态拉伸20-30秒；拉到轻微牵拉感即可，不弹震；大腿前侧/后侧、胸肩优先',mistakes:['拉伸到刺痛','弹震式拉伸','憋气'],video_bv:'BV1qM4m117VH'},
+ '快走 / 慢跑 / 骑行':{muscle:'有氧',folder:'Walking_Treadmill',tips:'中等强度：能说话但不能唱歌；步幅小、步频高；跑步膝盖不适就快走或骑行',mistakes:['一上来就冲刺','低头看手机','跑前不热身'],video_bv:'BV1Y88v6eEfk'}
 };
 var WEEK_PLAN={
  1:{title:'全身力量 + 腹肌',exercises:['深蹲','俯卧撑','哑铃俯身划船','哑铃推举','平板支撑','卷腹']},
@@ -1039,7 +1048,7 @@ function dayOfYear(){var n=new Date(),s=new Date(n.getFullYear(),0,0);return Mat
 function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
 
 function defaultState(){
- return {profile:{sex:'male',age:28,height:170,weight:80,target:63,activity:1.375},planIndex:0,logs:{},body:[],water:{},ai:{key:'',base:'https://api.openai.com/v1',model:'gpt-4o-mini',format:'responses'},photo:null,checkins:{},favs:[],photos:[],settings:{dark:false,reminders:{water:['10:00','15:00','20:00'],train:'19:00'},customPlan:null,sync:{url:'',key:'',code:'',auto:true,lastSync:0}}};
+ return {profile:{sex:'male',age:28,height:170,weight:80,target:65,activity:1.375},planIndex:0,logs:{},body:[],water:{},ai:{key:'',base:'https://api.openai.com/v1',model:'gpt-4o-mini',format:'responses'},photo:null,checkins:{},favs:[],photos:[],settings:{dark:false,reminders:{water:['10:00','15:00','20:00'],train:'19:00'},customPlan:null,sync:{url:'',key:'',code:'',auto:true,lastSync:0}}};
 }
 function normalizeState(s){
  var d=defaultState();
@@ -1097,7 +1106,9 @@ function nutritionAdjust(){
 function calc(p){
  var bmr=10*p.weight+6.25*p.height-5*p.age+(p.sex==='male'?5:-161);
  var tdee=bmr*p.activity;
- var intake=tdee-500;
+ var bmi0=p.weight/Math.pow(p.height/100,2);
+ var def=bmi0>=27?600:(bmi0>=25?500:(bmi0>=23?400:300));
+ var intake=tdee-def;
  var floor=p.sex==='male'?1500:1200;
  if(intake<floor)intake=floor;
  var protein=Math.round(p.weight*1.8);
@@ -1107,7 +1118,7 @@ function calc(p){
  intake=Math.round(intake+adj.kcal);
  carbs=Math.max(0,carbs+adj.carbs);
  var bmi=p.weight/Math.pow(p.height/100,2);
- return {bmr:Math.round(bmr),tdee:Math.round(tdee),intake:intake,protein:protein,fat:fat,carbs:carbs,bmi:bmi,adj:adj};
+ return {bmr:Math.round(bmr),tdee:Math.round(tdee),intake:intake,protein:protein,fat:fat,carbs:carbs,bmi:bmi,def:def,adj:adj};
 }
 
 function projected(){
@@ -1191,7 +1202,7 @@ function renderPlan(){
  }
  var banner=t.adj&&t.adj.msg?'<div style="margin-bottom:10px;padding:9px 12px;border-radius:12px;background:var(--primary-soft);color:var(--text);font-size:13px;font-weight:600">'+esc(t.adj.msg)+'</div>':'';  html=banner+html+'<div class="totals">合计 '+Math.round(tot.k)+'千卡 · 蛋白 '+Math.round(tot.p)+'g · 碳水 '+Math.round(tot.c)+'g · 脂肪 '+Math.round(tot.f)+'g</div>';
  $('plan-list').innerHTML=html;
- $('plan-note').textContent='当前方案：'+plan.name+'。目标：'+t.intake+'千卡 / 蛋白'+t.protein+'g / 脂肪'+t.fat+'g / 碳水'+t.carbs+'g。份量已按目标自动缩放 '+Math.round(scale*100)+'%。热量为估算值，以实际称重和记录为准。';
+ $('plan-note').textContent='当前方案：'+plan.name+'。目标：'+t.intake+'千卡 / 蛋白'+t.protein+'g / 脂肪'+t.fat+'g / 碳水'+t.carbs+'g（热量缺口 '+t.def+' 千卡）。份量已按目标自动缩放 '+Math.round(scale*100)+'%。热量为估算值，以实际称重和记录为准。';
 }
 function currentMealKey(){
  var h=new Date().getHours();
@@ -1261,10 +1272,11 @@ function renderTraining(){
   if(i===ti)h+=dayHtml;else daysHtml+=dayHtml;
  }
  var progress='<div style="margin-top:12px;font-size:12px;color:var(--text-2);line-height:1.6">'+esc(PROGRESS_RULE.icon)+' <b>'+esc(PROGRESS_RULE.title)+'</b>：'+esc(PROGRESS_RULE.content)+'</div>';
+ var roadmap='<div style="margin-top:8px;font-size:12px;color:var(--text-2);line-height:1.6">🎯 <b>薄肌路线</b>：第1-4周练动作模式，不追重量 → 第5-12周按渐进规则慢慢加重 → 每4周对比照片+体重趋势，围度比秤更重要。</div>';
  if(daysHtml){
   h+='<details style="margin-top:8px"><summary class="dim" style="cursor:pointer">📅 查看本周完整计划（其余 6 天）</summary><div style="margin-top:8px">'+progress+'<div>'+daysHtml+'</div></div></details>';
  }
- h+=progress;
+ h+=progress+roadmap;
  $('training').innerHTML=h;
 }
 var exCur={name:null,img:0};
@@ -1327,8 +1339,8 @@ function openExDrawer(name,anchor){
  for(var i=0;i<dots.length;i++)dots[i].classList.toggle('on',i===0);
  $('ex-video-wrap').style.display='none';
  $('ex-video-wrap').innerHTML='';
- $('ex-video-btn').style.display=ex.video_bv?'block':'none';
- $('ex-video-btn').textContent='▶ 看视频教程';
+ $('ex-video-btn').style.display='block';
+ $('ex-video-btn').textContent=ex.video_bv?'▶ 看视频教程':'🔍 B站搜索视频教程';
  if(row)row.appendChild(panel);
  panel.classList.add('open');
 }
@@ -1346,7 +1358,8 @@ $('ex-video-btn').addEventListener('click',function(){
   return;
  }
  var ex=exDb(exCur.name);
- if(!ex||!ex.video_bv)return;
+ if(!ex)return;
+ if(!ex.video_bv){window.open('https://search.bilibili.com/all?keyword='+encodeURIComponent(exCur.name+' 教学'),'_blank','noopener');return;}
  _w.innerHTML='<iframe src="https://player.bilibili.com/player.html?bvid='+encodeURIComponent(ex.video_bv)+'&danmaku=0&no_related=1" sandbox="allow-top-navigation allow-same-origin allow-forms allow-scripts" allowfullscreen></iframe>';
  _w.style.display='block';
  this.textContent='✕ 收起视频';
