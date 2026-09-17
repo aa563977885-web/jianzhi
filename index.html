@@ -15,8 +15,13 @@
 <style>
 :root{--bg:#f6f8f7;--card:#ffffff;--text:#1a2b28;--text-2:#6b7a76;--text-3:#9aa8a4;--border:#e8ecea;--primary:#14a085;--primary-soft:#e6f4f1;--water:#4aa8e0;--streak:#ff9500;--shadow:0 1px 3px rgba(0,0,0,.05),0 4px 12px rgba(0,0,0,.04);--radius:16px;--ink:#1a2b28;--sub:#6b7a76;--green:#14a085;--green2:#1fb891;--line:#e8ecea;--red:#ef4444;--amber:#f59e0b}
 *{box-sizing:border-box;margin:0;padding:0}
+html,body{overflow-x:hidden;max-width:100vw}
 body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--ink);font-size:15.5px;line-height:1.6;padding-bottom:70px}
-.wrap{max-width:720px;margin:0 auto;padding:0 14px}
+.wrap{max-width:100%;margin:0 auto;padding:0 14px}
+main.wrap{padding-bottom:88px}
+img,svg,iframe,video,canvas{max-width:100%}
+.card{max-width:100%}
+.card,.row,.td-col,.chips,.small-grid,.stat-grid,.badges,.badge-wall,.hm-week,.hm-grid{max-width:100%}
 header{background:linear-gradient(135deg,#0f766e,#10b981);color:#fff;padding:20px 0 16px;box-shadow:0 2px 8px rgba(15,118,110,.15)}
 header h1{font-size:20px;letter-spacing:.5px}
 header .sub{font-size:12px;opacity:.85;margin-top:2px}
@@ -30,7 +35,7 @@ main section.on{display:block}
 body.dark .card.danger-zone{border-color:#7f1d1d;background:#1c1416}
 .card h3{font-size:15px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center}
 .card h3 .btn{font-weight:400}
-.chips{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.chips{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
 .chip{background:#f0fdfa;border:1px solid #ccfbf1;border-radius:12px;padding:10px 4px;text-align:center}
 .chip b{display:block;font-size:17px;color:var(--green);word-break:break-all}
 .chip span{font-size:11px;color:var(--sub)}
@@ -72,7 +77,7 @@ label{font-size:12px;color:var(--sub);display:block;margin:10px 0 4px}
 .cup.full{background:#e0f2fe;border-color:#7dd3fc}
 ul.tips,ul.training{margin-left:18px;font-size:13.5px}
 ul.tips li,ul.training li{margin-bottom:6px}
-.small-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.small-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:6px}
 .dim{color:var(--sub);font-size:12px}
 .photo-food{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #f3f4f6;font-size:13.5px}
 .photo-food .nm{flex:1;min-width:0}
@@ -114,12 +119,12 @@ body.dark .ex-wrap{background:#1a2420}
 .fav-line .nm b{display:block;font-size:13.5px}
 .fav-line .nm span{font-size:11px;color:var(--sub)}
 .fav-line input{width:62px;padding:5px 6px;font-size:12.5px;text-align:center;flex:none}
-.badges{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.badges{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 .badge{border:1px solid var(--line);border-radius:12px;padding:10px 6px;text-align:center;font-size:11.5px;color:var(--ink);background:var(--card)}
 .badge .ico{font-size:24px;display:block;margin-bottom:2px}
 .badge .nm{display:block}
 .badge.lock{opacity:.35;filter:grayscale(1)}
-.stat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:8px}
+.stat-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:8px}
 .stat{background:#f9fafb;border-radius:12px;padding:10px;text-align:center}
 .stat b{font-size:18px;color:var(--green);display:block}
 .stat span{font-size:11px;color:var(--sub)}
@@ -166,9 +171,10 @@ body.dark .day-dot{background:#1e293b;color:#64748b}
 body.dark .day-dot.ok{background:#14532d;color:#6ee7b7}
 body.dark .editor-day{background:#101c33}
 body.dark .preset-chip{background:#1e293b}
-@media (max-width:420px){.chips{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:420px){.chips{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (max-width:420px){nav button{font-size:11px}}
 /* ===== v2.1 UI 优化 ===== */
+#tabs{display:none}
 #tabs button{position:relative}
 #tabs button .badge-dot{position:absolute;top:8px;right:16px;width:7px;height:7px;border-radius:50%;background:var(--red);display:none}
 #tabs button.needs-checkin .badge-dot{display:block}
@@ -196,8 +202,12 @@ body.dark .recent-chip .rc-k{color:#94a3b8}
 [data-theme="dark"]{--bg:#0f1513;--card:#181f1d;--text:#e8efec;--text-2:#9fb3ac;--text-3:#5f726c;--border:#28332f;--primary:#2fd3b3;--primary-soft:#123b32;--water:#5db8ea;--streak:#ff9500;--shadow:0 1px 3px rgba(0,0,0,.4),0 4px 12px rgba(0,0,0,.25);--ink:#e8efec;--sub:#9fb3ac;--green:#2fd3b3;--green2:#34d399;--line:#28332f;--red:#f87171;--amber:#fbbf24}
 .chip b,.log-item,.stat b,.ring-txt b,.rm-line b,#water-big,.ck-ring .ck-txt,.food-line .sub,.meal-k,.totals,.bar-row .top,.macro-num{font-variant-numeric:tabular-nums}
 /* 底部导航 */
-#btabs{display:none}
-#btabs button{position:relative}
+#btabs{display:flex;position:fixed;top:auto;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;height:auto;background:var(--card);border-top:1px solid var(--border);box-shadow:0 -2px 12px rgba(0,0,0,.05);z-index:60;padding-bottom:env(safe-area-inset-bottom)}
+#btabs button{position:relative;flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 0 7px;border:0;background:none;font-size:10.5px;color:var(--text-3);cursor:pointer}
+#btabs button .tico{font-size:19px;line-height:1}
+#btabs button.on{color:var(--primary);font-weight:600}
+#btabs button .badge-dot{position:absolute;top:7px;right:24%;width:7px;height:7px;border-radius:50%;background:var(--red);display:none}
+#btabs button.needs-checkin .badge-dot{display:block}
 /* 今日页双栏 */
 .td-grid{display:block}
 .td-col{display:flex;flex-direction:column;gap:12px}
@@ -260,7 +270,7 @@ body.dark .ck-pill{background:#222c28}
 .ck-pill.ok{background:var(--primary-soft);color:var(--primary);font-weight:700}
 .ck-pill.today{outline:2px solid var(--primary)}
 /* AI 教练 */
-.coach-wrap{display:flex;flex-direction:column;height:calc(100dvh - 210px);min-height:440px}
+.coach-wrap{display:flex;flex-direction:column;height:calc(100dvh - 160px);min-height:440px}
 .coach-card{flex:1;display:flex;flex-direction:column;min-height:0;margin-bottom:10px}
 .coach-card h3{flex:none}
 #coach-msgs{flex:1;overflow-y:auto;max-height:none;margin-bottom:0}
@@ -285,6 +295,7 @@ details.card[open] summary .arrow{transform:rotate(180deg)}
 /* 动作演示抽屉 */
 #ex-mask{display:none}
 #ex-drawer{display:none;position:relative;left:auto;transform:none;bottom:auto;width:100%;max-width:none;background:#f2f8f6;color:var(--text);border:1px solid var(--line);border-radius:14px;z-index:1;max-height:none;overflow:visible;padding:12px 14px;box-shadow:none;margin-top:10px}
+#ex-drawer.open{display:block}
 body.dark #ex-drawer{background:#14201c}
 .ex-handle{display:none}
 .ex-close{position:absolute;top:12px;right:14px;width:36px;height:36px;border-radius:50%;border:0;background:var(--primary-soft);color:var(--text);font-size:17px;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:3;line-height:1}
@@ -319,20 +330,12 @@ body.dark #ex-drawer{background:#14201c}
 /* 触控目标 */
 .meal-btn{min-height:44px}
 .cat-chip{min-height:44px}
-@media (max-width:1023px){
- #tabs{display:none}
- #btabs{display:flex;position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:var(--card);border-top:1px solid var(--border);box-shadow:0 -2px 12px rgba(0,0,0,.05);z-index:60;padding-bottom:env(safe-area-inset-bottom)}
- #btabs button{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 0 7px;border:0;background:none;font-size:10.5px;color:var(--text-3);cursor:pointer}
- #btabs button .tico{font-size:19px;line-height:1}
- #btabs button.on{color:var(--primary);font-weight:600}
-#btabs button .badge-dot{position:absolute;top:7px;right:24%;width:7px;height:7px;border-radius:50%;background:var(--red);display:none}
-#btabs button.needs-checkin .badge-dot{display:block}
- main{padding-bottom:88px}
- .coach-wrap{height:calc(100dvh - 160px)}
- #ex-drawer{max-height:none}
-}
 @media (min-width:1024px){
  .wrap{max-width:1100px}
+ #tabs{display:flex}
+ #btabs{display:none}
+ main.wrap{padding-bottom:0}
+ .coach-wrap{height:calc(100dvh - 210px)}
  .td-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;align-items:start}
  #ex-drawer{max-height:none}
 }
@@ -351,7 +354,7 @@ body.dark #ex-drawer{background:#14201c}
 /* ===== 批次4-7 新增 ===== */
 .new-badge-dot{display:inline-block;font-size:11px;font-weight:600;color:#fff;background:linear-gradient(135deg,var(--amber),#f97316);border-radius:99px;padding:2px 8px;margin-left:8px;vertical-align:middle;animation:ndot-pop .4s ease}
 @keyframes ndot-pop{0%{transform:scale(.5);opacity:0}100%{transform:scale(1);opacity:1}}
-.badge-wall{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:12px}
+.badge-wall{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:12px}
 .badge-cell{display:flex;flex-direction:column;align-items:center;gap:4px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:12px 4px;cursor:pointer;transition:transform .15s ease;font-variant-numeric:tabular-nums}
 .badge-cell:active{transform:scale(.96)}
 .badge-cell .bico{font-size:26px}
@@ -360,7 +363,8 @@ body.dark #ex-drawer{background:#14201c}
 .badge-progress{height:8px;border-radius:99px;background:var(--border);overflow:hidden;margin-top:10px}
 .badge-progress span{display:block;height:100%;background:linear-gradient(90deg,var(--primary),var(--green2));width:0;transition:width .6s ease}
 #badge-wall-count{font-size:12px;font-weight:400}
-#badge-modal{position:fixed;inset:0;z-index:10000;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.55);backdrop-filter:blur(2px)}
+#badge-modal{position:fixed;inset:0;z-index:10000;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.55);backdrop-filter:blur(2px)}
+#badge-modal.open{display:flex}
 .badge-modal-card{width:min(320px,86vw);background:var(--card);border-radius:20px;padding:28px 20px 22px;text-align:center;box-shadow:var(--shadow);animation:bm-pop .35s cubic-bezier(.34,1.56,.64,1)}
 @keyframes bm-pop{0%{transform:scale(.6);opacity:0}100%{transform:scale(1);opacity:1}}
 .bm-ico{font-size:64px;line-height:1;animation:bm-ico .5s ease}
@@ -368,10 +372,12 @@ body.dark #ex-drawer{background:#14201c}
 .bm-name{font-size:20px;font-weight:700;margin-top:12px;color:var(--text)}
 .bm-desc{font-size:13px;color:var(--text-2);margin-top:4px}
 #bm-ok{margin-top:18px;width:100%}
-.confetti-overlay{position:fixed;inset:0;pointer-events:none;z-index:9999;overflow:hidden}
+.confetti-overlay{position:fixed;inset:0;pointer-events:none;z-index:9999;overflow:hidden;display:none}
+.confetti-overlay.open{display:block}
 .confetti-piece{position:absolute;top:-14px;border-radius:2px;animation:confetti-fall linear forwards}
 @keyframes confetti-fall{to{transform:translateY(110vh) rotate(720deg);opacity:0}}
 #badge-drawer{position:fixed;left:50%;bottom:0;transform:translateX(-50%);width:min(560px,100%);background:var(--card);border-radius:20px 20px 0 0;box-shadow:var(--shadow);z-index:9998;padding:14px 20px 26px;display:none;animation:drawer-up .25s ease}
+#badge-drawer.open{display:block}
 @keyframes drawer-up{from{transform:translate(-50%,100%)}to{transform:translate(-50%,0)}}
 .bd-ico{font-size:56px;text-align:center;margin-top:8px}
 #badge-drawer h3{text-align:center;margin-top:8px}
@@ -380,9 +386,9 @@ body.dark #ex-drawer{background:#14201c}
 .hm-nav{float:right;display:flex;align-items:center;gap:6px;font-size:13px;font-weight:500;color:var(--text-2)}
 .hm-btn{width:28px;height:28px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);cursor:pointer;font-size:15px;line-height:1}
 .hm-btn:disabled{opacity:.35;cursor:not-allowed}
-.hm-week{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin:10px 0 6px}
+.hm-week{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;margin:10px 0 6px}
 .hm-week span{text-align:center;font-size:11px;color:var(--text-3)}
-.hm-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.hm-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
 .hm-cell{aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:12px;border-radius:8px;background:var(--border);color:var(--text-2);font-variant-numeric:tabular-nums}
 .hm-cell.empty{background:transparent}
 .hm-cell.lvl1{background:color-mix(in srgb,var(--primary) 30%,transparent);color:var(--text)}
@@ -696,7 +702,7 @@ body.dark .hm-cell.lvl3{color:#06281f}
 </section>
 </main>
 <div id="toast"></div>
-<div id="badge-modal" style="display:none">
+<div id="badge-modal">
   <div class="badge-modal-card">
     <div class="bm-ico" id="bm-ico">🏅</div>
     <div class="bm-name" id="bm-name"></div>
@@ -705,7 +711,7 @@ body.dark .hm-cell.lvl3{color:#06281f}
   </div>
 </div>
 <div class="confetti-overlay" id="confetti-overlay"></div>
-<div id="badge-drawer" role="region" style="display:none">
+<div id="badge-drawer" role="region">
   <div class="ex-handle"></div>
   <button class="ex-close" data-badge-close="1" aria-label="关闭">✕</button>
   <div class="bd-ico" id="bd-ico">🏅</div>
@@ -1096,7 +1102,7 @@ function openExDrawer(name,anchor){
  if(!ex)return;
  var panel=$('ex-drawer');
  var row=anchor?anchor.closest('.ex-wrap'):null;
- if(row&&panel.parentElement===row&&panel.style.display==='block'&&exCur.name===name){
+ if(row&&panel.parentElement===row&&panel.classList.contains('open')&&exCur.name===name){
   closeExDrawer();
   return;
  }
@@ -1135,11 +1141,11 @@ function openExDrawer(name,anchor){
  $('ex-video-btn').style.display=ex.video_bv?'block':'none';
  $('ex-video-btn').textContent='▶ 看视频教程';
  if(row)row.appendChild(panel);
- panel.style.display='block';
+ panel.classList.add('open');
 }
 function closeExDrawer(){
  var panel=$('ex-drawer');
- if(panel)panel.style.display='none';
+ if(panel)panel.classList.remove('open');
 }
 function bindExDrawer(){
 $('ex-video-btn').addEventListener('click',function(){
@@ -2492,18 +2498,19 @@ function showNextBadgeCelebration(){
  $('bm-ico').textContent=b.icon;
  $('bm-name').textContent=b.name;
  $('bm-desc').textContent=b.desc;
- $('badge-modal').style.display='flex';
+ $('badge-modal').classList.add('open');
  spawnConfetti();
  clearTimeout(showNextBadgeCelebration._t);
  showNextBadgeCelebration._t=setTimeout(closeBadgeModal,4000);
 }
 function closeBadgeModal(){
  badgeModalOpen=false;
- $('badge-modal').style.display='none';
+ $('badge-modal').classList.remove('open');
  if(badgeCelebrateQueue.length)setTimeout(showNextBadgeCelebration,350);
 }
 function spawnConfetti(){
  var ov=$('confetti-overlay');
+ ov.classList.add('open');
  var colors=['#ff5f6d','#ffc371','#34d399','#60a5fa','#a78bfa','#fbbf24','#f472b6','#2dd4bf'];
  for(var i=0;i<50;i++){
   var p=document.createElement('div');
@@ -2518,7 +2525,7 @@ function spawnConfetti(){
   p.addEventListener('animationend',function(){this.remove();});
   ov.appendChild(p);
  }
- setTimeout(function(){ov.innerHTML='';},3000);
+ setTimeout(function(){ov.innerHTML='';ov.classList.remove('open');},3000);
 }
 function markNewAchievementDot(){
  var card=$('target-card');
@@ -2569,7 +2576,7 @@ function openBadgeDetail(id){
   if(/^[\d.]+/.test(_rm))_rm='还差 '+_rm;
   $('bd-meta').textContent='🔒 未解锁 · '+_rm;
  }
- $('badge-drawer').style.display='block';
+ $('badge-drawer').classList.add('open');
 }
 $('badge-wall').addEventListener('click',function(e){
  var c=e.target.closest('.badge-cell');
@@ -2578,7 +2585,7 @@ $('badge-wall').addEventListener('click',function(e){
 $('bm-ok').addEventListener('click',closeBadgeModal);
 $('badge-modal').addEventListener('click',function(e){if(e.target===this)closeBadgeModal();});
 $('badge-drawer').addEventListener('click',function(e){
- if(e.target.closest('[data-badge-close]'))this.style.display='none';
+ if(e.target.closest('[data-badge-close]'))this.classList.remove('open');
 });
 
 /* ===================== 批次5：月度热力图 ===================== */
@@ -2856,7 +2863,7 @@ if('serviceWorker' in navigator&&location.protocol.indexOf('http')===0){
  window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){});});
 }
 </script>
-<div id="ex-drawer" role="region" style="display:none">
+<div id="ex-drawer" role="region">
   <div class="ex-handle"></div>
   <button class="ex-close" data-ex-close="1" aria-label="关闭抽屉">✕</button>
   <div class="ex-title"><h3 id="ex-name"></h3><span class="mtag" id="ex-muscle"></span></div>
