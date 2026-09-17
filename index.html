@@ -409,6 +409,27 @@ body.dark .hm-cell.lvl3{color:#06281f}
 .switch input:checked+.sl:before{transform:translateX(20px)}
 #poster-wrap{margin-top:12px}
 #poster-img{width:100%;border-radius:var(--radius);border:1px solid var(--border);display:block}
+/* 外食应急 */
+.out-formula{background:var(--primary-soft);border:1px solid var(--primary);border-radius:14px;padding:14px 16px;font-size:15px;font-weight:700;line-height:1.7;color:var(--text)}
+.out-tabs{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;margin-bottom:12px;scrollbar-width:none}
+.out-tabs::-webkit-scrollbar{display:none}
+.out-tab{flex:none;padding:9px 14px;border-radius:99px;border:1px solid var(--line);background:var(--bg);color:var(--text-2);font-size:13px;cursor:pointer;min-height:40px}
+.out-tab.on{background:var(--primary);color:#fff;border-color:var(--primary);font-weight:600}
+.out-item{display:flex;flex-direction:column;gap:6px;padding:11px 13px;border:1px solid var(--line);border-radius:12px;background:var(--card);margin-bottom:8px}
+.out-item .oi-top{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+.out-item .oi-name{font-weight:600;font-size:14px;color:var(--text)}
+.out-item .oi-nums{font-size:12px;color:var(--text-2);white-space:nowrap}
+.out-item .oi-tip{font-size:12.5px;color:var(--text-2);line-height:1.55}
+.out-copy{width:100%;text-align:left;border:1px dashed var(--primary);background:var(--primary-soft);color:var(--text);border-radius:12px;padding:12px 14px;font-size:13.5px;line-height:1.65;cursor:pointer}
+.out-copy small{display:block;margin-top:8px;color:var(--text-3);font-size:11.5px}
+.out-refuse-group{border:1px solid var(--line);border-radius:12px;background:var(--card);padding:0 13px;margin-bottom:8px}
+.out-refuse-group summary{list-style:none;cursor:pointer;font-size:14px;font-weight:600;color:var(--text);padding:12px 0;display:flex;justify-content:space-between;align-items:center}
+.out-refuse-group summary::-webkit-details-marker{display:none}
+.out-refuse-group .arrow{color:var(--text-3);font-size:11px}
+.out-refuse-group[open] .arrow{transform:rotate(180deg)}
+.out-say{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;text-align:left;background:none;border:0;border-top:1px dashed var(--border);color:var(--text-2);font-size:13px;line-height:1.55;padding:10px 0;cursor:pointer}
+.out-say:hover{color:var(--primary)}
+.out-say .copy-hint{flex:none;font-size:11px;color:var(--text-3)}
 </style>
 </head>
 <body>
@@ -447,6 +468,11 @@ body.dark .hm-cell.lvl3{color:#06281f}
   </div>
 </section>
 <section id="tab-log">
+  <button class="card entry-card" data-tab="out">
+    <span class="eico">🍱</span>
+    <span class="etxt"><b>外食应急</b><span>便利店 / 外卖 / 火锅烤肉 / 酒局怎么吃</span></span>
+    <span class="earrow">›</span>
+  </button>
   <button class="card entry-card" data-tab="photo">
     <span class="eico">📷</span>
     <span class="etxt"><b>拍照识别食物</b><span>拍一张照片，AI 帮你估算热量</span></span>
@@ -481,6 +507,31 @@ body.dark .hm-cell.lvl3{color:#06281f}
     </details>
   </div>
   <div class="card"><h3>🧾 今日已吃</h3><div id="log-list"></div></div>
+</section>
+<section id="tab-out">
+  <button class="back-btn" data-switch="log">‹ 返回记录</button>
+  <div class="card">
+    <h3>🧮 核心公式</h3>
+    <div class="out-formula">1 掌蛋白 + 2 拳蔬菜 + 1 拳主食 / 去皮、少酱、主食减半</div>
+    <p class="note" style="margin-bottom:0">外食不失控：先按公式拼盘，再按“去皮、少酱、主食减半”收尾。</p>
+  </div>
+  <div class="card">
+    <h3>🍽️ 场景推荐</h3>
+    <div class="out-tabs" id="out-tabs"></div>
+    <div id="out-scene"></div>
+    <p class="note" style="margin-bottom:0">热量和蛋白为常见估算值，按实际份量微调。</p>
+  </div>
+  <div class="card">
+    <h3>📝 外卖备注模板</h3>
+    <button class="out-copy" id="out-template">
+      少油少盐，不要额外添加白砂糖、酱料请分开装，主食请减半/换成杂粮饭
+      <small>点一下复制，下单时粘贴到备注</small>
+    </button>
+  </div>
+  <div class="card">
+    <h3>🍷 拒酒话术</h3>
+    <div id="out-refuse"></div>
+  </div>
 </section>
 <section id="tab-body">
   <button class="card entry-card" data-tab="report">
@@ -1024,6 +1075,25 @@ var photoItems=null;
 var photoError=null;
 var photoBusy=false;
 
+function todayPlan(){
+ var plan=state.settings.customPlan&&state.settings.customPlan.length?state.settings.customPlan:TRAINING;
+ var ti=(new Date().getDay()+6)%7;
+ return plan[ti]||null;
+}
+function todayPlanType(){
+ var d=todayPlan();
+ var raw=String(d&&(d.type||d.title)||'');
+ if(raw.indexOf('力量')>=0)return 'strength';
+ if(raw.indexOf('有氧')>=0||raw.indexOf('心肺')>=0)return 'cardio';
+ if(raw.indexOf('休息')>=0||raw.indexOf('恢复')>=0)return 'rest';
+ return 'none';
+}
+function nutritionAdjust(){
+ var type=todayPlanType();
+ if(type==='strength')return {type:'strength',kcal:100,carbs:30,msg:'🏋️ 训练日，燃料加满'};
+ if(type==='rest')return {type:'rest',kcal:0,carbs:-30,msg:'😌 休息日，碳水轻一点'};
+ return {type:type,kcal:0,carbs:0,msg:''};
+}
 function calc(p){
  var bmr=10*p.weight+6.25*p.height-5*p.age+(p.sex==='male'?5:-161);
  var tdee=bmr*p.activity;
@@ -1033,8 +1103,11 @@ function calc(p){
  var protein=Math.round(p.weight*1.8);
  var fat=Math.round(intake*0.25/9);
  var carbs=Math.round((intake-protein*4-fat*9)/4);
+ var adj=nutritionAdjust();
+ intake=Math.round(intake+adj.kcal);
+ carbs=Math.max(0,carbs+adj.carbs);
  var bmi=p.weight/Math.pow(p.height/100,2);
- return {bmr:Math.round(bmr),tdee:Math.round(tdee),intake:Math.round(intake),protein:protein,fat:fat,carbs:carbs,bmi:bmi};
+ return {bmr:Math.round(bmr),tdee:Math.round(tdee),intake:intake,protein:protein,fat:fat,carbs:carbs,bmi:bmi,adj:adj};
 }
 
 function projected(){
@@ -1080,7 +1153,8 @@ function renderTarget(){
  var foot='<span>本周 '+(wd==null?'待记录':(wd<=0?wd.toFixed(1)+' kg ✅':'+'+wd.toFixed(1)+' kg ⚠️'))+'</span>'+
   '<span>累计已减 '+(lost<0?Math.abs(lost).toFixed(1):'0')+' kg</span>'+
   '<span class="dim">BMI '+t.bmi.toFixed(1)+'</span>';
- $('target-body').innerHTML='<div class="tgt-wrap">'+
+ var banner=t.adj&&t.adj.msg?'<div style="margin-bottom:10px;padding:9px 12px;border-radius:12px;background:var(--primary-soft);color:var(--text);font-size:13px;font-weight:600">'+esc(t.adj.msg)+'</div>':'';
+ $('target-body').innerHTML=banner+'<div class="tgt-wrap">'+
   '<div class="tgt-ring"><svg viewBox="0 0 132 132">'+
    '<circle cx="66" cy="66" r="'+R+'" fill="none" style="stroke:var(--primary-soft)" stroke-width="11"/>'+
    '<circle cx="66" cy="66" r="'+R+'" fill="none" style="stroke:var(--primary);transition:stroke-dashoffset 1s ease" stroke-width="11" stroke-linecap="round" stroke-dasharray="'+C.toFixed(1)+'" stroke-dashoffset="'+off.toFixed(1)+'"/>'+
@@ -1115,7 +1189,7 @@ function renderPlan(){
   }
   html+='<div class="meal-k">小计 '+Math.round(mk)+' 千卡</div></details>';
  }
- html+='<div class="totals">合计 '+Math.round(tot.k)+'千卡 · 蛋白 '+Math.round(tot.p)+'g · 碳水 '+Math.round(tot.c)+'g · 脂肪 '+Math.round(tot.f)+'g</div>';
+ var banner=t.adj&&t.adj.msg?'<div style="margin-bottom:10px;padding:9px 12px;border-radius:12px;background:var(--primary-soft);color:var(--text);font-size:13px;font-weight:600">'+esc(t.adj.msg)+'</div>':'';  html=banner+html+'<div class="totals">合计 '+Math.round(tot.k)+'千卡 · 蛋白 '+Math.round(tot.p)+'g · 碳水 '+Math.round(tot.c)+'g · 脂肪 '+Math.round(tot.f)+'g</div>';
  $('plan-list').innerHTML=html;
  $('plan-note').textContent='当前方案：'+plan.name+'。目标：'+t.intake+'千卡 / 蛋白'+t.protein+'g / 脂肪'+t.fat+'g / 碳水'+t.carbs+'g。份量已按目标自动缩放 '+Math.round(scale*100)+'%。热量为估算值，以实际称重和记录为准。';
 }
@@ -1363,6 +1437,23 @@ function renderLogEntries(){
  $('log-list').innerHTML=h||'<p class="dim">今天还没记录，去上面添加第一餐吧。</p>';
 }
 
+var proteinHinted={};
+function mealProtein(meal){
+ var items=state.logs[todayStr()]||[];
+ var p=0;
+ for(var i=0;i<items.length;i++){if(items[i].meal===meal)p+=items[i].p;}
+ return p;
+}
+function maybeHintProtein(meal){
+ if(!meal)return;
+ var key=todayStr()+'|'+meal;
+ if(proteinHinted[key])return;
+ var p=mealProtein(meal);
+ if(p<30){
+  proteinHinted[key]=true;
+  showToast('⚠️ 这餐蛋白偏少（'+Math.round(p)+'g），加个蛋或酸奶？');
+ }
+}
 function addEntry(name,grams,kPer100,pPer100,cPer100,fPer100,meal){
  var d=todayStr();
  var item={name:name,meal:meal||currentMeal,grams:grams,k:Math.round(kPer100*grams/100),p:+(pPer100*grams/100).toFixed(1),c:+(cPer100*grams/100).toFixed(1),f:+(fPer100*grams/100).toFixed(1)};
@@ -1370,6 +1461,7 @@ function addEntry(name,grams,kPer100,pPer100,cPer100,fPer100,meal){
  state.logs[d].push(item);
  pushRecent(name,grams);
  save();safeRender('log-summary',renderLog);
+ maybeHintProtein(item.meal);
 }
 
 function pushRecent(name,grams){
@@ -2085,6 +2177,124 @@ function renderAll(){
  safeRender('photo-foods',renderPhotoTab);
 }
 
+var OUT_SCENES=['便利店','外卖','火锅烤肉','酒局','办公室抽屉'];
+var OUT_FOODS={
+ '便利店':[
+  {name:'关东煮：萝卜/海带/豆腐/鸡蛋',kcal:'100-200 千卡',protein:'8-15g',tip:'只吃清汤里的菜蛋豆制品，不喝汤，不选淀粉丸子'},
+  {name:'水煮蛋 / 溏心蛋',kcal:'70-90 千卡',protein:'6-7g',tip:'最省事的蛋白来源，可以一次买两个'},
+  {name:'即食鸡胸肉',kcal:'120-150 千卡',protein:'20-25g',tip:'看配料表，避开甜味酱料和烟熏糖渍款'},
+  {name:'无糖酸奶 / 纯牛奶',kcal:'60-120 千卡',protein:'5-9g',tip:'认准“无糖/原味”，风味奶基本都加糖'},
+  {name:'玉米 / 蒸红薯',kcal:'100-200 千卡',protein:'3-5g',tip:'粗粮当主食，一次一拳大小就够'}
+ ],
+ '外卖':[
+  {name:'麻辣烫 / 冒菜（清汤底）',kcal:'300-500 千卡',protein:'20-35g',tip:'清汤或菌汤，多选菜和蛋豆，少选丸子，蘸料用酱油醋'},
+  {name:'轻食鸡胸沙拉',kcal:'300-450 千卡',protein:'25-35g',tip:'酱料单独放，最多用一半'},
+  {name:'黄焖鸡 / 鸡腿饭',kcal:'500-700 千卡',protein:'25-35g',tip:'鸡皮去掉，汤汁不拌饭，米饭只吃半份'},
+  {name:'蒸鱼 / 清炒菜 + 杂粮饭',kcal:'450-650 千卡',protein:'25-40g',tip:'备注少油少盐，青菜先涮一下水再吃'},
+  {name:'牛肉面 / 拉面',kcal:'500-700 千卡',protein:'20-30g',tip:'面吃半碗，加个蛋，汤少喝几口'}
+ ],
+ '火锅烤肉':[
+  {name:'清汤 / 番茄 / 菌汤锅底',kcal:'锅底 30-80 千卡',protein:'—',tip:'避开牛油麻辣锅底，锅底汤不喝'},
+  {name:'牛瘦肉 / 虾 / 毛肚 / 百叶',kcal:'100-200 千卡/份',protein:'15-25g',tip:'涮清汤，蘸酱油醋蒜，不蘸麻酱'},
+  {name:'青菜 / 菌菇 / 豆腐',kcal:'50-150 千卡',protein:'5-12g',tip:'先吃菜占肚子，再吃肉，最后吃主食'},
+  {name:'烤肉：牛里脊 / 鸡胸 / 虾',kcal:'150-250 千卡',protein:'20-30g',tip:'少刷酱，烤完不蘸油碟，包生菜吃'},
+  {name:'主食：山药 / 玉米 / 土豆',kcal:'100-200 千卡',protein:'3-5g',tip:'半份粗粮代替米饭，涮完就别再吃主食了'}
+ ],
+ '酒局':[
+  {name:'开席先吃菜肉垫底',kcal:'200-300 千卡',protein:'15-25g',tip:'先吃蛋白和蔬菜，别空腹喝酒'},
+  {name:'清蒸鱼 / 白灼虾',kcal:'150-250 千卡',protein:'20-30g',tip:'优先点，蘸酱油比蘸油更稳'},
+  {name:'凉拌菜 / 卤牛肉',kcal:'150-300 千卡',protein:'15-25g',tip:'避开油炸花生米和糖醋里脊这类下酒菜'},
+  {name:'主食半碗',kcal:'100-150 千卡',protein:'3-5g',tip:'慢慢吃，能让喝酒节奏慢下来'},
+  {name:'每杯酒配一杯水 / 无糖茶',kcal:'0 千卡',protein:'—',tip:'隔杯喝，总量自然减半'}
+ ],
+ '办公室抽屉':[
+  {name:'即食鸡胸肉 / 鸡肉肠',kcal:'100-150 千卡',protein:'15-25g',tip:'认准配料表第一位是鸡肉，不是淀粉'},
+  {name:'无糖酸奶',kcal:'60-100 千卡',protein:'5-9g',tip:'常温款也能放抽屉，下午饿时先喝它'},
+  {name:'小包原味坚果（10g）',kcal:'60-70 千卡',protein:'2-3g',tip:'一次一小包，别买大罐装'},
+  {name:'蛋白棒',kcal:'150-220 千卡',protein:'10-20g',tip:'选每根糖 5g 以下的，当加餐不当零食'},
+  {name:'黑咖啡 / 无糖茶',kcal:'0-5 千卡',protein:'—',tip:'不加糖不加奶精，提神又解馋'}
+ ]
+};
+var OUT_TEMPLATE='少油少盐，不要额外添加白砂糖、酱料请分开装，主食请减半/换成杂粮饭';
+var OUT_REFUSE={
+ '开场预防':[
+  '我最近在减脂，医生让我这阵子先不喝酒，今天以茶代酒。',
+  '今晚还要开车，酒就不喝了，心意我领了。',
+  '我酒精过敏，医生叮嘱不能碰酒，别坑我。',
+  '今天我先定个量：只喝一杯，剩下的我陪你们聊天。',
+  '来之前就说好了，今晚我负责清醒送大家回家。'
+ ],
+ '被劝酒时':[
+  '真不能喝了，再喝明天训练和饮食计划全泡汤了。',
+  '这杯我喝不了，我干了这杯茶，情谊都在。',
+  '我先欠着，等减脂成功那天一定补上。',
+  '医生说再喝就白练了，饶了我吧。',
+  '你给我倒茶，我陪你喝三杯，酒就算了。'
+ ],
+ '以茶代酒':[
+  '我以茶代酒，敬你一个。',
+  '这杯茶我干了，你随意。',
+  '感情不靠酒，我敬你一杯茶，下次请你吃饭。',
+  '茶满敬人，我的诚意都在这一杯里。',
+  '大家尽兴，我以茶相陪，绝不扫兴。'
+ ]
+};
+var outScene='便利店';
+function copyText(text){
+ var done=function(ok){showToast(ok?'✅ 已复制':'⚠️ 复制失败，请长按手动复制');};
+ var fallback=function(){
+  var ta=document.createElement('textarea');
+  ta.value=text;
+  ta.setAttribute('readonly','');
+  ta.style.position='fixed';
+  ta.style.left='-9999px';
+  ta.style.top='0';
+  document.body.appendChild(ta);
+  var sel=document.getSelection();
+  var range=document.createRange();
+  range.selectNodeContents(ta);
+  if(sel){sel.removeAllRanges();sel.addRange(range);}
+  var ok=false;
+  try{ok=document.execCommand('copy');}catch(e){}
+  if(sel)sel.removeAllRanges();
+  ta.remove();
+  done(ok);
+ };
+ if(navigator.clipboard&&navigator.clipboard.writeText){
+  navigator.clipboard.writeText(text).then(function(){done(true);},function(){fallback();});
+ }else{
+  fallback();
+ }
+}
+function renderOutScene(){
+ var tabs='';
+ for(var i=0;i<OUT_SCENES.length;i++){
+  tabs+='<button class="out-tab'+(outScene===OUT_SCENES[i]?' on':'')+'" data-scene="'+esc(OUT_SCENES[i])+'">'+esc(OUT_SCENES[i])+'</button>';
+ }
+ $('out-tabs').innerHTML=tabs;
+ var items=OUT_FOODS[outScene]||[];
+ var h='';
+ for(var j=0;j<items.length;j++){
+  var x=items[j];
+  h+='<div class="out-item"><div class="oi-top"><span class="oi-name">'+esc(x.name)+'</span><span class="oi-nums">'+esc(x.kcal)+' · 蛋白 '+esc(x.protein)+'</span></div><div class="oi-tip">💡 '+esc(x.tip)+'</div></div>';
+ }
+ $('out-scene').innerHTML=h||'<p class="dim">暂无数据</p>';
+}
+function renderOutRefuse(){
+ var keys=['开场预防','被劝酒时','以茶代酒'];
+ var h='';
+ for(var i=0;i<keys.length;i++){
+  var g=keys[i];
+  var arr=OUT_REFUSE[g]||[];
+  h+='<details class="out-refuse-group"'+(i===0?' open':'')+'><summary><span>'+g+'</span><span class="arrow">▾</span></summary>';
+  for(var j=0;j<arr.length;j++){
+   h+='<button class="out-say" data-say="'+esc(arr[j])+'"><span>'+esc(arr[j])+'</span><span class="copy-hint">点一下复制</span></button>';
+  }
+  h+='</details>';
+ }
+ $('out-refuse').innerHTML=h;
+}
+function renderOut(){renderOutScene();renderOutRefuse();}
 function switchTab(name){
  var btns=document.querySelectorAll('#tabs button,#btabs button');
  for(var i=0;i<btns.length;i++)btns[i].classList.toggle('on',btns[i].dataset.tab===name);
@@ -2096,6 +2306,7 @@ function switchTab(name){
  if(name==='coach')coachBoot();
  if(name==='report'){safeRender('report-box',renderReport);safeRender('badge-box',renderBadges);}
  if(name==='profile'){safeRender('badge-wall',renderBadgeWall);renderSmartReminder();}
+ if(name==='out')renderOut();
  if(name==='today')renderToday();
  window.scrollTo(0,0);
 }
@@ -2113,6 +2324,13 @@ document.addEventListener('click',function(e){
  if(sw){switchTab(sw.dataset.switch);}
 });
 
+$('tab-out').addEventListener('click',function(e){
+ var tab=e.target.closest('.out-tab');
+ if(tab){outScene=tab.dataset.scene;renderOutScene();return;}
+ if(e.target.closest('#out-template')){copyText(OUT_TEMPLATE);return;}
+ var say=e.target.closest('.out-say');
+ if(say){copyText(say.dataset.say);return;}
+});
 $('swap-plan').addEventListener('click',function(){state.planIndex++;save();safeRender('plan-list',renderPlan);});
 $('water-row').addEventListener('click',function(e){
  var b=e.target.closest('.cup');
@@ -2205,6 +2423,7 @@ $('log-list').addEventListener('click',function(e){
  }
  save();
  safeRender('log-summary',renderLog);
+ maybeHintProtein('早餐');
  var nb=document.querySelector('#log-list .copy-bk');
  if(nb){nb.textContent='✓ 已复制';setTimeout(function(){if(nb.isConnected)nb.textContent='📋 复制昨天';},1500);}
 });
