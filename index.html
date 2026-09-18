@@ -433,7 +433,7 @@ body.dark .hm-cell.lvl3{color:#06281f}
 </style>
 </head>
 <body>
-<header><div class="wrap hrow"><div><h1>🔥 减脂助手 <span class="ver-badge">v2.7</span></h1><div class="sub">你的私人饮食与训练管家 · 数据默认保存在本机浏览器</div></div><button class="btn" id="dark-toggle" title="深色模式">🌙</button></div></header>
+<header><div class="wrap hrow"><div><h1>🔥 减脂助手 <span class="ver-badge">v2.8</span></h1><div class="sub">你的私人饮食与训练管家 · 数据默认保存在本机浏览器</div></div><button class="btn" id="dark-toggle" title="深色模式">🌙</button></div></header>
 <nav id="tabs">
   <button data-tab="today" class="on">🏠 今日<span class="badge-dot"></span></button>
   <button data-tab="log">🍽️ 记录</button>
@@ -1149,7 +1149,7 @@ function weekDelta(){
  d.setDate(d.getDate()-7);
  var base=null;
  for(var i=0;i<b.length;i++){
-  if(b[i].date>=d.toISOString().slice(0,10)){base=b[i].weight;break;}
+  if(b[i].date>=dateStr(d)){base=b[i].weight;break;}
  }
  if(base==null)return null;
  return +(b[b.length-1].weight-base).toFixed(1);
@@ -1880,7 +1880,7 @@ function coachSysPrompt(){
  var b=state.body.slice().sort(function(a,c){return a.date<c.date?-1:1;});
  var lastW=b.length?b[b.length-1].weight+'kg（'+b[b.length-1].date+'）':'暂无记录';
  var done=state.checkins[todayStr()]?'已完成':'未完成';
- return '你是资深减脂教练和注册营养师。用户：男，'+p.age+'岁，身高'+p.height+'cm，体重'+p.weight+'kg，目标体重'+p.target+'kg。每日目标：'+t.intake+'千卡、蛋白质'+t.protein+'g、脂肪'+t.fat+'g、碳水'+t.carbs+'g。今天已摄入'+Math.round(c.k)+'千卡（蛋白质'+Math.round(c.p)+'g）。今日训练打卡：'+done+'。最近体重：'+lastW+'。请用中文简洁回答，给具体可执行的建议，不超过300字。不构成医疗建议。';
+ return '你是资深减脂教练和注册营养师。用户：'+(p.sex==='male'?'男':'女')+'，'+p.age+'岁，身高'+p.height+'cm，体重'+p.weight+'kg，目标体重'+p.target+'kg。每日目标：'+t.intake+'千卡、蛋白质'+t.protein+'g、脂肪'+t.fat+'g、碳水'+t.carbs+'g。今天已摄入'+Math.round(c.k)+'千卡（蛋白质'+Math.round(c.p)+'g）。今日训练打卡：'+done+'。最近体重：'+lastW+'。请用中文简洁回答，给具体可执行的建议，不超过300字。不构成医疗建议。';
 }
 function coachAdd(text,who){
  var div=document.createElement('div');
@@ -2091,7 +2091,7 @@ function syncPush(){
  if(!c){$('sy-msg').textContent='请先填写网址、anon 公钥和同步码';return;}
  $('sy-msg').textContent='⏳ 上传中…';
  var url=c.url.replace(/\/+$/,'')+'/rest/v1/fitness_state';
- fetch(url,{method:'POST',headers:{'apikey':c.key,'Authorization':'Bearer '+c.key,'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'},body:JSON.stringify({code:c.code,data:state,updated_at:new Date().toISOString()})}).then(function(r){
+ fetch(url,{method:'POST',headers:{'apikey':c.key,'Authorization':'Bearer '+c.key,'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'},body:JSON.stringify({code:c.code,data:(function(){var _d=JSON.parse(JSON.stringify(state));if(_d.ai)_d.ai.key='';return _d;})(),updated_at:new Date().toISOString()})}).then(function(r){
   if(!r.ok)return r.json().then(function(d){throw new Error('HTTP '+r.status+'：'+((d&&d.message)||''));});
   state.settings.sync.lastSync=Date.now();
   save();
@@ -2114,7 +2114,8 @@ function syncPull(){
   if(!d||!d.profile)throw new Error('云端数据不完整');
   if(!confirm('确定用云端数据覆盖本机数据吗？'))return;
   syncGuard=true;
-  state=normalizeState(d);
+  var _prevAik=state.ai.key;
+  state=normalizeState(d);if(!state.ai.key&&_prevAik)state.ai.key=_prevAik;
   save();renderAll();safeRender('training',renderTraining);applyDark();
   syncGuard=false;
   state.settings.sync.lastSync=Date.now();
@@ -2136,7 +2137,7 @@ function syncPushSilent(){
  var c=syncCfg();
  if(!c)return;
  var url=c.url.replace(/\/+$/,'')+'/rest/v1/fitness_state';
- fetch(url,{method:'POST',headers:{'apikey':c.key,'Authorization':'Bearer '+c.key,'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'},body:JSON.stringify({code:c.code,data:state,updated_at:new Date().toISOString()})}).then(function(r){
+ fetch(url,{method:'POST',headers:{'apikey':c.key,'Authorization':'Bearer '+c.key,'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'},body:JSON.stringify({code:c.code,data:(function(){var _d=JSON.parse(JSON.stringify(state));if(_d.ai)_d.ai.key='';return _d;})(),updated_at:new Date().toISOString()})}).then(function(r){
   if(!r.ok)throw new Error('push '+r.status);
   state.settings.sync.lastSync=Date.now();
  }).catch(function(){});
@@ -2156,7 +2157,8 @@ function autoPullOnce(){
   var remote=new Date(rows[0].updated_at||0).getTime();
   if(remote>state.settings.sync.lastSync){
    syncGuard=true;
-   state=normalizeState(d);
+   var _prevAik=state.ai.key;
+   state=normalizeState(d);if(!state.ai.key&&_prevAik)state.ai.key=_prevAik;
    save();renderAll();safeRender('training',renderTraining);applyDark();
    syncGuard=false;
    state.settings.sync.lastSync=Date.now();
@@ -2478,7 +2480,7 @@ $('b-list').addEventListener('click',function(e){
 });
 $('p-save').addEventListener('click',function(){
  var v={sex:$('p-sex').value,age:+$('p-age').value,height:+$('p-height').value,weight:+$('p-weight').value,target:+$('p-target').value,activity:+$('p-activity').value};
- if(!(v.age>0&&v.height>100&&v.weight>0&&v.target>0)){alert('请完整填写信息');return;}
+ if(!(v.age>0&&v.height>100&&v.weight>0&&v.target>0)){alert('请完整填写信息');return;}var tbmi=v.target/Math.pow(v.height/100,2);if(tbmi<18.5&&!confirm('目标体重对应 BMI '+tbmi.toFixed(1)+'，低于健康范围下限 18.5，确定要这样设置吗？'))return;
  state.profile=v;save();renderAll();
 });
 $('p-reset').addEventListener('click',function(){
@@ -2562,7 +2564,7 @@ $('mp-portion').addEventListener('click',function(e){
 });
 $('mp-add').addEventListener('click',function(){
  var name=$('mp-food').value;
- var f=FOODS.find(function(x){return x.n===name;});
+ var f=ALL_FOODS.find(function(x){return x.n===name;});
  var grams=parseFloat($('mp-grams').value)||100;
  addEntry(name,grams,f.k,f.p,f.c,f.f,manualMeal);
 });
@@ -3162,7 +3164,7 @@ function genPoster(){
   ctx.beginPath();ctx.moveTo(W/2-120,300);ctx.lineTo(W/2+120,300);ctx.stroke();
   var rows=[
    ['本周体重变化',s.weight],
-   ['连续打卡',s.ck+' 天'],
+   ['本周打卡',s.ck+' 天'],
    ['本周饮水达标',s.water+'/7 天'],
    ['平均每日热量',s.kcal==='—'?'—':s.kcal+' 千卡']
   ];
