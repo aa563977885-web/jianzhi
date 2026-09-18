@@ -433,7 +433,7 @@ body.dark .hm-cell.lvl3{color:#06281f}
 </style>
 </head>
 <body>
-<header><div class="wrap hrow"><div><h1>🔥 减脂助手 <span class="ver-badge">v2.8</span></h1><div class="sub">你的私人饮食与训练管家 · 数据默认保存在本机浏览器</div></div><button class="btn" id="dark-toggle" title="深色模式">🌙</button></div></header>
+<header><div class="wrap hrow"><div><h1>🔥 减脂助手 <span class="ver-badge">v2.9</span></h1><div class="sub">你的私人饮食与训练管家 · 数据默认保存在本机浏览器</div></div><button class="btn" id="dark-toggle" title="深色模式">🌙</button></div></header>
 <nav id="tabs">
   <button data-tab="today" class="on">🏠 今日<span class="badge-dot"></span></button>
   <button data-tab="log">🍽️ 记录</button>
@@ -705,6 +705,7 @@ body.dark .hm-cell.lvl3{color:#06281f}
       <button class="btn" id="sy-push" style="flex:1">⬆️ 上传到云端</button>
       <button class="btn ghost" id="sy-pull" style="flex:1">⬇️ 从云端恢复</button>
     </div>
+    <p class="note" style="margin-top:6px">同步规则：饮食记录 / 饮水 / 打卡 / 体重 / 照片自动合并，两边都保留；基本资料与设置以后上传的一端为准；AI Key 不会上传。</p>
     <p class="note" id="sy-msg"></p>
     <details><summary class="dim" style="cursor:pointer">如何开通（一次性，约 3 分钟）</summary>
       <ol class="tips" style="margin-top:6px">
@@ -1107,7 +1108,7 @@ function calc(p){
  var bmr=10*p.weight+6.25*p.height-5*p.age+(p.sex==='male'?5:-161);
  var tdee=bmr*p.activity;
  var bmi0=p.weight/Math.pow(p.height/100,2);
- var def=bmi0>=27?600:(bmi0>=25?500:(bmi0>=23?400:300));
+ var def=bmi0>=28?600:(bmi0>=24?500:(bmi0>=18.5?300:0));
  var intake=tdee-def;
  var floor=p.sex==='male'?1500:1200;
  if(intake<floor)intake=floor;
@@ -1875,6 +1876,7 @@ function renderFoodList(){
 
 var coachBusy=false;
 var COACH_CHIPS=['今天吃超了300千卡，怎么补救？','想快速瘦肚子，怎么做？','训练后特别饿怎么办？','平台期了，体重不动怎么办？','给我安排明天的三餐'];
+var coachHistory=[];
 function coachSysPrompt(){
  var p=state.profile,t=calc(p),c=consumed();
  var b=state.body.slice().sort(function(a,c){return a.date<c.date?-1:1;});
@@ -1903,7 +1905,7 @@ function coachSend(q){
  var text=(q||$('coach-in').value).trim();
  if(!text)return;
  if(coachBusy)return;
- coachAdd(text,'user');
+ coachAdd(text,'user');coachHistory.push({role:'user',content:text});if(coachHistory.length>8)coachHistory=coachHistory.slice(-8);
  $('coach-in').value='';
  if(!state.ai.key){coachAdd('还没有配置 API Key：请到「拍照识别 → AI 设置」填写，然后回来再问我。','ai');return;}
  coachBusy=true;
@@ -1913,16 +1915,16 @@ function coachSend(q){
  $('coach-msgs').appendChild(box);
  var payload;
  if(aiFormat()==='chat'){
-  payload={model:state.ai.model,messages:[{role:'system',content:coachSysPrompt()},{role:'user',content:text}],temperature:0.6,max_tokens:1500};
+  payload={model:state.ai.model,messages:[{role:'system',content:coachSysPrompt()}].concat(coachHistory),temperature:0.6,max_tokens:1500};
  }else{
-  payload={model:state.ai.model,instructions:coachSysPrompt(),input:[{role:'user',content:[{type:'input_text',text:text}]}]};
+  payload={model:state.ai.model,instructions:coachSysPrompt(),input:coachHistory.map(function(m){return {role:m.role,content:m.content};})};
  }
  aiFetch(payload).then(function(r){
   return r.json().then(function(d){if(!r.ok)throw new Error('HTTP '+r.status+': '+(d.error&&d.error.message?d.error.message:JSON.stringify(d).slice(0,120)));return d;});
  }).then(function(d){
-  box.textContent=aiExtractText(d)||'（没有回复内容）';
+  var _t=aiExtractText(d)||'（没有回复内容）';coachHistory.push({role:'assistant',content:_t});if(coachHistory.length>8)coachHistory=coachHistory.slice(-8);box.textContent=_t;
  }).catch(function(e){
-  box.textContent='请求失败：'+e.message+'。可以到「拍照识别 → AI 设置」检查 Key / 接口地址 / 模型名。';
+  if(coachHistory.length&&coachHistory[coachHistory.length-1].role==='user')coachHistory.pop();box.textContent='请求失败：'+e.message+'。可以到「拍照识别 → AI 设置」检查 Key / 接口地址 / 模型名。';
  }).then(function(){
   coachBusy=false;
   $('coach-msgs').scrollTop=$('coach-msgs').scrollHeight;
@@ -2127,6 +2129,37 @@ function syncPull(){
 }
 var autoPushTimer=null;
 var syncGuard=false;
+function mergeState(local,remote,remoteNewer){
+ var out=JSON.parse(JSON.stringify(local));
+ out.logs=out.logs||{};remote.logs=remote.logs||{};
+ Object.keys(remote.logs).forEach(function(d){
+  var arr=(remote.logs[d]||[]).filter(Boolean);
+  if(!arr.length)return;
+  var cur=out.logs[d]||[];var seen={};
+  cur.forEach(function(x){seen[JSON.stringify(x)]=1;});
+  arr.forEach(function(x){var k=JSON.stringify(x);if(!seen[k]){cur.push(x);seen[k]=1;}});
+  out.logs[d]=cur;
+ });
+ out.water=out.water||{};remote.water=remote.water||{};
+ Object.keys(remote.water).forEach(function(d){out.water[d]=Math.max(out.water[d]||0,remote.water[d]||0);});
+ out.checkins=out.checkins||{};remote.checkins=remote.checkins||{};
+ Object.keys(remote.checkins).forEach(function(d){if(remote.checkins[d])out.checkins[d]=true;});
+ var bm={};(out.body||[]).forEach(function(x){bm[x.date]=x;});
+ (remote.body||[]).forEach(function(x){if(!bm[x.date]||remoteNewer)bm[x.date]=x;});
+ out.body=Object.keys(bm).map(function(d){return bm[d];}).sort(function(a,c){return a.date<c.date?-1:1;});
+ var pm={};(out.photos||[]).forEach(function(x){pm[x.date]=x;});
+ (remote.photos||[]).forEach(function(x){if(!pm[x.date]||remoteNewer)pm[x.date]=x;});
+ out.photos=Object.keys(pm).map(function(d){return pm[d];}).sort(function(a,c){return a.date<c.date?-1:1;}).slice(-4);
+ var fv={};(out.favs||[]).forEach(function(x){fv[x]=1;});(remote.favs||[]).forEach(function(x){fv[x]=1;});
+ out.favs=Object.keys(fv);
+ if(remoteNewer){
+  if(remote.profile)out.profile=remote.profile;
+  if(remote.settings){var sy=out.settings.sync;out.settings=remote.settings;if(sy)out.settings.sync=sy;}
+  if(remote.planIndex!=null)out.planIndex=remote.planIndex;
+  if(remote.ai&&remote.ai.key)out.ai.key=remote.ai.key;
+ }
+ return out;
+}
 function scheduleAutoPush(){
  if(syncGuard)return;
  if(!syncCfg()||state.settings.sync.auto===false)return;
@@ -2136,11 +2169,34 @@ function scheduleAutoPush(){
 function syncPushSilent(){
  var c=syncCfg();
  if(!c)return;
- var url=c.url.replace(/\/+$/,'')+'/rest/v1/fitness_state';
- fetch(url,{method:'POST',headers:{'apikey':c.key,'Authorization':'Bearer '+c.key,'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'},body:JSON.stringify({code:c.code,data:(function(){var _d=JSON.parse(JSON.stringify(state));if(_d.ai)_d.ai.key='';return _d;})(),updated_at:new Date().toISOString()})}).then(function(r){
-  if(!r.ok)throw new Error('push '+r.status);
-  state.settings.sync.lastSync=Date.now();
- }).catch(function(){});
+ var pullUrl=c.url.replace(/\/+$/,'')+'/rest/v1/fitness_state?code=eq.'+encodeURIComponent(c.code)+'&select=data,updated_at';
+ var pushUrl=c.url.replace(/\/+$/,'')+'/rest/v1/fitness_state';
+ function doPush(){
+  fetch(pushUrl,{method:'POST',headers:{'apikey':c.key,'Authorization':'Bearer '+c.key,'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'},body:JSON.stringify({code:c.code,data:(function(){var _d=JSON.parse(JSON.stringify(state));if(_d.ai)_d.ai.key='';return _d;})(),updated_at:new Date().toISOString()})}).then(function(r){
+   if(!r.ok)throw new Error('push '+r.status);
+   state.settings.sync.lastSync=Date.now();
+  }).catch(function(){});
+ }
+ fetch(pullUrl,{method:'GET',headers:{'apikey':c.key,'Authorization':'Bearer '+c.key}}).then(function(r){
+  if(!r.ok)throw new Error('pull '+r.status);
+  return r.json();
+ }).then(function(rows){
+  try{
+   if(rows&&rows.length&&rows[0].data&&rows[0].data.profile){
+    var remoteTime=new Date(rows[0].updated_at||0).getTime();
+    if(remoteTime>state.settings.sync.lastSync+5000){
+     syncGuard=true;
+     var _pk=state.ai.key;
+     var merged=mergeState(state,normalizeState(rows[0].data),true);
+     if(!merged.ai.key&&_pk)merged.ai.key=_pk;
+     state=merged;
+     save();renderAll();safeRender('training',renderTraining);applyDark();
+     syncGuard=false;
+    }
+   }
+  }catch(e){}
+  doPush();
+ }).catch(function(){doPush();});
 }
 function autoPullOnce(){
  if(!syncCfg()||state.settings.sync.auto===false)return;
@@ -2155,15 +2211,17 @@ function autoPullOnce(){
   var d=rows[0].data;
   if(!d||!d.profile)return;
   var remote=new Date(rows[0].updated_at||0).getTime();
-  if(remote>state.settings.sync.lastSync){
+    if(remote>state.settings.sync.lastSync){
    syncGuard=true;
    var _prevAik=state.ai.key;
-   state=normalizeState(d);if(!state.ai.key&&_prevAik)state.ai.key=_prevAik;
+   var merged=mergeState(state,normalizeState(d),true);
+   if(!merged.ai.key&&_prevAik)merged.ai.key=_prevAik;
+   state=merged;
    save();renderAll();safeRender('training',renderTraining);applyDark();
    syncGuard=false;
    state.settings.sync.lastSync=Date.now();
    save();
-   showToast('☁️ 已从云端同步最新数据');
+   showToast('☁️ 已合并云端最新数据');
   }
  }).catch(function(){});
 }
@@ -2204,7 +2262,7 @@ var OUT_FOODS={
  '外卖':[
   {name:'麻辣烫 / 冒菜（清汤底）',kcal:'300-500 千卡',protein:'20-35g',tip:'清汤或菌汤，多选菜和蛋豆，少选丸子，蘸料用酱油醋'},
   {name:'轻食鸡胸沙拉',kcal:'300-450 千卡',protein:'25-35g',tip:'酱料单独放，最多用一半'},
-  {name:'黄焖鸡 / 鸡腿饭',kcal:'500-700 千卡',protein:'25-35g',tip:'鸡皮去掉，汤汁不拌饭，米饭只吃半份'},
+  {name:'黄焖鸡 / 鸡腿饭',kcal:'700-900 千卡',protein:'30-40g',tip:'鸡皮去掉，汤汁不拌饭，米饭只吃半份'},
   {name:'蒸鱼 / 清炒菜 + 杂粮饭',kcal:'450-650 千卡',protein:'25-40g',tip:'备注少油少盐，青菜先涮一下水再吃'},
   {name:'牛肉面 / 拉面',kcal:'500-700 千卡',protein:'20-30g',tip:'面吃半碗，加个蛋，汤少喝几口'}
  ],
