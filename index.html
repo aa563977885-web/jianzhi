@@ -28,6 +28,8 @@ header .sub{font-size:12px;opacity:.85;margin-top:2px}
 nav{display:flex;background:var(--card);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20}
 nav button{flex:1;border:0;background:none;padding:12px 2px;font-size:14px;color:var(--sub);border-bottom:2px solid transparent;cursor:pointer}
 nav button.on{color:var(--green);border-bottom-color:var(--green);font-weight:600}
+.ver-switch{display:inline-flex;gap:4px;margin:0 4px}
+.ver-switch button.on{background:#e6f4f1;color:#0f766e;border:1px solid #ccfbf1}
 main section{display:none;padding-top:14px}
 main section.on{display:block}
 .card{background:var(--card);border-radius:var(--radius);padding:16px;margin-bottom:12px;box-shadow:var(--shadow)}
@@ -433,7 +435,7 @@ body.dark .hm-cell.lvl3{color:#06281f}
 </style>
 </head>
 <body>
-<header><div class="wrap hrow"><div><h1>🔥 减脂助手 <span class="ver-badge">v2.9</span></h1><div class="sub">你的私人饮食与训练管家 · 数据默认保存在本机浏览器</div></div><button class="btn" id="dark-toggle" title="深色模式">🌙</button></div></header>
+<header><div class="wrap hrow"><div><h1>🔥 减脂助手 <span class="ver-badge">v3.0</span></h1><div class="sub">你的私人饮食与训练管家 · 数据默认保存在本机浏览器</div></div><button class="btn" id="dark-toggle" title="深色模式">🌙</button></div></header>
 <nav id="tabs">
   <button data-tab="today" class="on">🏠 今日<span class="badge-dot"></span></button>
   <button data-tab="log">🍽️ 记录</button>
@@ -463,7 +465,7 @@ body.dark .hm-cell.lvl3{color:#06281f}
         <div id="plan-list"></div>
         <p class="note" id="plan-note"></p>
       </div>
-      <div class="card"><h3>🏋️ 本周训练模板 · 点动作看教程 <button class="btn small ghost" id="plan-edit">✏️ 编辑计划</button></h3><div id="plan-editor" style="display:none"></div><div id="training"></div></div>
+      <div class="card"><h3>🏋️ 本周训练模板 · 点动作看教程 <span class="ver-switch"><button class="btn small ghost on" id="pv-home">居家版</button><button class="btn small ghost" id="pv-gym">健身房版</button></span> <button class="btn small ghost" id="plan-edit">✏️ 编辑计划</button></h3><div id="plan-editor" style="display:none"></div><div id="training"></div></div>
     </div>
   </div>
 </section>
@@ -889,7 +891,9 @@ var TIPS=[
  '戒含糖饮料：想喝就选无糖茶、黑咖啡、气泡水。一杯奶茶≈一顿饭的热量。',
  '外食技巧：涮水去油、优先蒸煮、酱料减半，油炸食物剥皮再吃。',
  '晚上 8 点后不进食，睡够 7-8 小时；睡眠不足会直接拖慢减脂。',
- '每周同一时间称重取平均，别被单日波动影响心情，趋势才重要。'
+ '每周同一时间称重取平均，别被单日波动影响心情，趋势才重要。',
+ '蛋白分散到 4 餐、每餐 30-40g，比总量更能保住肌肉。',
+ '肌酸每天 3-5g 是证据最强的合法补剂；开头体重涨 0.5-1kg 是水分入肌，不是变胖。'
 ];
 var ACHIEVEMENTS=[
  {ico:'🎬',nm:'初次打卡',cond:function(){return Object.keys(state.checkins).length>0;}},
@@ -985,6 +989,76 @@ var TRAINING=WEEK_PLAN_V2.map(function(d){
  else if(String(d.type).indexOf('力量')>=0)o.note='组间休息 60-90 秒，动作标准优先于重量';
  return o;
 });
+var WEEK_PLAN_V3=[
+ {
+  day:'周一',type:'力量A',title:'下肢 + 推',icon:'🏋️',minutes:50,
+  moves:[
+   {name:'热身',sets:2,reps:'开合跳1分钟+高抬腿1分钟+肩绕环30秒',tip:'微微出汗即可，别把力气用完'},
+   {name:'杠铃深蹲',sets:3,reps:'8-12次',tip:'杠铃贴斜方肌上部，出杠站稳，核心收紧再下蹲',alt:'没把握：高脚杯深蹲 3×12-15 找姿势'},
+   {name:'杠铃罗马尼亚硬拉',sets:3,reps:'8-12次',tip:'杠贴大腿，髋部向后推，背挺直',alt:'小重量场馆没片：哑铃版一样有效'},
+   {name:'杠铃卧推',sets:3,reps:'8-12次',tip:'肩胛后收下沉，杠触中胸，手肘约45-70°',alt:'没人保护：哑铃卧推或器械推胸'},
+   {name:'平板支撑',sets:3,reps:'30-45秒',tip:'不塌腰、不撅臀'},
+   {name:'拉伸',sets:1,reps:'3分钟',tip:'腿、胸、肩各 20-30 秒'}
+  ]
+ },
+ {
+  day:'周二',type:'有氧',title:'心肺日',icon:'🏃',minutes:35,
+  moves:[
+   {name:'快走 / 慢跑 / 骑行',sets:1,reps:'30-40分钟',tip:'微微喘但能断续说话；健身房可选椭圆机/爬坡快走'},
+   {name:'日常步数',sets:1,reps:'目标 8000 步',tip:'有氧日之外的日常也在累计'}
+  ]
+ },
+ {
+  day:'周三',type:'力量B',title:'上肢 + 核心',icon:'💪',minutes:50,
+  moves:[
+   {name:'热身',sets:2,reps:'同周一',tip:'上肢日肩膀多绕环几圈'},
+   {name:'高位下拉',sets:3,reps:'10-12次',tip:'胸挺起，肩胛先沉再拉，杠到锁骨上方',alt:'拉不动：辅助引体或弹力带引体'},
+   {name:'哑铃肩上推举',sets:3,reps:'8-12次',tip:'核心收紧，推起别挺腰',alt:'坐着推更稳'},
+   {name:'单臂哑铃划船',sets:3,reps:'每侧10-12次',tip:'一手撑凳，哑铃拉向腰侧，肩胛后收'},
+   {name:'死虫式',sets:3,reps:'每侧8-10次',tip:'下背全程贴地，动作慢而稳'},
+   {name:'拉伸',sets:1,reps:'3分钟',tip:'背、肩、腿各 20-30 秒'}
+  ]
+ },
+ {
+  day:'周四',type:'恢复',title:'恢复日',icon:'🚶',minutes:30,
+  moves:[
+   {name:'轻松散步',sets:1,reps:'8000 步',tip:'让肌肉和关节恢复'},
+   {name:'休息提示',sets:1,reps:'',tip:'散步、拉伸、睡个好觉即可'}
+  ]
+ },
+ {
+  day:'周五',type:'力量C',title:'全身循环',icon:'🔥',minutes:50,
+  moves:[
+   {name:'热身',sets:2,reps:'同周一',tip:''},
+   {name:'引体向上(辅助)',sets:3,reps:'5-10次',tip:'肩胛先下沉再拉，下巴过杠，下放要慢',alt:'做不动：高位下拉 3×10-12'},
+   {name:'哑铃地板卧推 / 上斜俯卧撑',sets:3,reps:'10-12次',tip:'下放到大臂轻触地再推起',alt:'想上强度：杠铃卧推（找保护）'},
+   {name:'哑铃俯身划船',sets:3,reps:'10-12次',tip:'背挺直，肘贴身向后拉，想象用背发力'},
+   {name:'臀桥',sets:3,reps:'12-15次',tip:'顶点夹臀停 1 秒',alt:'轻松了：改哑铃臀桥'},
+   {name:'侧平板',sets:2,reps:'每侧20-30秒',tip:'髋部抬起来，身体一条线'},
+   {name:'拉伸',sets:1,reps:'3分钟',tip:'全身主要肌群过一遍'}
+  ]
+ },
+ {
+  day:'周六',type:'有氧',title:'心肺日 ②',icon:'🚴',minutes:35,
+  moves:[
+   {name:'任选一项',sets:1,reps:'30-40分钟',tip:'骑行/游泳/椭圆机/快走爬坡，选不无聊的那个'}
+  ]
+ },
+ {
+  day:'周日',type:'休息',title:'完全休息',icon:'😴',minutes:0,
+  moves:[
+   {name:'今天不用练',sets:1,reps:'',tip:'睡够 7 小时——睡眠是训练的一部分，肌肉是休息时长出来的'}
+  ]
+ }
+];
+var TRAINING_GYM=WEEK_PLAN_V3.map(function(d){
+ var items=[];
+ for(var i=0;i<d.moves.length;i++)items.push(d.moves[i].name);
+ var o={day:d.day,type:d.type,title:d.title,icon:d.icon,minutes:d.minutes,moves:d.moves,items:items};
+ if(d.day==='周四')o.note='轻松散步 8000 步，让肌肉和关节恢复';
+ else if(String(d.type).indexOf('力量')>=0)o.note='组间休息 90-120 秒，动作标准优先于重量；加重前先保证动作全程稳定';
+ return o;
+});
 var EXERCISES={
  '深蹲':{target:'大腿、臀部',sets:'3组×12-15次',video:'深蹲 标准动作 教学',bvid:'BV1iWuz6aEmx',breath:'下蹲吸气，起身呼气',mistakes:['膝盖内扣','脚跟离地','弓背弯腰'],steps:['双脚与肩同宽，脚尖微朝外','像坐椅子一样向后向下蹲，膝盖与脚尖同方向','蹲到大腿约与地面平行即可，先追求动作稳','脚跟发力蹬地站起，站直时收紧臀部']},
  '俯卧撑(卧推)':{target:'胸、肩、手臂',sets:'3组×8-15次',video:'俯卧撑 标准动作 教学',bvid:'BV1TE411p7QG',breath:'下降吸气，推起呼气',mistakes:['塌腰撅臀','手肘张得太开','只做半程'],steps:['双手略宽于肩撑地，身体从头到脚一条直线','屈肘下降，胸口接近地面','推起时手臂接近伸直，不锁死手肘','力量不够先从跪姿或扶墙俯卧撑开始；健身房可用卧推']},
@@ -1018,7 +1092,12 @@ var EXERCISE_DB={
  '侧平板':{muscle:'核心',folder:'Side_Plank',tips:'手肘在肩正下方；髋部抬起，头肩髋踝一条线；收紧腹部和臀部；撑不住可屈膝着地',mistakes:['塌髋','身体前转','憋气'],video_bv:'BV1eF3tzjEMk'},
  '热身':{muscle:'全身',folder:'Warmup',tips:'开合跳1分钟+高抬腿1分钟+肩绕环30秒；微微出汗即可；训练前必做，降低受伤风险',mistakes:['跳过热身直接上强度','热身太猛耗尽体力'],video_bv:'BV1YS4y1v7C5'},
  '拉伸':{muscle:'全身',folder:'Stretch',tips:'训练后每个部位静态拉伸20-30秒；拉到轻微牵拉感即可，不弹震；大腿前侧/后侧、胸肩优先',mistakes:['拉伸到刺痛','弹震式拉伸','憋气'],video_bv:'BV1qM4m117VH'},
- '快走 / 慢跑 / 骑行':{muscle:'有氧',folder:'Walking_Treadmill',tips:'中等强度：能说话但不能唱歌；步幅小、步频高；跑步膝盖不适就快走或骑行',mistakes:['一上来就冲刺','低头看手机','跑前不热身'],video_bv:'BV1Y88v6eEfk'}
+ '快走 / 慢跑 / 骑行':{muscle:'有氧',folder:'Walking_Treadmill',tips:'中等强度：能说话但不能唱歌；步幅小、步频高；跑步膝盖不适就快走或骑行',mistakes:['一上来就冲刺','低头看手机','跑前不热身'],video_bv:'BV1Y88v6eEfk'},
+ '杠铃深蹲':{muscle:'腿',folder:'Barbell_Squat',tips:'杠铃放在斜方肌上部，出杠后退一步站稳；吸气收腹下蹲到大腿平行，膝盖与脚尖同向；脚跟发力站起',mistakes:['弓腰','膝盖内扣','脚跟离地']},
+ '杠铃罗马尼亚硬拉':{muscle:'后链',folder:'Barbell_Romanian_Deadlift',tips:'杠贴大腿，髋部向后推让杠沿腿下滑；背挺直，感受大腿后侧拉紧；臀腿发力起身，不要用腰硬拉',mistakes:['弓背','杠离腿太远','用腰发力']},
+ '杠铃卧推':{muscle:'胸',folder:'Barbell_Bench_Press',tips:'肩胛后收下沉贴凳，双脚踩实；杠触中胸后推起，手肘约45-70°；顶端不锁死手肘',mistakes:['臀部离凳','手肘完全外展','下落弹跳借力']},
+ '高位下拉':{muscle:'背',folder:'Lat_Pulldown',tips:'胸挺起、身体略后倾固定，肩胛先下沉，肘部垂直向下把杠拉到锁骨上方，慢放还原',mistakes:['身体后仰甩重','用手臂硬拉','耸肩']},
+ '引体向上':{muscle:'背',folder:'Pull_Up',tips:'全握略宽于肩，悬挂后肩胛先下沉，肘部向下拉到下巴过杠，下放控制到完全伸展',mistakes:['蹬腿借力','只做半程','耸肩']}
 };
 var WEEK_PLAN={
  1:{title:'全身力量 + 腹肌',exercises:['深蹲','俯卧撑','哑铃俯身划船','哑铃推举','平板支撑','卷腹']},
@@ -1049,7 +1128,7 @@ function dayOfYear(){var n=new Date(),s=new Date(n.getFullYear(),0,0);return Mat
 function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
 
 function defaultState(){
- return {profile:{sex:'male',age:28,height:170,weight:80,target:65,activity:1.375},planIndex:0,logs:{},body:[],water:{},ai:{key:'',base:'https://api.openai.com/v1',model:'gpt-4o-mini',format:'responses'},photo:null,checkins:{},favs:[],photos:[],settings:{dark:false,reminders:{water:['10:00','15:00','20:00'],train:'19:00'},customPlan:null,sync:{url:'',key:'',code:'',auto:true,lastSync:0}}};
+ return {profile:{sex:'male',age:28,height:170,weight:80,target:65,activity:1.375},planIndex:0,logs:{},body:[],water:{},ai:{key:'',base:'https://api.openai.com/v1',model:'gpt-4o-mini',format:'responses'},photo:null,checkins:{},favs:[],photos:[],settings:{dark:false,reminders:{water:['10:00','15:00','20:00'],train:'19:00'},customPlan:null,planVersion:'home',sync:{url:'',key:'',code:'',auto:true,lastSync:0}}};
 }
 function normalizeState(s){
  var d=defaultState();
@@ -1064,6 +1143,7 @@ function normalizeState(s){
   var r=st.reminders||{};
   d.settings.reminders={water:(r.water&&r.water.length)?r.water:['10:00','15:00','20:00'],train:r.train||'19:00'};
   d.settings.customPlan=st.customPlan||null;
+  d.settings.planVersion=st.planVersion==='gym'?'gym':'home';
   var sy=st.sync||{};
   d.settings.sync={url:sy.url||'',key:sy.key||'',code:sy.code||'',auto:sy.auto!==false,lastSync:sy.lastSync||0};
  }
@@ -1085,8 +1165,12 @@ var photoItems=null;
 var photoError=null;
 var photoBusy=false;
 
+function basePlan(){
+ if(state.settings.customPlan&&state.settings.customPlan.length)return state.settings.customPlan;
+ return state.settings.planVersion==='gym'?TRAINING_GYM:TRAINING;
+}
 function todayPlan(){
- var plan=state.settings.customPlan&&state.settings.customPlan.length?state.settings.customPlan:TRAINING;
+ var plan=basePlan();
  var ti=(new Date().getDay()+6)%7;
  return plan[ti]||null;
 }
@@ -1230,11 +1314,17 @@ function planMoveByName(name){
   var moves=WEEK_PLAN_V2[i].moves||[];
   for(var j=0;j<moves.length;j++){if(moves[j].name===name)return moves[j];}
  }
+ for(var k=0;k<WEEK_PLAN_V3.length;k++){
+  var mv3=WEEK_PLAN_V3[k].moves||[];
+  for(var m=0;m<mv3.length;m++){if(mv3[m].name===name)return mv3[m];}
+ }
  return null;
 }
 function renderTraining(){
+ var ph=$('pv-home'),pg=$('pv-gym');
+ if(ph&&pg){var gym=state.settings.planVersion==='gym';ph.className='btn small ghost'+(gym?'':' on');pg.className='btn small ghost'+(gym?' on':'');}
  var h='<p class="note" style="margin:0 0 4px">每次训练前动态热身 5 分钟（开合跳、高抬腿、肩绕环），训练后拉伸每个部位 20-30 秒。点动作名看演示图与教程。</p>';
- var plan=state.settings.customPlan&&state.settings.customPlan.length?state.settings.customPlan:TRAINING;
+ var plan=basePlan();
  var ti=(new Date().getDay()+6)%7;
  var daysHtml='';
  for(var i=0;i<plan.length;i++){
@@ -1953,7 +2043,7 @@ function shapeSlide(v){
 }
 var editPlan=null;
 function openEditor(){
- editPlan=JSON.parse(JSON.stringify(state.settings.customPlan&&state.settings.customPlan.length?state.settings.customPlan:TRAINING));
+ editPlan=JSON.parse(JSON.stringify(basePlan()));
  $('plan-editor').style.display='block';
  safeRender('plan-editor',renderPlanEditor);
 }
@@ -1963,7 +2053,7 @@ function exerciseNameList(){
  for(var i=0;i<base.length;i++)map[base[i]]=1;
  var db=Object.keys(EXERCISE_DB);
  for(var j=0;j<db.length;j++)map[db[j]]=1;
- var plan=state.settings.customPlan&&state.settings.customPlan.length?state.settings.customPlan:TRAINING;
+ var plan=basePlan();
  for(var k=0;k<plan.length;k++){
   var items=plan[k].items||[];
   for(var m=0;m<items.length;m++)map[items[m]]=1;
@@ -2738,6 +2828,13 @@ $('shape-view').addEventListener('click',function(e){
  save();safeRender('shape-view',renderShape);
 });
 $('plan-edit').addEventListener('click',openEditor);
+function switchPlanVer(v){
+ if(state.settings.planVersion===v)return;
+ if(state.settings.customPlan&&state.settings.customPlan.length&&!confirm('切换训练版本会清空你的自定义计划，确定继续吗？'))return;
+ state.settings.planVersion=v;state.settings.customPlan=null;save();safeRender('training',renderTraining);
+}
+$('pv-home').addEventListener('click',function(){switchPlanVer('home');});
+$('pv-gym').addEventListener('click',function(){switchPlanVer('gym');});
 $('plan-editor').addEventListener('click',function(e){
  var chip=e.target.closest('.ex-chip');
  if(chip){
