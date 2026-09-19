@@ -30,6 +30,14 @@ nav button{flex:1;border:0;background:none;padding:12px 2px;font-size:14px;color
 nav button.on{color:var(--green);border-bottom-color:var(--green);font-weight:600}
 .ver-switch{display:inline-flex;gap:4px;margin:0 4px}
 .ver-switch button.on{background:#e6f4f1;color:#0f766e;border:1px solid #ccfbf1}
+.log-date-nav{display:inline-flex;gap:4px;align-items:center}
+.log-date-nav input{width:136px;font-size:12px;padding:4px 6px;border:1px solid var(--border);border-radius:8px;background:var(--card);color:var(--text)}
+.log-item .txt{cursor:pointer}
+.log-item .txt:hover{color:var(--green)}
+.log-edit-row{display:flex;gap:6px;align-items:center;margin:2px 0 10px;flex-wrap:wrap}
+.log-edit-row input{width:88px}
+.log-edit-row select{padding:6px;border:1px solid var(--border);border-radius:8px;background:var(--card);color:var(--text)}
+.day-total{margin:2px 0 4px;font-size:12.5px;color:var(--text-2)}
 main section{display:none;padding-top:14px}
 main section.on{display:block}
 .card{background:var(--card);border-radius:var(--radius);padding:16px;margin-bottom:12px;box-shadow:var(--shadow)}
@@ -435,7 +443,7 @@ body.dark .hm-cell.lvl3{color:#06281f}
 </style>
 </head>
 <body>
-<header><div class="wrap hrow"><div><h1>🔥 减脂助手 <span class="ver-badge">v3.2</span></h1><div class="sub">你的私人饮食与训练管家 · 数据默认保存在本机浏览器</div></div><button class="btn" id="dark-toggle" title="深色模式">🌙</button></div></header>
+<header><div class="wrap hrow"><div><h1>🔥 减脂助手 <span class="ver-badge">v3.3</span></h1><div class="sub">你的私人饮食与训练管家 · 数据默认保存在本机浏览器</div></div><button class="btn" id="dark-toggle" title="深色模式">🌙</button></div></header>
 <nav id="tabs">
   <button data-tab="today" class="on">🏠 今日<span class="badge-dot"></span></button>
   <button data-tab="log">🍽️ 记录</button>
@@ -508,7 +516,7 @@ body.dark .hm-cell.lvl3{color:#06281f}
       <button class="btn small ghost" id="c-add" style="margin-top:8px">加入今日饮食</button>
     </details>
   </div>
-  <div class="card"><h3>🧾 今日已吃</h3><div id="log-list"></div></div>
+  <div class="card"><h3>🧾 饮食记录<span class="log-date-nav"><button class="btn small ghost" id="log-prev" title="前一天">‹</button><input type="date" id="log-date" title="选择日期查看"><button class="btn small ghost" id="log-next" title="后一天">›</button></span></h3><div id="log-list"></div></div>
 </section>
 <section id="tab-out">
   <button class="back-btn" data-switch="log">‹ 返回记录</button>
@@ -1521,25 +1529,40 @@ function renderLogSummary(){
   '<p class="note">'+(left>0?'还能再吃约 '+Math.round(left)+' 千卡。':'今日已超预算，明天恢复正常即可，别自责。')+'</p>';
 }
 
+function shiftDate(ds,n){var p=String(ds).split('-');var d=new Date(+p[0],+p[1]-1,+p[2]);d.setDate(d.getDate()+n);return dateStr(d);}
+var logViewDate=null;
+var logEdit=null;
+function logDateStr(){return logViewDate||todayStr();}
+function setLogViewDate(ds){
+ if(!ds||ds>todayStr())ds=todayStr();
+ logViewDate=ds===todayStr()?null:ds;
+ renderLogEntries();
+}
 function renderLogEntries(){
- var d=todayStr();
+ var d=logDateStr();
+ var ld=$('log-date');
+ if(ld){if(ld.value!==d)ld.value=d;ld.max=todayStr();}
  var items=state.logs[d]||[];
  var order=['早餐','午餐','加餐','晚餐'];
  var h='';
+ if(items.length){var totK=0,totP=0;for(var q=0;q<items.length;q++){totK+=items[q].k;totP+=items[q].p;}var tt=calc(state.profile);h+='<p class="day-total">全天 '+Math.round(totK)+' / '+tt.intake+' 千卡 · 蛋白 '+Math.round(totP)+' / '+tt.protein+' g</p>';}
  for(var a=0;a<order.length;a++){
   var m=order[a];
   var sub=[];
   for(var i=0;i<items.length;i++){if(items[i].meal===m)sub.push([items[i],i]);}
   var ybk=0;
-  if(m==='早餐'&&!sub.length){ybk=(state.logs[yesterdayStr()]||[]).filter(function(x){return x.meal==='早餐';}).length;}
+  if(m==='早餐'&&!sub.length){ybk=(state.logs[shiftDate(d,-1)]||[]).filter(function(x){return x.meal==='早餐';}).length;}
   if(!sub.length&&!ybk)continue;
-  h+='<div class="meal-head" style="margin-top:8px">'+m+(m==='早餐'?' <span class="copy-bk">📋 复制昨天</span>':'')+'</div>';
+  h+='<div class="meal-head" style="margin-top:8px">'+m+(m==='早餐'?' <span class="copy-bk">📋 复制前一天</span>':'')+'</div>';
   for(var j=0;j<sub.length;j++){
    var x=sub[j][0],idx=sub[j][1];
-   h+='<div class="log-item"><span>'+esc(x.name)+' · '+x.grams+'g</span><span>'+x.k+'千卡 <span class="x" data-i="'+idx+'">✕</span></span></div>';
+   h+='<div class="log-item"><span class="txt" data-edit="'+idx+'">'+esc(x.name)+' · '+x.grams+'g ✎</span><span>'+x.k+'千卡 <span class="x" data-i="'+idx+'">✕</span></span></div>';
+   if(logEdit&&logEdit.date===d&&logEdit.idx===idx){
+    h+='<div class="log-edit-row"><input type="number" class="le-g" value="'+x.grams+'" min="1" step="5"><select class="le-meal">'+order.map(function(mm){return '<option value="'+mm+'"'+(mm===x.meal?' selected':'')+'>'+mm+'</option>';}).join('')+'</select><button class="btn small" data-le-save="1">保存</button><button class="btn small ghost" data-le-cancel="1">取消</button></div>';
+   }
   }
  }
- $('log-list').innerHTML=h||'<p class="dim">今天还没记录，去上面添加第一餐吧。</p>';
+ $('log-list').innerHTML=h||'<p class="dim">'+(d===todayStr()?'今天还没记录，去上面添加第一餐吧。':'这一天没有饮食记录。')+'</p>';
 }
 
 var proteinHinted={};
@@ -1567,6 +1590,7 @@ function addEntry(name,grams,kPer100,pPer100,cPer100,fPer100,meal){
  pushRecent(name,grams);
  save();safeRender('log-summary',renderLog);
  maybeHintProtein(item.meal);
+ if(logViewDate)showToast('已记录到「今天」的'+item.meal);
 }
 
 function pushRecent(name,grams){
@@ -2567,18 +2591,43 @@ $('c-add').addEventListener('click',function(){
  $('c-name').value='';
 });
 $('log-list').addEventListener('click',function(e){
+ var w=e.target.closest('[data-le-save]');
+ if(w){
+  if(!logEdit)return;
+  var arr=state.logs[logEdit.date]||[];
+  var it=arr[logEdit.idx];
+  if(!it){logEdit=null;renderLogEntries();return;}
+  var row=w.closest('.log-edit-row');
+  var ng=parseFloat(row.querySelector('.le-g').value);
+  var nm=row.querySelector('.le-meal').value;
+  if(!(ng>0)){showToast('克数需大于 0');return;}
+  var fd=ALL_FOODS.find(function(x){return x.n===it.name;});
+  if(fd){it.k=Math.round(fd.k*ng/100);it.p=+(fd.p*ng/100).toFixed(1);it.c=+(fd.c*ng/100).toFixed(1);it.f=+(fd.f*ng/100).toFixed(1);}
+  else{var r=ng/it.grams;it.k=Math.round(it.k*r);it.p=+(it.p*r).toFixed(1);it.c=+(it.c*r).toFixed(1);it.f=+(it.f*r).toFixed(1);}
+  it.grams=ng;
+  if(nm)it.meal=nm;
+  logEdit=null;
+  save();safeRender('log-summary',renderLog);
+  return;
+ }
+ var c=e.target.closest('[data-le-cancel]');
+ if(c){logEdit=null;renderLogEntries();return;}
+ var t=e.target.closest('[data-edit]');
+ if(t){logEdit={date:logDateStr(),idx:+t.dataset.edit};renderLogEntries();return;}
  var x=e.target.closest('.x');
  if(!x)return;
- state.logs[todayStr()].splice(+x.dataset.i,1);
+ var dd=logDateStr();
+ state.logs[dd]=state.logs[dd]||[];
+ state.logs[dd].splice(+x.dataset.i,1);
  save();safeRender('log-summary',renderLog);
 });
 $('log-list').addEventListener('click',function(e){
  var b=e.target.closest('.copy-bk');
  if(!b)return;
- var y=yesterdayStr();
+ var d=logDateStr();
+ var y=shiftDate(d,-1);
  var src=(state.logs[y]||[]).filter(function(x){return x.meal==='早餐';});
- if(!src.length){showToast('昨天没有早餐记录');return;}
- var d=todayStr();
+ if(!src.length){showToast('前一天没有早餐记录');return;}
  state.logs[d]=state.logs[d]||[];
  for(var i=0;i<src.length;i++){
   var x=src[i];
@@ -2587,10 +2636,13 @@ $('log-list').addEventListener('click',function(e){
  }
  save();
  safeRender('log-summary',renderLog);
- maybeHintProtein('早餐');
+ if(d===todayStr())maybeHintProtein('早餐');
  var nb=document.querySelector('#log-list .copy-bk');
- if(nb){nb.textContent='✓ 已复制';setTimeout(function(){if(nb.isConnected)nb.textContent='📋 复制昨天';},1500);}
+ if(nb){nb.textContent='✓ 已复制';setTimeout(function(){if(nb.isConnected)nb.textContent='📋 复制前一天';},1500);}
 });
+$('log-prev').addEventListener('click',function(){setLogViewDate(shiftDate(logDateStr(),-1));});
+$('log-next').addEventListener('click',function(){setLogViewDate(shiftDate(logDateStr(),1));});
+$('log-date').addEventListener('change',function(){setLogViewDate(this.value);});
 $('food-search').addEventListener('focus',function(){renderHistory();});
 $('food-search').addEventListener('blur',function(){var box=$('food-history');if(box)setTimeout(function(){box.style.display='none';},180);});
 $('food-history').addEventListener('click',function(e){
