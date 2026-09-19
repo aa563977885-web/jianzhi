@@ -435,7 +435,7 @@ body.dark .hm-cell.lvl3{color:#06281f}
 </style>
 </head>
 <body>
-<header><div class="wrap hrow"><div><h1>🔥 减脂助手 <span class="ver-badge">v3.1</span></h1><div class="sub">你的私人饮食与训练管家 · 数据默认保存在本机浏览器</div></div><button class="btn" id="dark-toggle" title="深色模式">🌙</button></div></header>
+<header><div class="wrap hrow"><div><h1>🔥 减脂助手 <span class="ver-badge">v3.2</span></h1><div class="sub">你的私人饮食与训练管家 · 数据默认保存在本机浏览器</div></div><button class="btn" id="dark-toggle" title="深色模式">🌙</button></div></header>
 <nav id="tabs">
   <button data-tab="today" class="on">🏠 今日<span class="badge-dot"></span></button>
   <button data-tab="log">🍽️ 记录</button>
@@ -665,6 +665,7 @@ body.dark .hm-cell.lvl3{color:#06281f}
       <option value="1.55">中度：每周运动 3-5 次</option>
       <option value="1.725">重度：每周运动 6-7 次</option>
     </select>
+    <p class="note" style="margin-top:4px">按训练之外的日常状态选：办公室久坐选「轻度」即可。别因为每周练几次就选更高档，否则目标热量会偏高、减脂变慢。</p>
     <button class="btn" id="p-save" style="width:100%;margin-top:14px">保存并重新计算</button>
   </div>
   <div class="card" id="backup-card">
@@ -859,7 +860,7 @@ var FOODS_EXT=[
  {n:'蛋挞',hint:'1个约60g',k:375,p:5.5,c:41,f:21,cat:'零食'},
  {n:'薯片',hint:'1包约70g',k:530,p:5,c:52,f:33,cat:'零食'},
  {n:'巧克力',hint:'1块约50g',k:550,p:6,c:54,f:33,cat:'零食'},
- {n:'混合坚果',hint:'1把约30g',k:600,p:18,c:22,f:52,cat:'零食'},
+ {n:'混合坚果(零食包)',hint:'1小包约25g',k:600,p:18,c:22,f:52,cat:'零食'},
  {n:'雪糕',hint:'1支约80g',k:180,p:3,c:22,f:8,cat:'零食'},
  {n:'奶油蛋糕',hint:'1块约100g',k:350,p:5,c:40,f:18,cat:'零食'}
 ];
@@ -1198,10 +1199,10 @@ function calc(p){
  if(intake<floor)intake=floor;
  var protein=Math.round(p.weight*1.8);
  var fat=Math.round(intake*0.25/9);
- var carbs=Math.round((intake-protein*4-fat*9)/4);
  var adj=nutritionAdjust();
  intake=Math.round(intake+adj.kcal);
- carbs=Math.max(0,carbs+adj.carbs);
+ var carbs=Math.round((intake-protein*4-fat*9)/4);
+ if(adj.type==='rest'){carbs=Math.max(0,carbs-30);fat=fat+Math.round(120/9);}
  var bmi=p.weight/Math.pow(p.height/100,2);
  return {bmr:Math.round(bmr),tdee:Math.round(tdee),intake:intake,protein:protein,fat:fat,carbs:carbs,bmi:bmi,def:def,adj:adj};
 }
@@ -2615,6 +2616,8 @@ $('b-add').addEventListener('click',function(){
  var w=parseFloat($('b-weight').value);
  var waist=parseFloat($('b-waist').value);
  if(!date||!(w>0)){alert('请选择日期并填写体重');return;}
+ if(date>todayStr()){alert('日期不能晚于今天');return;}
+ if(w>=300){alert('体重数值看起来异常（单位是 kg），请检查后再保存');return;}
  state.body=state.body.filter(function(x){return x.date!==date;});
  state.body.push({date:date,weight:w,waist:isNaN(waist)?null:waist});
  save();safeRender('b-summary',renderBody);safeRender('target-body',renderTarget);
