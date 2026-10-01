@@ -443,7 +443,7 @@ body.dark .hm-cell.lvl3{color:#06281f}
 </style>
 </head>
 <body>
-<header><div class="wrap hrow"><div><h1>🔥 减脂助手 <span class="ver-badge">v3.4</span></h1><div class="sub">你的私人饮食与训练管家 · 数据默认保存在本机浏览器</div></div><button class="btn" id="dark-toggle" title="深色模式">🌙</button></div></header>
+<header><div class="wrap hrow"><div><h1>🔥 减脂助手 <span class="ver-badge">v4.0</span></h1><div class="sub">你的私人饮食与训练管家 · 数据默认保存在本机浏览器</div></div><button class="btn" id="dark-toggle" title="深色模式">🌙</button></div></header>
 <nav id="tabs">
   <button data-tab="today" class="on">🏠 今日<span class="badge-dot"></span></button>
   <button data-tab="log">🍽️ 记录</button>
@@ -707,6 +707,31 @@ body.dark .hm-cell.lvl3{color:#06281f}
     <div class="sr-row" id="sr-row-photo"><span>📷 周日对比照（每周日 20:00）</span><label class="switch"><input type="checkbox" id="sr-photo"><span class="sl"></span></label></div>
     <p class="note" id="smart-note">网页打开着才会提醒，建议「添加到主屏幕」。每类提醒每天最多一次。</p>
   </div>
+  <div class="card" id="account-card">
+    <h3>👤 账号 <span class="dim" id="acc-status" style="font-size:12px;font-weight:400"></span></h3>
+    <div id="acc-out" style="display:none">
+      <p class="note" id="acc-email" style="margin:0 0 4px"></p>
+      <div class="row" style="margin-top:10px;gap:8px">
+        <button class="btn" id="acc-pull" style="flex:1">⬇️ 从云端合并</button>
+        <button class="btn ghost" id="acc-logout" style="flex:1">退出登录</button>
+      </div>
+      <p class="note" style="margin-bottom:0">登录后数据自动按账号云同步，手机电脑互通；本机 AI Key 不会上传。</p>
+    </div>
+    <div id="acc-in">
+      <label>邮箱</label><input type="email" id="acc-email-in" placeholder="you@example.com">
+      <label>密码</label><input type="password" id="acc-pass" placeholder="至少 6 位">
+      <div class="row" style="margin-top:10px;gap:8px">
+        <button class="btn" id="acc-login" style="flex:1">登录</button>
+        <button class="btn ghost" id="acc-signup" style="flex:1">注册</button>
+      </div>
+      <details style="margin-top:12px"><summary class="dim" style="cursor:pointer">☁️ 云端配置（首次一次性：填 Supabase 网址和 anon 公钥）</summary>
+        <label>Supabase 网址</label><input id="acc-url" placeholder="https://xxxx.supabase.co">
+        <label>anon 公钥</label><input id="acc-anon" placeholder="eyJhbGciOi…">
+        <button class="btn small" id="acc-sb-save" style="margin-top:8px">保存配置</button>
+        <p class="note">注册：supabase.com 免费档。建表 SQL 在下方「云同步」卡片里。建议在 Supabase 控制台 Authentication → Sign In / Providers 关闭「Confirm email」，注册即可直接登录。</p>
+      </details>
+    </div>
+  </div>
   <div class="card">
     <h3>☁️ 云同步（手机 ↔ 电脑自动）<span class="dim" id="sy-status" style="font-size:12px;font-weight:400"></span></h3>
     <label>Supabase 网址（形如 https://xxxx.supabase.co）</label><input id="sy-url" placeholder="https://xxxx.supabase.co">
@@ -716,7 +741,7 @@ body.dark .hm-cell.lvl3{color:#06281f}
       <button class="btn" id="sy-push" style="flex:1">⬆️ 上传到云端</button>
       <button class="btn ghost" id="sy-pull" style="flex:1">⬇️ 从云端恢复</button>
     </div>
-    <p class="note" style="margin-top:6px">同步规则：饮食记录 / 饮水 / 打卡 / 体重 / 照片自动合并，两边都保留；基本资料与设置以后上传的一端为准；AI Key 不会上传。</p>
+    <p class="note" style="margin-top:6px">已登录账号的话无需此处的同步码（推荐用上方「账号」）。同步规则：饮食记录 / 饮水 / 打卡 / 体重 / 照片自动合并，两边都保留；基本资料与设置以后上传的一端为准；AI Key 不会上传。</p>
     <p class="note" id="sy-msg"></p>
     <details><summary class="dim" style="cursor:pointer">如何开通（一次性，约 3 分钟）</summary>
       <ol class="tips" style="margin-top:6px">
@@ -1153,6 +1178,10 @@ function normalizeState(s){
   d.settings.reminders={water:(r.water&&r.water.length)?r.water:['10:00','15:00','20:00'],train:r.train||'19:00'};
   d.settings.customPlan=st.customPlan||null;
   d.settings.planVersion=st.planVersion==='gym'?'gym':'home';
+  var sb=s.supabase||{};d.supabase={url:sb.url||'',anonKey:sb.anonKey||''};
+  if(!d.supabase.url&&d.settings.sync.url){d.supabase.url=d.settings.sync.url;d.supabase.anonKey=d.settings.sync.key;}
+  var au=s.auth||null;
+  d.auth=au?{email:au.email||'',userId:au.userId||'',accessToken:au.accessToken||'',refreshToken:au.refreshToken||'',expiresAt:au.expiresAt||0}:null;
   var sy=st.sync||{};
   d.settings.sync={url:sy.url||'',key:sy.key||'',code:sy.code||'',auto:sy.auto!==false,lastSync:sy.lastSync||0};
  }
@@ -1167,6 +1196,9 @@ function load(){
 }
 function save(){try{localStorage.setItem(LS_KEY,JSON.stringify(state));scheduleAutoPush();checkBadges();}catch(e){}}
 var state=load();
+if(!state.supabase)state.supabase={url:'',anonKey:''};
+if(state.supabase.url&&!state.settings.sync.url){state.settings.sync.url=state.supabase.url;state.settings.sync.key=state.supabase.anonKey;}
+if(typeof state.auth==='undefined')state.auth=null;
 var currentMeal='早餐';
 var photoMeal='午餐';
 var manualMeal='午餐';
@@ -2203,8 +2235,9 @@ function fmtSyncTime(ts){
 function renderSyncStatus(){
  var el=$('sy-status');
  if(!el)return;
- if(!syncCfg()){el.textContent='未配置';return;}
  var s=state.settings.sync;
+ if(authState()&&sbCfg()){el.textContent='账号同步已开启'+(s.lastSync?' · 上次同步 '+fmtSyncTime(s.lastSync):' · 尚未同步');return;}
+ if(!syncCfg()){el.textContent='未配置';return;}
  el.textContent=(s.auto===false?'自动同步已暂停':'自动同步已开启')+(s.lastSync?(' · 上次同步 '+fmtSyncTime(s.lastSync)):' · 尚未同步');
 }
 function renderSyncForm(){
@@ -2235,6 +2268,7 @@ function syncPush(){
  });
 }
 function syncPull(){
+ if(authState()&&sbCfg()){accountPull(true);return;}
  var c=syncCfg();
  if(!c){$('sy-msg').textContent='请先填写网址、anon 公钥和同步码';return;}
  $('sy-msg').textContent='⏳ 下载中…';
@@ -2295,11 +2329,13 @@ function mergeState(local,remote,remoteNewer){
 }
 function scheduleAutoPush(){
  if(syncGuard)return;
- if(!syncCfg()||state.settings.sync.auto===false)return;
+ if(state.settings.sync.auto===false)return;
+ if(!syncCfg()&&!(authState()&&sbCfg()))return;
  clearTimeout(autoPushTimer);
  autoPushTimer=setTimeout(function(){autoPushTimer=null;syncPushSilent();},2500);
 }
 function syncPushSilent(){
+ if(authState()&&sbCfg()){accountSyncCycle(false);return;}
  var c=syncCfg();
  if(!c)return;
  var pullUrl=c.url.replace(/\/+$/,'')+'/rest/v1/fitness_state?code=eq.'+encodeURIComponent(c.code)+'&select=data,updated_at';
@@ -2332,7 +2368,12 @@ function syncPushSilent(){
  }).catch(function(){doPush();});
 }
 function autoPullOnce(){
- if(!syncCfg()||state.settings.sync.auto===false)return;
+ if(state.settings.sync.auto===false)return;
+ if(authState()&&sbCfg()){
+  if(Date.now()-state.settings.sync.lastSync<60*1000)return;
+  accountSyncCycle(true);return;
+ }
+ if(!syncCfg())return;
  if(Date.now()-state.settings.sync.lastSync<60*1000)return;
  var c=syncCfg();
  var url=c.url.replace(/\/+$/,'')+'/rest/v1/fitness_state?code=eq.'+encodeURIComponent(c.code)+'&select=data,updated_at';
@@ -2378,6 +2419,7 @@ function renderToday(){
 }
 function renderAll(){
  safeRender('profile-card',renderProfileForm);
+ renderAccount();
  renderToday();
  safeRender('log-summary',renderLog);
  safeRender('b-summary',renderBody);
@@ -2512,7 +2554,7 @@ function switchTab(name){
  if(name==='photo')safeRender('photo-foods',renderPhotoTab);
  if(name==='coach')coachBoot();
  if(name==='report'){safeRender('report-box',renderReport);safeRender('badge-box',renderBadges);}
- if(name==='profile'){safeRender('badge-wall',renderBadgeWall);renderSmartReminder();}
+ if(name==='profile'){safeRender('badge-wall',renderBadgeWall);renderSmartReminder();renderAccount();}
  if(name==='out')renderOut();
  if(name==='today')renderToday();
  window.scrollTo(0,0);
@@ -3452,6 +3494,156 @@ setInterval(tickSmartReminders,300000);
 setTimeout(autoPullOnce,3000);
 setInterval(function(){if(document.visibilityState==='visible')autoPullOnce();},90000);
 document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible')setTimeout(autoPullOnce,500);});
+/* ===================== 账号系统（v4.0） ===================== */
+function sbBase(){return String((state.supabase&&state.supabase.url)||'').replace(/\/+$/,'');}
+function sbKey(){return (state.supabase&&state.supabase.anonKey)||'';}
+function sbCfg(){return sbBase()&&sbKey()?(sbBase()+' '+sbKey()):'';}
+function authState(){return (state.auth&&state.auth.userId&&state.auth.refreshToken)?state.auth:null;}
+function authRestHeaders(){
+ return {'apikey':sbKey(),'Authorization':'Bearer '+((state.auth&&state.auth.accessToken)||''),'Content-Type':'application/json'};
+}
+async function authEnsureToken(force){
+ var a=state.auth;
+ if(!a||!a.refreshToken||!sbCfg())throw new Error('未登录');
+ if(!force&&a.expiresAt&&a.expiresAt-Date.now()>120000)return;
+ var r=await fetch(sbBase()+'/auth/v1/token?grant_type=refresh_token',{method:'POST',headers:{'apikey':sbKey(),'Content-Type':'application/json'},body:JSON.stringify({refresh_token:a.refreshToken})});
+ var d=await r.json().catch(function(){return {};});
+ if(!r.ok||!d.access_token){state.auth=null;save();renderAccount();throw new Error('登录已过期，请重新登录');}
+ a.accessToken=d.access_token;a.refreshToken=d.refresh_token;a.expiresAt=Date.now()+(d.expires_in||3600)*1000;
+ save();
+}
+function applySession(d){
+ if(!d.user)return;
+ state.auth={email:(d.user.email||''),userId:d.user.id,accessToken:d.access_token||'',refreshToken:d.refresh_token||'',expiresAt:Date.now()+(d.expires_in||3600)*1000};
+ save();renderAccount();renderSyncStatus();
+}
+async function authSignup(email,pass){
+ if(!sbCfg())throw new Error('请先展开「云端配置」填写 Supabase 网址和 anon 公钥');
+ if(!email||!pass||pass.length<6)throw new Error('请填写邮箱和至少 6 位密码');
+ var r=await fetch(sbBase()+'/auth/v1/signup',{method:'POST',headers:{'apikey':sbKey(),'Content-Type':'application/json'},body:JSON.stringify({email:email,password:pass})});
+ var d=await r.json().catch(function(){return {};});
+ if(!r.ok)throw new Error(d.error_description||d.msg||d.message||('注册失败（HTTP '+r.status+'）'));
+ if(d.access_token&&d.user){applySession(d);return 'session';}
+ return 'confirm';
+}
+async function authLogin(email,pass){
+ if(!sbCfg())throw new Error('请先展开「云端配置」填写 Supabase 网址和 anon 公钥');
+ if(!email||!pass)throw new Error('请填写邮箱和密码');
+ var r=await fetch(sbBase()+'/auth/v1/token?grant_type=password',{method:'POST',headers:{'apikey':sbKey(),'Content-Type':'application/json'},body:JSON.stringify({email:email,password:pass})});
+ var d=await r.json().catch(function(){return {};});
+ if(!r.ok||!d.access_token)throw new Error(d.error_description||d.msg||('登录失败（HTTP '+r.status+'）'));
+ applySession(d);
+ await afterLogin();
+}
+function accountRow(){return 'u_'+state.auth.userId;}
+function accountRowUrl(){return sbBase()+'/rest/v1/fitness_state?code=eq.'+encodeURIComponent(accountRow())+'&select=data,updated_at';}
+async function accountPush(){
+ await authEnsureToken();
+ var body=(function(){var _d=JSON.parse(JSON.stringify(state));if(_d.ai)_d.ai.key='';return _d;})();
+ var send=function(){return fetch(sbBase()+'/rest/v1/fitness_state',{method:'POST',headers:Object.assign({'Prefer':'resolution=merge-duplicates,return=minimal'},authRestHeaders()),body:JSON.stringify({code:accountRow(),user_id:state.auth.userId,data:body,updated_at:new Date().toISOString()})});};
+ var r=await send();
+ if(r.status===401){await authEnsureToken(true);r=await send();}
+ if(!r.ok)throw new Error('上传失败（HTTP '+r.status+'）');
+ state.settings.sync.lastSync=Date.now();
+ save();renderSyncStatus();
+}
+function accountMergeFrom(rows){
+ var remoteTime=(rows&&rows.length)?new Date(rows[0].updated_at||0).getTime():0;
+ if(!(rows&&rows.length&&rows[0].data&&rows[0].data.profile))return false;
+ syncGuard=true;
+ var merged=mergeState(state,normalizeState(rows[0].data),remoteTime>state.settings.sync.lastSync);
+ if(merged&&!merged.ai.key&&state.ai)merged.ai.key=state.ai.key;
+ state=merged;
+ save();renderAll();safeRender('training',renderTraining);applyDark();renderAccount();
+ syncGuard=false;
+ state.settings.sync.lastSync=Math.max(Date.now(),remoteTime);
+ save();renderSyncStatus();
+ return true;
+}
+async function afterLogin(){
+ try{
+  await authEnsureToken();
+  var r=await fetch(accountRowUrl(),{headers:authRestHeaders()});
+  if(r.status===401){await authEnsureToken(true);r=await fetch(accountRowUrl(),{headers:authRestHeaders()});}
+  var rows=await r.json();
+  var hasCloud=rows&&rows.length&&rows[0].data&&rows[0].data.profile;
+  var hasLocal=(state.logs&&Object.keys(state.logs).length)||(state.body&&state.body.length)||(state.checkins&&Object.keys(state.checkins).length);
+  if(!hasCloud){
+   if(hasLocal){await accountPush();showToast('☁️ 本机数据已上传到你的账号');}
+   else{showToast('☁️ 账号就绪，之后自动云端同步');}
+  }else{
+   var mergedSomething=accountMergeFrom(rows);
+   await accountPush();
+   showToast(hasLocal?(mergedSomething?'☁️ 云端与本机数据已合并上传':'☁️ 本机数据已同步到账号'):'☁️ 已从账号恢复数据');
+  }
+ }catch(e){showToast('⚠️ 账号同步检查失败：'+e.message);}
+}
+async function accountPull(manual){
+ try{
+  await authEnsureToken();
+  var r=await fetch(accountRowUrl(),{headers:authRestHeaders()});
+  if(r.status===401){await authEnsureToken(true);r=await fetch(accountRowUrl(),{headers:authRestHeaders()});}
+  var rows=await r.json();
+  var got=accountMergeFrom(rows);
+  if(manual){$('sy-msg').textContent=got?'✅ 已从账号合并云端数据':'云端还没有数据';if(got)showToast('☁️ 已合并云端数据');}
+ }catch(e){if(manual){$('sy-msg').textContent='❌ '+e.message;showToast('⚠️ '+e.message);}}
+}
+var accountBusy=false;
+async function accountSyncCycle(pullOnly){
+ if(accountBusy)return;accountBusy=true;
+ try{
+  await authEnsureToken();
+  var r=await fetch(accountRowUrl(),{headers:authRestHeaders()});
+  if(r.status===401){await authEnsureToken(true);r=await fetch(accountRowUrl(),{headers:authRestHeaders()});}
+  var rows=await r.json();
+  var remoteTime=(rows&&rows.length)?new Date(rows[0].updated_at||0).getTime():0;
+  var didMerge=false;
+  if(remoteTime>state.settings.sync.lastSync+5000){didMerge=accountMergeFrom(rows);}
+  if(!pullOnly)await accountPush();
+  else if(didMerge)showToast('☁️ 已合并云端最新数据');
+ }catch(e){if(String(e.message).indexOf('重新登录')>=0)showToast('⚠️ '+e.message);}
+ accountBusy=false;
+}
+function renderAccount(){
+ var inBox=$('acc-in'),outBox=$('acc-out');
+ if(!inBox||!outBox)return;
+ var a=authState();
+ var st=$('acc-status');
+ if(a){
+  if(st)st.textContent='已登录';
+  inBox.style.display='none';outBox.style.display='block';
+  $('acc-email').textContent='当前账号：'+a.email;
+ }else{
+  if(st)st.textContent='未登录（数据仅存本机）';
+  inBox.style.display='block';outBox.style.display='none';
+ }
+ $('acc-url').value=state.supabase.url||'';
+ $('acc-anon').value=state.supabase.anonKey||'';
+}
+$('acc-sb-save').addEventListener('click',function(){
+ state.supabase={url:$('acc-url').value.trim(),anonKey:$('acc-anon').value.trim()};
+ if(!state.settings.sync.url){state.settings.sync.url=state.supabase.url;state.settings.sync.key=state.supabase.anonKey;}
+ save();renderAccount();renderSyncForm();showToast('✅ 云端配置已保存，可以注册/登录了');
+});
+$('acc-signup').addEventListener('click',async function(){
+ try{
+  var res=await authSignup($('acc-email-in').value.trim(),$('acc-pass').value);
+  if(res==='session'){showToast('🎉 注册成功，本机数据已上传到账号');await afterLogin();}
+  else{showToast('📧 确认邮件已发送：请点邮件里的链接后，回来点「登录」');}
+ }catch(e){showToast('⚠️ '+e.message);}
+});
+$('acc-login').addEventListener('click',async function(){
+ try{
+  await authLogin($('acc-email-in').value.trim(),$('acc-pass').value);
+  showToast('👋 登录成功，数据已按账号同步');
+ }catch(e){showToast('⚠️ '+e.message);}
+});
+$('acc-logout').addEventListener('click',async function(){
+ try{await authEnsureToken();await fetch(sbBase()+'/auth/v1/logout',{method:'POST',headers:authRestHeaders()});}catch(e){}
+ state.auth=null;save();renderAccount();renderSyncStatus();showToast('已退出登录（记录仍保留在本机）');
+});
+$('acc-pull').addEventListener('click',function(){accountPull(true);});
+
 if('serviceWorker' in navigator&&location.protocol.indexOf('http')===0){
  window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){});});
 }
