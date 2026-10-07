@@ -32,6 +32,12 @@ nav button.on{color:var(--green);border-bottom-color:var(--green);font-weight:60
 .ver-switch button.on{background:#e6f4f1;color:#0f766e;border:1px solid #ccfbf1}
 .log-date-nav{display:inline-flex;gap:4px;align-items:center}
 .log-date-nav input{width:136px;font-size:12px;padding:4px 6px;border:1px solid var(--border);border-radius:8px;background:var(--card);color:var(--text)}
+.plateau-box{background:#fff7ed;border:1.5px solid #fdba74;border-radius:12px;padding:10px 12px;margin-top:10px;font-size:13px}
+.plateau-box p{margin:4px 0 8px;color:var(--text-2)}
+.cmp-good{color:#14a085;font-weight:600}
+.cmp-bad{color:#ef4444;font-weight:600}
+#fl-list button{margin:0 6px 6px 0}
+#fl-holder iframe{width:100%;height:260px;border:0;border-radius:12px}
 .log-item .txt{cursor:pointer}
 .log-item .txt:hover{color:var(--green)}
 .log-edit-row{display:flex;gap:6px;align-items:center;margin:2px 0 10px;flex-wrap:wrap}
@@ -443,7 +449,7 @@ body.dark .hm-cell.lvl3{color:#06281f}
 </style>
 </head>
 <body>
-<header><div class="wrap hrow"><div><h1>🔥 减脂助手 <span class="ver-badge">v4.1</span></h1><div class="sub">你的私人饮食与训练管家 · 数据默认保存在本机浏览器</div></div><button class="btn" id="dark-toggle" title="深色模式">🌙</button></div></header>
+<header><div class="wrap hrow"><div><h1>🔥 减脂助手 <span class="ver-badge">v4.4</span></h1><div class="sub">你的私人饮食与训练管家 · 数据默认保存在本机浏览器</div></div><button class="btn" id="dark-toggle" title="深色模式">🌙</button></div></header>
 <nav id="tabs">
   <button data-tab="today" class="on">🏠 今日<span class="badge-dot"></span></button>
   <button data-tab="log">🍽️ 记录</button>
@@ -474,6 +480,7 @@ body.dark .hm-cell.lvl3{color:#06281f}
         <p class="note" id="plan-note"></p>
       </div>
       <div class="card"><h3>🏋️ 本周训练模板 · 点动作看教程 <span class="ver-switch"><button class="btn small ghost on" id="pv-home">居家版</button><button class="btn small ghost" id="pv-gym">健身房版</button></span> <button class="btn small ghost" id="plan-edit">✏️ 编辑计划</button></h3><div id="plan-editor" style="display:none"></div><div id="training"></div></div>
+      <div class="card"><h3>🎬 跟练课程 <span class="dim" style="font-size:12px;font-weight:400">已人工核验</span></h3><div class="row" id="fl-list" style="flex-wrap:wrap"></div><div id="fl-holder" style="display:none;margin-top:8px"><div class="video-holder"></div></div><p class="note" style="margin-bottom:0">有氧日选一个跟练；休息/睡前做拉伸；腹肌日选腹肌跟练。</p></div>
     </div>
   </div>
 </section>
@@ -567,12 +574,29 @@ body.dark .hm-cell.lvl3{color:#06281f}
       <input type="date" id="b-date">
       <input type="number" id="b-weight" placeholder="体重 kg" step="0.1" min="1">
       <input type="number" id="b-waist" placeholder="腰围 cm（可选）" step="0.5" min="1">
+      <input type="number" id="b-bodyfat" placeholder="体脂率 %（可选）" step="0.1" min="3" max="60">
+    </div>
+    <div class="row" style="margin-top:8px;gap:8px">
+      <button class="btn small ghost" id="bf-est" style="flex:1">🧮 按 BMI 估算体脂率（没体脂秤用这个）</button>
     </div>
     <button class="btn" id="b-add" style="width:100%;margin-top:10px">保存记录</button>
   </div>
   <div class="card" id="b-summary"></div>
   <div class="card"><h3>📉 体重趋势</h3><svg id="chart" viewBox="0 0 600 180" style="width:100%;height:180px"></svg></div>
   <div class="card"><h3>📸 身材对比（建议每月拍一张正面照）</h3><input type="file" id="shape-input" accept="image/*" capture="user" style="display:none"><button class="btn" id="shape-take" style="width:100%">📷 拍 / 选照片</button><div id="shape-view"></div></div>
+  <div class="card" id="exlog-card">
+    <h3>🏃 运动记录 <span class="dim" id="exlog-week" style="font-size:12px;font-weight:400"></span></h3>
+    <div class="small-grid" style="grid-template-columns:1.4fr 1fr 1fr">
+      <select id="ex-type">
+        <option>快走</option><option>慢跑</option><option>骑行</option><option>游泳</option><option>跳绳</option><option>HIIT</option><option>球类</option><option>力量训练</option><option>瑜伽拉伸</option><option>散步</option><option>其他有氧</option>
+      </select>
+      <input type="number" id="ex-min" placeholder="分钟" min="5" step="5">
+      <input type="date" id="ex-date">
+    </div>
+    <button class="btn" id="exlog-add" style="width:100%;margin-top:10px">添加运动记录</button>
+    <div id="exlog-list" style="margin-top:8px"></div>
+    <p class="note" style="margin-bottom:0">热量按 MET 估算，仅供展示，不计入饮食目标（活动系数已含运动，避免重复计算）。</p>
+  </div>
   <div class="card"><h3>📋 历史记录</h3><div id="b-list"></div></div>
 </section>
 <section id="tab-photo">
@@ -717,6 +741,11 @@ body.dark .hm-cell.lvl3{color:#06281f}
       </div>
       <p class="note" style="margin-bottom:0">登录后数据自动按账号云同步，手机电脑互通；本机 AI Key 不会上传。</p>
     </div>
+    <div id="acc-reset" style="display:none">
+      <p class="note" style="margin:0 0 6px">检测到密码重置链接，请设置新密码（至少 6 位）：</p>
+      <label>新密码</label><input type="password" id="acc-newpass" placeholder="至少 6 位">
+      <button class="btn" id="acc-reset-do" style="width:100%;margin-top:10px">确认修改密码</button>
+    </div>
     <div id="acc-in">
       <label>邮箱</label><input type="email" id="acc-email-in" placeholder="you@example.com">
       <label>密码</label><input type="password" id="acc-pass" placeholder="至少 6 位">
@@ -724,6 +753,7 @@ body.dark .hm-cell.lvl3{color:#06281f}
         <button class="btn" id="acc-login" style="flex:1">登录</button>
         <button class="btn ghost" id="acc-signup" style="flex:1">注册</button>
       </div>
+      <p class="note" style="margin:8px 0 0"><a href="javascript:void(0)" id="acc-forgot" style="color:var(--text-2)">忘记密码？点此发送重置邮件（发到上方填写的邮箱）</a></p>
       <details style="margin-top:12px"><summary class="dim" style="cursor:pointer">☁️ 云端配置（首次一次性：填 Supabase 网址和 anon 公钥）</summary>
         <label>Supabase 网址</label><input id="acc-url" placeholder="https://xxxx.supabase.co">
         <label>anon 公钥</label><input id="acc-anon" placeholder="eyJhbGciOi…">
@@ -1216,7 +1246,7 @@ function dayOfYear(){var n=new Date(),s=new Date(n.getFullYear(),0,0);return Mat
 function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
 
 function defaultState(){
- return {profile:{sex:'male',age:28,height:170,weight:80,target:65,activity:1.375},planIndex:0,logs:{},body:[],water:{},ai:{key:'',base:'https://api.openai.com/v1',model:'gpt-4o-mini',format:'responses'},photo:null,checkins:{},favs:[],photos:[],settings:{dark:false,reminders:{water:['10:00','15:00','20:00'],train:'19:00'},customPlan:null,planVersion:'home',sync:{url:'',key:'',code:'',auto:true,lastSync:0}}};
+ return {profile:{sex:'male',age:28,height:170,weight:80,target:65,activity:1.375},planIndex:0,logs:{},body:[],water:{},exercises:{},ai:{key:'',base:'https://api.openai.com/v1',model:'gpt-4o-mini',format:'responses'},photo:null,checkins:{},favs:[],photos:[],settings:{dark:false,reminders:{water:['10:00','15:00','20:00'],train:'19:00'},customPlan:null,planVersion:'home',sync:{url:'',key:'',code:'',auto:true,lastSync:0}}};
 }
 function normalizeState(s){
  var d=defaultState();
@@ -1226,6 +1256,7 @@ function normalizeState(s){
   d.ai={key:sa.key||'',base:sa.base||'https://api.openai.com/v1',model:sa.model||'gpt-4o-mini',format:sa.format||sa.apiFormat||'responses'};
   d.photo=s.photo||null;
   d.checkins=s.checkins||{};d.favs=s.favs||[];d.photos=s.photos||[];
+  d.exercises=s.exercises||{};
   var st=s.settings||{};
   d.settings.dark=!!st.dark;
   var r=st.reminders||{};
@@ -1733,10 +1764,18 @@ function renderBodySummary(){
  var wd=+(last.weight-first.weight).toFixed(1);
  var t=calc(state.profile);
  var waist=last.waist!=null?last.waist+'cm':'—';
+ var bfLast=null;
+ for(var i=b.length-1;i>=0;i--){if(b[i].bodyfat!=null){bfLast=b[i];break;}}
  var gap=last.weight-state.profile.target;
  var h='<h3>📊 当前状态</h3><div class="chips">'+
   chip(last.weight+'kg','最新体重')+chip((wd>0?'+':'')+wd+'kg','累计变化')+chip(t.bmi.toFixed(1),'BMI')+chip(waist,'腰围')+
+  chip(bfLast?bfLast.bodyfat+'%':'—','体脂率(近)')+
   '</div><div class="tags"><span class="tag">预计达标 '+projected()+'</span><span class="tag">'+(gap>0?'距目标还差 '+gap.toFixed(1)+' kg':'已达成目标 🎉')+'</span></div>';
+ var pu=null;try{pu=localStorage.getItem('plateau_until');}catch(e){}
+ var pl=(pu&&pu>=todayStr())?null:plateauCheck();
+ if(pl){
+  h+='<div class="plateau-box"><b>⛰️ 疑似平台期：近 7 天均值较上周 '+(pl.diff>=0?'+':'')+pl.diff+'kg</b><p>建议：①安排一周「饮食休息」——把每日目标临时提到维持热量约 <b>'+pl.maintain+' 千卡</b>（「我的」里把活动系数上调一档即可近似实现），一周后回来继续缺口；②日常步数提到 10000+。</p><button class="btn small ghost" onclick="plateauDismiss()">知道了，10 天内不再提示</button></div>';
+ }
  $('b-summary').innerHTML=h;
 }
 
@@ -1762,11 +1801,11 @@ function drawChart(){
 function renderBodyList(){
  var arr=state.body.slice().sort(function(a,c){return a.date>c.date?-1:1;});
  $('b-list').innerHTML=arr.map(function(x){
-  return '<div class="log-item"><span>'+x.date+'</span><span>'+x.weight+'kg'+(x.waist!=null?' · 腰围'+x.waist+'cm':'')+' <span class="x" data-date="'+x.date+'">✕</span></span></div>';
+  return '<div class="log-item"><span>'+x.date+'</span><span>'+x.weight+'kg'+(x.waist!=null?' · 腰围'+x.waist+'cm':'')+(x.bodyfat!=null?' · 体脂'+x.bodyfat+'%':'')+' <span class="x" data-date="'+x.date+'">✕</span></span></div>';
  }).join('')||'<p class="dim">暂无记录</p>';
 }
 
-function renderBody(){if(!$('b-date').value)$('b-date').value=todayStr();renderBodySummary();drawChart();renderBodyList();}
+function renderBody(){if(!$('b-date').value)$('b-date').value=todayStr();renderBodySummary();drawChart();renderBodyList();renderExLog();}
 
 function renderProfileForm(){
  var p=state.profile;
@@ -1982,42 +2021,53 @@ function persistDays(){
 }
 function renderReport(){
  var days=lastNDays(7);
+ var prevDays=lastNDays(14).slice(0,7);
  var t=calc(state.profile);
- var ck=days.filter(function(d){return state.checkins[d];}).length;
- var logd=days.filter(function(d){return (state.logs[d]||[]).length>0;}).length;
- var kcalSum=0,kcalDays=0;
- var ph=days.filter(function(d){
-  var arr=state.logs[d]||[];
-  if(!arr.length)return false;
-  var p=0,k=0;
-  for(var i=0;i<arr.length;i++){p+=arr[i].p;k+=arr[i].k;}
-  kcalSum+=k;kcalDays++;
-  return p>=t.protein;
- }).length;
- var avgK=kcalDays?Math.round(kcalSum/kcalDays):0;
- var water=days.filter(function(d){return (state.water[d]||0)>=8;}).length;
+ function metrics(ds){
+  var ck=0,ph=0,kcalSum=0,kcalDays=0,water=0,logd=0,minSum=0;
+  ds.forEach(function(d){
+   if(state.checkins[d])ck++;
+   var arr=state.logs[d]||[];
+   if(arr.length){logd++;var p=0,k=0;arr.forEach(function(x){p+=x.p;k+=x.k;});kcalSum+=k;kcalDays++;if(p>=t.protein)ph++;}
+   if((state.water[d]||0)>=8)water++;
+   ((state.exercises&&state.exercises[d])||[]).forEach(function(x){minSum+=x.minutes;});
+  });
+  return {ck:ck,ph:ph,avgK:kcalDays?Math.round(kcalSum/kcalDays):0,water:water,logd:logd,min:minSum};
+ }
+ var cur=metrics(days),prev=metrics(prevDays);
  var b=state.body.slice().sort(function(a,c){return a.date<c.date?-1:1;});
- var wTxt='还没有记录';
+ var wTxt='还没有记录',waistTxt='—',bfTxt='—';
  if(b.length){
   var last=b[b.length-1],weekAgo=null;
   for(var i=b.length-1;i>=0;i--){if(b[i].date<=days[0]){weekAgo=b[i];break;}}
   if(weekAgo){var dd=+(last.weight-weekAgo.weight).toFixed(1);wTxt=last.weight+'kg（本周'+(dd>0?'+':'')+dd+'kg）';}
   else{wTxt=last.weight+'kg（最新）';}
+  var lastW=null,prevW=null;
+  for(var j=b.length-1;j>=0;j--){if(b[j].waist!=null){lastW=b[j];break;}}
+  if(lastW){
+   for(var k=b.length-1;k>=0;k--){if(b[k].date<lastW.date&&b[k].waist!=null){prevW=b[k];break;}}
+   waistTxt=lastW.waist+'cm'+(prevW?'（'+(lastW.waist-prevW.waist>0?'+':'')+(lastW.waist-prevW.waist).toFixed(1)+'）':'');
+  }
+  var lastB=null;
+  for(var m=b.length-1;m>=0;m--){if(b[m].bodyfat!=null){lastB=b[m];break;}}
+  if(lastB)bfTxt=lastB.bodyfat+'%';
  }
  var advice='';
- if(ck===0)advice='这周还没有训练打卡。今天从最小的目标开始：完成 10 分钟快走就算赢。';
- else if(ck>=5&&ph>=4)advice='训练和蛋白质都做得很好，保持这个节奏，腹肌只是时间问题。';
- else if(ph<=1)advice='蛋白质达标天数偏少。每餐先夹「一掌心」的肉/蛋/豆制品，再吃别的。';
- else if(water<=3)advice='饮水偏少。把水杯放在看得见的地方，每小时喝两口。';
+ if(cur.ck===0)advice='这周还没有训练打卡。今天从最小的目标开始：完成 10 分钟快走就算赢。';
+ else if(cur.ck>=5&&cur.ph>=4)advice='训练和蛋白质都做得很好，保持这个节奏，腹肌只是时间问题。';
+ else if(cur.ph<=1)advice='蛋白质达标天数偏少。每餐先夹「一掌心」的肉/蛋/豆制品，再吃别的。';
+ else if(cur.water<=3)advice='饮水偏少。把水杯放在看得见的地方，每小时喝两口。';
  else advice='整体在轨道上，继续记录、继续打卡，下周会比这周更好。';
  var h='<div class="stat-grid">'+
-  '<div class="stat"><b>'+ck+'/7</b><span>训练打卡天数</span></div>'+
-  '<div class="stat"><b>'+ph+'</b><span>蛋白质达标天数</span></div>'+
-  '<div class="stat"><b>'+(avgK||'—')+'</b><span>日均摄入（千卡）</span></div>'+
-  '<div class="stat"><b>'+water+'</b><span>8杯水达标天数</span></div>'+
-  '<div class="stat"><b>'+logd+'</b><span>记录饮食天数</span></div>'+
+  '<div class="stat"><b>'+cur.ck+'/7</b><span>训练打卡（上周 '+prev.ck+'）</span></div>'+
+  '<div class="stat"><b>'+cur.ph+'</b><span>蛋白达标（上周 '+prev.ph+'）</span></div>'+
+  '<div class="stat"><b>'+(cur.avgK||'—')+'</b><span>日均摄入（上周 '+(prev.avgK||'—')+'）</span></div>'+
+  '<div class="stat"><b>'+cur.min+'</b><span>运动分钟（上周 '+prev.min+'）</span></div>'+
+  '<div class="stat"><b>'+cur.water+'/7</b><span>饮水达标（上周 '+prev.water+'）</span></div>'+
   '<div class="stat"><b>'+wTxt+'</b><span>体重情况</span></div>'+
- '</div><p class="note"><b>📊 本周小结：训练 '+ck+'/7 · 蛋白质达标 '+ph+' 天 · 日均摄入 '+(avgK||'—')+' 千卡。</b><br>💬 '+advice+'</p>';
+  '<div class="stat"><b>'+waistTxt+'</b><span>腰围</span></div>'+
+  '<div class="stat"><b>'+bfTxt+'</b><span>体脂率（近）</span></div>'+
+ '</div><p class="note"><b>📊 本周小结：训练 '+cur.ck+'/7 · 蛋白质达标 '+cur.ph+' 天 · 日均摄入 '+(cur.avgK||'—')+' 千卡 · 运动 '+cur.min+' 分钟。</b><br>💬 '+advice+'</p>';
  $('report-box').innerHTML=h;
 }
 function renderBadges(){
@@ -2360,6 +2410,15 @@ function mergeState(local,remote,remoteNewer){
   cur.forEach(function(x){seen[JSON.stringify(x)]=1;});
   arr.forEach(function(x){var k=JSON.stringify(x);if(!seen[k]){cur.push(x);seen[k]=1;}});
   out.logs[d]=cur;
+ });
+ out.exercises=out.exercises||{};remote.exercises=remote.exercises||{};
+ Object.keys(remote.exercises).forEach(function(d){
+  var arr=(remote.exercises[d]||[]).filter(Boolean);
+  if(!arr.length)return;
+  var cur=out.exercises[d]||[];var seen={};
+  cur.forEach(function(x){seen[JSON.stringify(x)]=1;});
+  arr.forEach(function(x){var k=JSON.stringify(x);if(!seen[k]){cur.push(x);seen[k]=1;}});
+  out.exercises[d]=cur;
  });
  out.water=out.water||{};remote.water=remote.water||{};
  Object.keys(remote.water).forEach(function(d){out.water[d]=Math.max(out.water[d]||0,remote.water[d]||0);});
@@ -2786,9 +2845,15 @@ $('b-add').addEventListener('click',function(){
  if(date>todayStr()){alert('日期不能晚于今天');return;}
  if(w>=300){alert('体重数值看起来异常（单位是 kg），请检查后再保存');return;}
  state.body=state.body.filter(function(x){return x.date!==date;});
- state.body.push({date:date,weight:w,waist:isNaN(waist)?null:waist});
- save();safeRender('b-summary',renderBody);safeRender('target-body',renderTarget);
- $('b-weight').value='';
+ var bf=parseFloat($('b-bodyfat').value);
+ state.body.push({date:date,weight:w,waist:isNaN(waist)?null:waist,bodyfat:(!isNaN(bf)&&bf>=3&&bf<=60)?bf:null});
+ var maxD=state.body.reduce(function(m,x){return x.date>m?x.date:m;},date);
+ var linked=false;
+ if(date===maxD&&state.profile.weight!==w){state.profile.weight=w;linked=true;}
+ save();
+ safeRender('b-summary',renderBody);safeRender('target-body',renderTarget);renderAll();
+ if(linked)showToast('⚖️ 体重档案已同步为 '+w+'kg，热量目标已重新计算');
+ $('b-weight').value='';$('b-bodyfat').value='';
 });
 $('b-list').addEventListener('click',function(e){
  var x=e.target.closest('.x');
@@ -3699,6 +3764,128 @@ $('acc-logout').addEventListener('click',async function(){
  state.auth=null;save();renderAccount();renderSyncStatus();showToast('已退出登录（记录仍保留在本机）');
 });
 $('acc-pull').addEventListener('click',function(){accountPull(true);});
+
+/* ===================== v4.4：平台期 / 体脂估算 / 运动记录 / 跟练 / 密码恢复 ===================== */
+function weekAvgWeight(offset){
+ var end=new Date();end.setDate(end.getDate()-7*offset);
+ var start=new Date(end);start.setDate(start.getDate()-6);
+ var s=dateStr(start),e=dateStr(end);
+ var vals=state.body.filter(function(x){return x.date>=s&&x.date<=e;}).map(function(x){return x.weight;});
+ if(!vals.length)return null;
+ return vals.reduce(function(a,b){return a+b;},0)/vals.length;
+}
+function plateauCheck(){
+ if(state.body.length<4)return null;
+ var a=weekAvgWeight(0),b=weekAvgWeight(1);
+ if(a==null||b==null)return null;
+ if(a-b>-0.1&&a>state.profile.target+1.5){
+  return {diff:+(a-b).toFixed(2),maintain:Math.round(calc(state.profile).tdee)};
+ }
+ return null;
+}
+function plateauDismiss(){
+ try{localStorage.setItem('plateau_until',dateStr(new Date(Date.now()+10*86400000)));}catch(e){}
+ renderBody();
+}
+$('bf-est').addEventListener('click',function(){
+ var p=state.profile;
+ var bmi=p.weight/Math.pow(p.height/100,2);
+ var bf=1.2*bmi+0.23*p.age-10.8*(p.sex==='male'?1:0)-5.4;
+ $('b-bodyfat').value=Math.max(3,Math.min(60,+bf.toFixed(1)));
+ showToast('🧮 已按 BMI 估算填入（参考值），有体脂秤以实测为准');
+});
+var EX_MET={'快走':4.3,'慢跑':8,'骑行':6.8,'游泳':7,'跳绳':11,'HIIT':8,'球类':6.5,'力量训练':5,'瑜伽拉伸':3,'散步':3.5,'其他有氧':5};
+function exKcal(name,minutes){
+ var met=EX_MET[name]||5;
+ return Math.round(met*3.5*state.profile.weight/200*minutes);
+}
+function renderExLog(){
+ var list=$('exlog-list');if(!list)return;
+ if($('ex-date')&&!$('ex-date').value)$('ex-date').value=todayStr();
+ var wk=lastNDays(7),wm=0,wk2=0;
+ var items=[];
+ Object.keys(state.exercises||{}).forEach(function(d){
+  (state.exercises[d]||[]).forEach(function(x,i){items.push({date:d,i:i,name:x.name,minutes:x.minutes,kcal:x.kcal});});
+ });
+ items.sort(function(a,b){return a.date<b.date?1:-1;});
+ items.forEach(function(x){if(wk.indexOf(x.date)>=0){wm+=x.minutes;wk2+=x.kcal;}});
+ var wEl=$('exlog-week');if(wEl)wEl.textContent='本周 '+wm+' 分钟 · 约 '+wk2+' 千卡';
+ list.innerHTML=items.length?items.slice(0,20).map(function(x){
+  return '<div class="log-item"><span>'+x.date+' · '+esc(x.name)+' · '+x.minutes+'分钟</span><span>约'+x.kcal+'千卡 <span class="x" data-exi="'+x.date+'|'+x.i+'">✕</span></span></div>';
+ }).join(''):'<p class="dim">还没有运动记录。</p>';
+}
+$('exlog-add').addEventListener('click',function(){
+ var name=$('ex-type').value;
+ var minutes=parseFloat($('ex-min').value);
+ var date=$('ex-date').value||todayStr();
+ if(!(minutes>=5)){showToast('请填写运动时长（至少 5 分钟）');return;}
+ if(date>todayStr())date=todayStr();
+ state.exercises[date]=state.exercises[date]||[];
+ state.exercises[date].push({name:name,minutes:minutes,kcal:exKcal(name,minutes)});
+ save();renderExLog();
+ showToast('🏃 已记录 '+name+' '+minutes+' 分钟');
+});
+$('exlog-list').addEventListener('click',function(e){
+ var x=e.target.closest('.x');if(!x)return;
+ var p=x.dataset.exi.split('|');
+ var arr=state.exercises[p[0]]||[];
+ arr.splice(+p[1],1);
+ if(!arr.length)delete state.exercises[p[0]];
+ save();renderExLog();
+});
+var FL_COURSES=[
+ {name:'帕梅拉 10分钟暴汗有氧',tag:'有氧',bvid:'BV1R3411A7g4'},
+ {name:'帕梅拉 10分钟全身拉伸',tag:'拉伸',bvid:'BV1gf4y1p78A'},
+ {name:'腹肌撕裂者 9分钟',tag:'腹肌',bvid:'BV1D8411Q7ad'},
+ {name:'初阶 30分钟无跳跃HIIT',tag:'大体重友好',bvid:'BV1KH4y137xv'}
+];
+function renderFlList(){
+ $('fl-list').innerHTML=FL_COURSES.map(function(c,i){
+  return '<button class="btn small ghost" data-fl="'+i+'">'+c.tag+' · '+c.name+'</button>';
+ }).join('');
+}
+$('fl-list').addEventListener('click',function(e){
+ var b=e.target.closest('[data-fl]');if(!b)return;
+ var c=FL_COURSES[+b.dataset.fl];
+ var holder=$('fl-holder');
+ holder.style.display='block';
+ holder.querySelector('.video-holder').innerHTML='<iframe src="https://player.bilibili.com/player.html?bvid='+encodeURIComponent(c.bvid)+'&danmaku=0&no_related=1" sandbox="allow-top-navigation allow-same-origin allow-forms allow-scripts" allowfullscreen></iframe>';
+});
+renderFlList();
+$('acc-forgot').addEventListener('click',async function(){
+ var em=$('acc-email-in').value.trim();
+ if(!em){showToast('请先在上方填写你的注册邮箱');return;}
+ if(!sbCfg()){showToast('请先展开「云端配置」并保存');return;}
+ try{
+  var r=await fetch(sbBase()+'/auth/v1/recover',{method:'POST',headers:{'apikey':sbKey(),'Content-Type':'application/json'},body:JSON.stringify({email:em})});
+  if(!r.ok)throw new Error('发送失败 HTTP '+r.status);
+  showToast('📧 重置邮件已发送，请到邮箱点链接（会回到本页设置新密码）');
+ }catch(e){showToast('⚠️ '+e.message);}
+});
+(function recoveryCheck(){
+ var h=location.hash||'';
+ var at=(h.match(/access_token=([^&]+)/)||[])[1];
+ var rt=(h.match(/refresh_token=([^&]+)/)||[])[1];
+ var type=(h.match(/type=([^&]+)/)||[])[1];
+ if(at&&type==='recovery'){
+  state.auth={email:'',userId:'',accessToken:decodeURIComponent(at),refreshToken:rt?decodeURIComponent(rt):'',expiresAt:Date.now()+3600000};
+  save();
+  $('acc-in').style.display='none';$('acc-out').style.display='none';
+  $('acc-reset').style.display='block';
+  history.replaceState(null,'',location.pathname+location.search);
+ }
+})();
+$('acc-reset-do').addEventListener('click',async function(){
+ var np=$('acc-newpass').value;
+ if(!np||np.length<6){showToast('新密码至少 6 位');return;}
+ try{
+  var r=await fetch(sbBase()+'/auth/v1/user',{method:'PUT',headers:authRestHeaders(),body:JSON.stringify({password:np})});
+  if(!r.ok)throw new Error('修改失败 HTTP '+r.status);
+  $('acc-reset').style.display='none';
+  state.auth=null;save();renderAccount();
+  showToast('✅ 密码已更新，请用新密码登录');
+ }catch(e){showToast('⚠️ '+e.message);}
+});
 
 if('serviceWorker' in navigator&&location.protocol.indexOf('http')===0){
  window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){});});
