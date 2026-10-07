@@ -449,7 +449,7 @@ body.dark .hm-cell.lvl3{color:#06281f}
 </style>
 </head>
 <body>
-<header><div class="wrap hrow"><div><h1>🔥 减脂助手 <span class="ver-badge">v4.6</span></h1><div class="sub">你的私人饮食与训练管家 · 数据默认保存在本机浏览器</div></div><button class="btn" id="dark-toggle" title="深色模式">🌙</button></div></header>
+<header><div class="wrap hrow"><div><h1>🔥 减脂助手 <span class="ver-badge">v4.7</span></h1><div class="sub">你的私人饮食与训练管家 · 数据默认保存在本机浏览器</div></div><button class="btn" id="dark-toggle" title="深色模式">🌙</button></div></header>
 <nav id="tabs">
   <button data-tab="today" class="on">🏠 今日<span class="badge-dot"></span></button>
   <button data-tab="log">🍽️ 记录</button>
@@ -475,9 +475,10 @@ body.dark .hm-cell.lvl3{color:#06281f}
     </div>
     <div class="td-col">
       <div class="card">
-        <h3>🍱 今日三餐建议 <button class="btn small ghost" id="swap-plan">换一套</button></h3>
+        <h3>🍱 今日三餐建议 <button class="btn small ghost" id="meal-gen-toggle">🥗 自选生成</button><button class="btn small ghost" id="swap-plan">换一套</button></h3>
         <div id="plan-list"></div>
         <p class="note" id="plan-note"></p>
+        <div id="meal-gen-panel" style="display:none"></div>
       </div>
       <div class="card"><h3>🏋️ 本周训练模板 · 点动作看教程 <span class="ver-switch"><button class="btn small ghost on" id="pv-home">居家版</button><button class="btn small ghost" id="pv-gym">健身房版</button></span> <button class="btn small ghost" id="plan-edit">✏️ 编辑计划</button></h3><div id="plan-editor" style="display:none"></div><div id="training"></div></div>
       <div class="card"><h3>🎬 跟练课程 <span class="dim" style="font-size:12px;font-weight:400">已人工核验</span></h3><div class="row" id="fl-list" style="flex-wrap:wrap"></div><div id="fl-holder" style="display:none;margin-top:8px"><div class="video-holder"></div></div><p class="note" style="margin-bottom:0">有氧日选一个跟练；休息/睡前做拉伸；腹肌日选腹肌跟练。</p></div>
@@ -1305,7 +1306,7 @@ function dayOfYear(){var n=new Date(),s=new Date(n.getFullYear(),0,0);return Mat
 function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
 
 function defaultState(){
- return {profile:{sex:'male',age:28,height:170,weight:80,target:65,activity:1.375},planIndex:0,logs:{},body:[],water:{},exercises:{},ai:{key:'',base:'https://api.openai.com/v1',model:'gpt-4o-mini',format:'responses'},photo:null,checkins:{},favs:[],photos:[],settings:{dark:false,reminders:{water:['10:00','15:00','20:00'],train:'19:00'},customPlan:null,planVersion:'home',sync:{url:'',key:'',code:'',auto:true,lastSync:0}}};
+ return {profile:{sex:'male',age:28,height:170,weight:80,target:65,activity:1.375},planIndex:0,logs:{},body:[],water:{},exercises:{},ai:{key:'',base:'https://api.openai.com/v1',model:'gpt-4o-mini',format:'responses'},photo:null,checkins:{},favs:[],photos:[],settings:{dark:false,reminders:{water:['10:00','15:00','20:00'],train:'19:00'},customPlan:null,planVersion:'home',mealPool:[],customMealPlan:null,sync:{url:'',key:'',code:'',auto:true,lastSync:0}}};
 }
 function normalizeState(s){
  var d=defaultState();
@@ -1322,6 +1323,8 @@ function normalizeState(s){
   d.settings.reminders={water:(r.water&&r.water.length)?r.water:['10:00','15:00','20:00'],train:r.train||'19:00'};
   d.settings.customPlan=st.customPlan||null;
   d.settings.planVersion=st.planVersion==='gym'?'gym':'home';
+  d.settings.mealPool=(st.mealPool&&st.mealPool.length)?st.mealPool:[];
+  d.settings.customMealPlan=(st.customMealPlan&&st.customMealPlan.days&&st.customMealPlan.days.length)?st.customMealPlan:null;
   var sb=s.supabase||{};d.supabase={url:sb.url||'',anonKey:sb.anonKey||''};
   if(!d.supabase.url&&d.settings.sync.url){d.supabase.url=d.settings.sync.url;d.supabase.anonKey=d.settings.sync.key;}
   var au=s.auth||null;
@@ -1449,8 +1452,16 @@ function renderTarget(){
 
 function renderPlan(){
  var t=calc(state.profile);
- var plan=PLAN_VARIANTS[(state.planIndex+dayOfYear())%PLAN_VARIANTS.length];
- var scale=Math.min(1.25,Math.max(0.8,t.intake/1620));
+ var custom=state.settings.customMealPlan&&state.settings.customMealPlan.days.length;
+ var plan,di=0,n=0;
+ if(custom){
+  n=state.settings.customMealPlan.days.length;
+  di=((state.mealDayIdx||0)%n+n)%n;
+  plan=state.settings.customMealPlan.days[di];
+ }else{
+  plan=PLAN_VARIANTS[(state.planIndex+dayOfYear())%PLAN_VARIANTS.length];
+ }
+ var scale=custom?1:Math.min(1.25,Math.max(0.8,t.intake/1620));
  var order=['早餐','午餐','加餐','晚餐'];
  var openMeal=currentMealKey();
  var tot={k:0,p:0,c:0,f:0};
@@ -1470,9 +1481,26 @@ function renderPlan(){
   }
   html+='<div class="meal-k">小计 '+Math.round(mk)+' 千卡</div></details>';
  }
- var banner=t.adj&&t.adj.msg?'<div style="margin-bottom:10px;padding:9px 12px;border-radius:12px;background:var(--primary-soft);color:var(--text);font-size:13px;font-weight:600">'+esc(t.adj.msg)+'</div>':'';  html=banner+html+'<div class="totals">合计 '+Math.round(tot.k)+'千卡 · 蛋白 '+Math.round(tot.p)+'g · 碳水 '+Math.round(tot.c)+'g · 脂肪 '+Math.round(tot.f)+'g</div>';
+ var banner=t.adj&&t.adj.msg?'<div style="margin-bottom:10px;padding:9px 12px;border-radius:12px;background:var(--primary-soft);color:var(--text);font-size:13px;font-weight:600">'+esc(t.adj.msg)+'</div>':'';
+ var navDiv='';
+ if(custom){
+  navDiv='<div class="row" style="margin:8px 0;gap:8px;align-items:center">'+
+   '<button class="btn small ghost" id="mg-prev">‹ 前一天</button>'+
+   '<span style="font-size:13px">🥗 自选计划 · 第'+(di+1)+'/'+n+'天</span>'+
+   '<button class="btn small ghost" id="mg-next">后一天 ›</button>'+
+   '<button class="btn small ghost" id="mg-exit">退出自选</button>'+
+   '</div>';
+ }
+ html=banner+html+navDiv+'<div class="totals">合计 '+Math.round(tot.k)+'千卡 · 蛋白 '+Math.round(tot.p)+'g · 碳水 '+Math.round(tot.c)+'g · 脂肪 '+Math.round(tot.f)+'g</div>';
  $('plan-list').innerHTML=html;
- $('plan-note').textContent='当前方案：'+plan.name+'。目标：'+t.intake+'千卡 / 蛋白'+t.protein+'g / 脂肪'+t.fat+'g / 碳水'+t.carbs+'g（热量缺口 '+t.def+' 千卡）。份量已按目标自动缩放 '+Math.round(scale*100)+'%。热量为估算值，以实际称重和记录为准。';
+ if(custom){
+  $('plan-note').innerHTML='🥗 自选生成计划（'+esc(state.settings.customMealPlan.genAt)+' 生成，热量已按你目标配平）。想换口味点「🥗 自选生成」重新生成；「退出自选」回到标准轮换。';
+  $('mg-prev').onclick=function(){state.mealDayIdx=((di-1)%n+n)%n;save();renderPlan();};
+  $('mg-next').onclick=function(){state.mealDayIdx=(di+1)%n;save();renderPlan();};
+  $('mg-exit').onclick=function(){state.settings.customMealPlan=null;state.mealDayIdx=0;save();renderPlan();showToast('已退出自选计划，回到标准轮换');};
+ }else{
+  $('plan-note').textContent='当前方案：'+plan.name+'。目标：'+t.intake+'千卡 / 蛋白'+t.protein+'g / 脂肪'+t.fat+'g / 碳水'+t.carbs+'g（热量缺口 '+t.def+' 千卡）。份量已按目标自动缩放 '+Math.round(scale*100)+'%。热量为估算值，以实际称重和记录为准。';
+ }
 }
 function currentMealKey(){
  var h=new Date().getHours();
@@ -2752,7 +2780,15 @@ $('tab-out').addEventListener('click',function(e){
  var say=e.target.closest('.out-say');
  if(say){copyText(say.dataset.say);return;}
 });
-$('swap-plan').addEventListener('click',function(){state.planIndex++;save();safeRender('plan-list',renderPlan);});
+$('swap-plan').addEventListener('click',function(){
+ if(state.settings.customMealPlan&&state.settings.customMealPlan.days.length){
+  var n=state.settings.customMealPlan.days.length;
+  state.mealDayIdx=((state.mealDayIdx||0)+1)%n;
+  save();renderPlan();
+ }else{
+  state.planIndex++;save();safeRender('plan-list',renderPlan);
+ }
+});
 $('water-row').addEventListener('click',function(e){
  var b=e.target.closest('.cup');
  if(!b)return;
@@ -3944,6 +3980,133 @@ $('acc-reset-do').addEventListener('click',async function(){
   state.auth=null;save();renderAccount();
   showToast('✅ 密码已更新，请用新密码登录');
  }catch(e){showToast('⚠️ '+e.message);}
+});
+
+/* ===================== v4.7：自选菜品生成三餐 ===================== */
+function dishTag(n){
+ if(/牛奶|酸奶|蛋白粉|橄榄油|坚果|花生酱|牛油果|蓝莓|猕猴桃|西瓜|苹果|香蕉|橙子/.test(n))return '其他';
+ if(/饭|面|馒头|面包|燕麦|紫薯|红薯|土豆|魔芋|小米粥|荞麦|玉米/.test(n))return '主食';
+ if(/汤/.test(n))return '汤';
+ if(/鸡|牛|猪|鱼|虾|蛋|肉|鸭|豆腐|香干|蛤蜊/.test(n))return '荤';
+ return '素';
+}
+function mealGenOpen(){
+ var panel=$('meal-gen-panel');
+ var willShow=panel.style.display!=='block';
+ panel.style.display=willShow?'block':'none';
+ if(!willShow)return;
+ var groups={主食:[],荤:[],素:[],汤:[]};
+ FOODS.forEach(function(x){
+  if(FOODS_EXT.some(function(e){return e.n===x.n;}))return;
+  var tag=dishTag(x.n);
+  if(groups[tag])groups[tag].push(x.n);
+ });
+ var pool=state.settings.mealPool||[];
+ var labels={主食:'主食',荤:'荤菜 / 蛋白',素:'素菜',汤:'汤'};
+ var h='<p class="note" style="margin:4px 0 2px">勾选你爱吃的菜（每类都勾一点效果最好）：</p>';
+ Object.keys(groups).forEach(function(tag){
+  if(!groups[tag].length)return;
+  h+='<p class="note" style="margin:8px 0 2px"><b>'+labels[tag]+'</b></p><div class="row" style="flex-wrap:wrap;gap:6px">';
+  groups[tag].forEach(function(n){
+   h+='<button class="ex-chip'+(pool.indexOf(n)>=0?' on':'')+'" data-mg="'+n+'">'+n+'</button>';
+  });
+  h+='</div>';
+ });
+ h+='<div class="row" style="margin-top:12px;gap:8px">'+
+  '<button class="btn small" data-mg-gen="3">生成 3 天</button>'+
+  '<button class="btn small" data-mg-gen="5">生成 5 天</button>'+
+  '<button class="btn small" data-mg-gen="7">生成 7 天</button>'+
+  '<button class="btn small ghost" data-mg-clear="1">清空选择</button>'+
+  '</div><p class="note">生成逻辑：早/加餐由系统按高蛋白原则搭配，午/晚餐的荤素和主食全部来自你勾的菜，主食克数按你的每日热量目标自动配平。建议至少勾 1 个主食、2 个荤菜、2 个素菜。</p>';
+ panel.innerHTML=h;
+}
+function mealGenBuild(numDays){
+ var t=calc(state.profile);
+ var pool=state.settings.mealPool||[];
+ var byTag={主食:[],荤:[],素:[],汤:[]};
+ pool.forEach(function(n){var g=dishTag(n);if(byTag[g])byTag[g].push(n);});
+ if(!byTag.主食.length){showToast('至少勾选 1 个主食类（饭/面/薯类）');return false;}
+ if(!byTag.荤.length){showToast('至少勾选 1 个荤菜/蛋白类');return false;}
+ if(!byTag.素.length){showToast('至少勾选 1 个素菜类');return false;}
+ var breakfasts=[
+  [['燕麦片',40],['鸡蛋',100],['纯牛奶',250]],
+  [['全麦馒头',100],['鸡蛋',100],['豆浆(无糖)',250]],
+  [['玉米',200],['鸡蛋',100],['纯牛奶',250]],
+  [['全麦面包',70],['鸡蛋',100],['纯牛奶',250]]
+ ];
+ var fruits=[['苹果',200],['香蕉',150],['猕猴桃',100],['蓝莓',150],['橙子',200]];
+ var snacks=[['无糖酸奶',150],['乳清蛋白粉',20],['蛋清',100]];
+ function kcalOf(arr){
+  var k=0;
+  arr.forEach(function(it){var fd=FOODS.find(function(x){return x.n===it[0];});if(fd)k+=fd.k*it[1]/100;});
+  return k;
+ }
+ var days=[];
+ for(var i=0;i<numDays;i++){
+  var lunchS=byTag.主食[i%byTag.主食.length];
+  var lunchM=byTag.荤[i%byTag.荤.length];
+  var lunchV=byTag.素[(i*2)%byTag.素.length];
+  var dinnerM=byTag.荤[(i+1)%byTag.荤.length];
+  var dinnerV=byTag.素[(i*2+1)%byTag.素.length];
+  var dinnerS=byTag.主食[(i+1)%byTag.主食.length];
+  var soup=byTag.汤.length?[byTag.汤[i%byTag.汤.length],300]:null;
+  var Bm=breakfasts[i%breakfasts.length];
+  var L=[[lunchS,150],[lunchM,180],[lunchV,220]];
+  var D=[[dinnerS,150],[dinnerM,160],[dinnerV,220]];
+  if(soup)D.push(soup);
+  var S=[fruits[i%fruits.length]].concat([snacks[i%snacks.length]]);
+  var fixed=kcalOf(Bm)+kcalOf(S)+kcalOf(L.slice(1))+kcalOf(D.slice(1));
+  var stapleF=FOODS.find(function(x){return x.n===lunchS;});
+  var totalK=function(){return kcalOf(Bm)+kcalOf(S)+kcalOf(L)+kcalOf(D);};
+  var needStapleG=Math.max(60,Math.min(400,Math.round((t.intake-fixed)/stapleF.k*100/5)*5));
+  var gs=Math.max(50,Math.round(needStapleG*0.55/5)*5);
+  var gd=Math.max(50,needStapleG-gs);
+  L[0][1]=gs;D[0][1]=gd;
+  var guard=0;
+  while(totalK()<t.intake-120&&guard<4){
+   var short=t.intake-totalK();
+   var dishK=kcalOf(L.slice(1))+kcalOf(D.slice(1));
+   if(dishK<=0)break;
+   var f=Math.min(1.8,1+short/dishK*0.8);
+   [L[1],L[2],D[1],D[2]].forEach(function(it){it[1]=Math.min(350,Math.max(50,Math.round(it[1]*f/5)*5));});
+   var fixed2=kcalOf(Bm)+kcalOf(S)+kcalOf(L.slice(1))+kcalOf(D.slice(1));
+   var sg=Math.max(60,Math.min(400,Math.round((t.intake-fixed2)/stapleF.k*100/5)*5));
+   var gs2=Math.max(50,Math.round(sg*0.55/5)*5);
+   L[0][1]=gs2;D[0][1]=Math.max(50,sg-gs2);
+   guard++;
+  }
+  days.push({name:'自选第'+(i+1)+'天',meals:{早餐:Bm,午餐:L,加餐:S,晚餐:D}});
+ }
+ state.settings.customMealPlan={days:days,genAt:todayStr()};
+ state.mealDayIdx=0;
+ save();renderPlan();
+ return true;
+}
+$('meal-gen-toggle').addEventListener('click',mealGenOpen);
+$('meal-gen-panel').addEventListener('click',function(e){
+ var chip=e.target.closest('[data-mg]');
+ if(chip){
+  var n=chip.getAttribute('data-mg');
+  var pool=state.settings.mealPool||[];
+  var i=pool.indexOf(n);
+  if(i>=0){pool.splice(i,1);chip.classList.remove('on');}
+  else{pool.push(n);chip.classList.add('on');}
+  state.settings.mealPool=pool;save();
+  return;
+ }
+ var gen=e.target.closest('[data-mg-gen]');
+ if(gen){
+  var ok=mealGenBuild(+gen.getAttribute('data-mg-gen'));
+  if(ok){
+   $('meal-gen-panel').style.display='none';
+   showToast('🥗 自选计划已生成：'+state.settings.customMealPlan.days.length+' 天，点“前一天/后一天”翻看');
+  }
+  return;
+ }
+ if(e.target.closest('[data-mg-clear]')){
+  state.settings.mealPool=[];save();
+  $('meal-gen-panel').style.display='none';mealGenOpen();
+ }
 });
 
 if('serviceWorker' in navigator&&location.protocol.indexOf('http')===0){
