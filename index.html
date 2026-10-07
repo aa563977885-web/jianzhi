@@ -449,7 +449,7 @@ body.dark .hm-cell.lvl3{color:#06281f}
 </style>
 </head>
 <body>
-<header><div class="wrap hrow"><div><h1>🔥 减脂助手 <span class="ver-badge">v4.8</span></h1><div class="sub">你的私人饮食与训练管家 · 数据默认保存在本机浏览器</div></div><button class="btn" id="dark-toggle" title="深色模式">🌙</button></div></header>
+<header><div class="wrap hrow"><div><h1>🔥 减脂助手 <span class="ver-badge">v4.9</span></h1><div class="sub">你的私人饮食与训练管家 · 数据默认保存在本机浏览器</div></div><button class="btn" id="dark-toggle" title="深色模式">🌙</button></div></header>
 <nav id="tabs">
   <button data-tab="today" class="on">🏠 今日<span class="badge-dot"></span></button>
   <button data-tab="log">🍽️ 记录</button>
@@ -589,8 +589,8 @@ body.dark .hm-cell.lvl3{color:#06281f}
     <h3>🏃 运动记录 <span class="dim" id="exlog-week" style="font-size:12px;font-weight:400"></span></h3>
     <div class="small-grid" style="grid-template-columns:1.4fr 1fr 1fr">
       <select id="ex-type">
-        <optgroup label="时长类（记分钟）"><option>快走</option><option>慢跑</option><option>爬坡快走</option><option>骑行</option><option>椭圆机</option><option>登山机</option><option>游泳</option><option>跳绳</option><option>HIIT</option><option>球类</option><option>力量训练</option><option>瑜伽拉伸</option><option>散步</option><option>其他有氧</option></optgroup>
-        <optgroup label="次数类（记个数）"><option>俯卧撑</option><option>深蹲</option><option>卷腹</option><option>引体向上</option><option>臀桥</option><option>悬垂举腿</option></optgroup>
+        <optgroup label="时长类（记分钟）"><option>快走</option><option>慢跑</option><option>爬坡快走</option><option>骑行</option><option>椭圆机</option><option>登山机</option><option>划船机</option><option>动感单车</option><option>爬楼梯</option><option>游泳</option><option>跳绳</option><option>HIIT</option><option>燃脂操</option><option>球类</option><option>羽毛球</option><option>力量训练</option><option>瑜伽拉伸</option><option>普拉提</option><option>舞蹈</option><option>拳击</option><option>徒步爬山</option><option>太极</option><option>做家务</option><option>散步</option><option>其他有氧</option></optgroup>
+        <optgroup label="次数类（记个数）"><option>俯卧撑</option><option>深蹲</option><option>波比跳</option><option>开合跳</option><option>高抬腿</option><option>弓步蹲</option><option>深蹲跳</option><option>卷腹</option><option>引体向上</option><option>臀桥</option><option>悬垂举腿</option></optgroup>
       </select>
       <input type="number" id="ex-min" placeholder="分钟" min="5" step="5">
       <input type="date" id="ex-date">
@@ -3890,8 +3890,8 @@ $('bf-est').addEventListener('click',function(){
  $('b-bodyfat').value=Math.max(3,Math.min(60,+bf.toFixed(1)));
  showToast('🧮 已按 BMI 估算填入（参考值），有体脂秤以实测为准');
 });
-var EX_MET={'快走':4.3,'慢跑':8,'爬坡快走':6.3,'骑行':6.8,'椭圆机':5,'登山机':7,'游泳':7,'跳绳':11,'HIIT':8,'球类':6.5,'力量训练':5,'瑜伽拉伸':3,'散步':3.5,'其他有氧':5};
-var EX_REPS={'俯卧撑':{met:5,sec:3.5},'深蹲':{met:5,sec:4},'卷腹':{met:4.5,sec:2.5},'引体向上':{met:6,sec:4},'臀桥':{met:4,sec:3},'悬垂举腿':{met:4.5,sec:3}};
+var EX_MET={'快走':4.3,'慢跑':8,'爬坡快走':6.3,'骑行':6.8,'椭圆机':5,'登山机':7,'游泳':7,'跳绳':11,'HIIT':8,'球类':6.5,'力量训练':5,'瑜伽拉伸':3,'散步':3.5,'其他有氧':5,'划船机':6,'动感单车':7,'爬楼梯':8,'燃脂操':6.5,'舞蹈':5,'普拉提':3.8,'拳击':6,'徒步爬山':6,'羽毛球':5.5,'太极':3,'做家务':3};
+var EX_REPS={'俯卧撑':{met:5,sec:3.5},'深蹲':{met:5,sec:4},'卷腹':{met:4.5,sec:2.5},'引体向上':{met:6,sec:4},'臀桥':{met:4,sec:3},'悬垂举腿':{met:4.5,sec:3},'波比跳':{met:8,sec:5},'开合跳':{met:8,sec:1.5},'高抬腿':{met:8,sec:1.5},'弓步蹲':{met:5,sec:4},'深蹲跳':{met:8,sec:4}};
 function exIsReps(name){return !!EX_REPS[name];}
 function exUnit(name){return exIsReps(name)?'个':'分钟';}
 function exKcal(name,amount){
