@@ -51,10 +51,10 @@ function fitnessDay(date){
  const w=s.workouts?.[date];if(w&&!w.deleted&&Array.isArray(w.sets)){const sets=w.sets.filter(x=>x&&hasNumber(x.weight)&&hasNumber(x.reps));if(sets.length)out.workoutDetails=(w.completed?'已完成':'草稿')+' · 全身 '+(w.kind||'')+' · '+sets.length+'组\n'+sets.map(x=>x.exercise+' '+x.weight+'kg × '+x.reps+'次').join('\n')}
  return out;
 }
-function effectiveRecord(date){const h=fitnessDay(date),base=db.records[date];return base||Object.keys(h).length?{...base,...h,date}:null}
+function effectiveRecord(date){const h=fitnessDay(date),base=db.records[date];if(!base&&!Object.keys(h).length)return null;const out={...base,...h,date};if(base?.exercise&&h.exercise&&base.exercise!==h.exercise)out.exercise=h.exercise+'\n感受与补充：'+base.exercise;return out}
 function allRecordDates(){const s=fitnessState();return [...new Set([...Object.keys(db.records),...Object.keys(s.logs||{}),...Object.keys(s.exercises||{}),...Object.keys(s.water||{}),...Object.keys(s.checkins||{}),...Object.keys(s.workouts||{}),...(Array.isArray(s.body)?s.body:[]).map(x=>x.date)])].filter(d=>validDate(d)&&effectiveRecord(d))}
 function renderHealth(date){const r=effectiveRecord(date)||{},h=fitnessDay(date);$('health-metrics').innerHTML=metric('饮食热量',hasNumber(r.calories)?fmt(r.calories):'—','kcal','已登记食物的估算值','◷')+metric('蛋白质',hasNumber(r.protein)?fmt(r.protein):'—','g','已登记食物的估算值','♡')+metric('当日体重',hasNumber(r.weight)?fmt(r.weight):'—','kg','仅显示当天实测','▥')+metric('今日饮水',hasNumber(r.water)?fmt(r.water):'—','ml','与健身助手同步','◉');$('health-source').textContent=Object.keys(h).length?'已关联健身助手记录。进入健身减脂修改后，这里会自动更新。'+(r.workoutDetails?' '+r.workoutDetails.split('\n')[0]:''):'还没有关联的健康记录。进入健身减脂，添加饮食、运动或体重。'}
-function openFitness(){const frame=$('fitness-frame');if(!frame.getAttribute('src'))frame.src='./fitness.html?v=health-ui-1'+(QA?'&qa=1':'')}
+function openFitness(){const frame=$('fitness-frame');if(!frame.getAttribute('src'))frame.src='./fitness.html?v=health-status-1'+(QA?'&qa=1':'')}
 window.addEventListener('storage',e=>{if(e.key===FITNESS_KEY||e.key===null){renderToday();if(!$('page-week').hidden)renderWeek();if(!$('page-record').hidden)loadDaily($('record-date').value)}if(e.key===KEY){try{db=validate(JSON.parse(e.newValue));renderToday();if(!$('page-week').hidden)renderWeek()}catch(e){}}});
 window.addEventListener('focus',()=>{renderToday();if(!$('page-week').hidden)renderWeek()});
 // Backups explicitly whitelist record fields. Credentials and cloud sessions never enter the journal backup.
@@ -106,9 +106,9 @@ function renderChart(date){
  const lines=[lo,(lo+hi)/2,hi].map(v=>`<line x1="${L}" y1="${y(v)}" x2="${W-R}" y2="${y(v)}" stroke="var(--line)" stroke-dasharray="3 4"/><text x="1" y="${y(v)+4}" fill="var(--muted)" font-size="10">${v.toFixed(1)}</text>`).join('');
  $('weight-chart').innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="近14天体重，${points.map(p=>`${p.d} ${p.v}公斤`).join('；')}">${lines}<polyline points="${points.map(p=>`${x(p.d)},${y(p.v)}`).join(' ')}" fill="none" stroke="var(--green)" stroke-width="2.5"/>${points.map(p=>`<circle cx="${x(p.d)}" cy="${y(p.v)}" r="4" fill="var(--green)"><title>${p.d} · ${p.v} kg</title></circle>`).join('')}<text x="${L}" y="${H-5}" fill="var(--muted)" font-size="10">${short(start)}</text><text x="${W-R}" y="${H-5}" text-anchor="end" fill="var(--muted)" font-size="10">${short(date)}</text></svg>`;
 }
-function loadDaily(date){if(!validDate(date))return;const r=effectiveRecord(date)||{},linked=fitnessDay(date),form=$('daily-form');for(const f of [...TEXT_FIELDS,...Object.keys(NUM_LIMITS)]){form.elements[f].value=r[f]??'';form.elements[f].readOnly=Object.hasOwn(linked,f)}$('linked-health-note').textContent=Object.keys(linked).length?'绿色字段来自健身助手，修改请到健身减脂。睡眠、精力与工作在这里补充。':'饮食、运动、体重可以在健身减脂中详细登记，也可以在这里简记。';$('record-status').textContent=db.records[date]?'已保存 · 可以继续修改':'这一天还没有记录';}
+function loadDaily(date){if(!validDate(date))return;const r=effectiveRecord(date)||{},linked=fitnessDay(date),form=$('daily-form');for(const f of [...TEXT_FIELDS,...Object.keys(NUM_LIMITS)]){form.elements[f].value=(f==='exercise'?db.records[date]?.exercise:r[f])??'';form.elements[f].readOnly=f!=='exercise'&&Object.hasOwn(linked,f)}$('linked-health-note').textContent=Object.keys(linked).length?'绿色字段来自健身助手，无需重复填写。运动感受、睡眠、精力与工作可以在这里补充。'+(linked.exercise?' 运动明细：'+linked.exercise:''):'饮食、运动、体重可以在健身减脂中详细登记，也可以在这里简记。';$('record-status').textContent=db.records[date]?'已保存 · 可以继续修改':'这一天还没有记录';}
 $('record-date').value=today();$('record-date').addEventListener('change',()=>{if($('record-date').value>today()){$('record-date').value=today();toast('每日记录用于记录已经发生的事。')}loadDaily($('record-date').value)});$('record-date').max=today();
-$('daily-form').addEventListener('submit',e=>{e.preventDefault();const form=e.currentTarget,date=form.elements.date.value;if(!validDate(date)||date>today())return toast('请选择有效日期，且不晚于今天。');const r={date};for(const f of TEXT_FIELDS)r[f]=form.elements[f].value.trim();for(const f of Object.keys(NUM_LIMITS)){const raw=form.elements[f].value;r[f]=raw===''?null:Number(raw)}if(!TEXT_FIELDS.some(f=>r[f])&&!Object.keys(NUM_LIMITS).some(f=>hasNumber(r[f])))return toast('先填写至少一项，再保存这一天。');const linked=fitnessDay(date);for(const f of Object.keys(linked)){if(TEXT_FIELDS.includes(f)||Object.hasOwn(NUM_LIMITS,f))r[f]=db.records[date]?.[f]??(TEXT_FIELDS.includes(f)?'':null)}if(!TEXT_FIELDS.some(f=>r[f])&&!Object.keys(NUM_LIMITS).some(f=>hasNumber(r[f]))){renderToday();return toast('健身数据已自动关联，无需重复保存。')}const next=structuredClone(db);next.records[date]=r;if(persist(next)){renderToday();loadDaily(date);toast('这一天已保存 ✓')}});
+$('daily-form').addEventListener('submit',e=>{e.preventDefault();const form=e.currentTarget,date=form.elements.date.value;if(!validDate(date)||date>today())return toast('请选择有效日期，且不晚于今天。');const r={date};for(const f of TEXT_FIELDS)r[f]=form.elements[f].value.trim();for(const f of Object.keys(NUM_LIMITS)){const raw=form.elements[f].value;r[f]=raw===''?null:Number(raw)}if(!TEXT_FIELDS.some(f=>r[f])&&!Object.keys(NUM_LIMITS).some(f=>hasNumber(r[f])))return toast('先填写至少一项，再保存这一天。');const linked=fitnessDay(date);for(const f of Object.keys(linked)){if(f!=='exercise'&&(TEXT_FIELDS.includes(f)||Object.hasOwn(NUM_LIMITS,f)))r[f]=db.records[date]?.[f]??(TEXT_FIELDS.includes(f)?'':null)}if(!TEXT_FIELDS.some(f=>r[f])&&!Object.keys(NUM_LIMITS).some(f=>hasNumber(r[f]))){renderToday();return toast('健身数据已自动关联，无需重复保存。')}const next=structuredClone(db);next.records[date]=r;if(persist(next)){renderToday();loadDaily(date);toast('这一天已保存 ✓')}});
 function weekRecords(){return days(weekStart).filter(d=>effectiveRecord(d)).map(d=>effectiveRecord(d))}
 function renderWeek(){
  const records=weekRecords(),sleep=records.filter(r=>hasNumber(r.sleep)),energy=records.filter(r=>hasNumber(r.energy)),moves=records.filter(r=>hasNumber(r.movement));
@@ -146,3 +146,48 @@ if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceW
 
 function syncFitnessTheme(){const frame=$('fitness-frame');if(frame.contentWindow&&location.protocol==='https:')frame.contentWindow.postMessage({type:'journal-theme',dark:document.body.classList.contains('dark')},location.origin)}
 $('fitness-frame').addEventListener('load',syncFitnessTheme);$('theme').addEventListener('click',syncFitnessTheme);
+
+// Fitness status edits share the journal record, without copying detailed exercise totals.
+const FITNESS_STATUS_FIELDS=['sleep','energy','movement','exercise'];
+function refreshJournalForStatus(){
+ if(storageBroken)throw Error('已有记录读取异常，请先导出备份，暂时不能保存。');
+ const raw=localStorage.getItem(KEY);db=raw?validate(JSON.parse(raw)):blankState();
+}
+function fitnessStatusSnapshot(date){
+ const r=db.records[date]||{},h=fitnessDay(date),values={};
+ for(const f of FITNESS_STATUS_FIELDS)values[f]=f==='exercise'?(r[f]||''):(f==='movement'&&hasNumber(h.movement)?h.movement:r[f]??null);
+ return {date,values,manualMovement:r.movement??null,linkedMovement:hasNumber(h.movement),exerciseDetails:h.exercise||'',workoutDetails:h.workoutDetails||'',saved:!!db.records[date]};
+}
+function saveFitnessStatus(date,values,base){
+ try{
+  if(!validDate(date)||date>today())throw Error('请选择有效日期，且不晚于今天。');
+  if(!values||!base)throw Error('记录尚未加载，请刷新后再保存。');
+  refreshJournalForStatus();
+  const current=fitnessStatusSnapshot(date),patch={};
+  for(const f of FITNESS_STATUS_FIELDS){
+   if(f==='movement'&&current.linkedMovement)continue;
+   const v=values[f];
+   if(f==='exercise'){if(typeof v!=='string'||v.length>3000)throw Error('运动内容与感受最多填写 3000 字。');}
+   else if(v!==null&&(!hasNumber(v)||v<NUM_LIMITS[f][0]||v>NUM_LIMITS[f][1]||(f==='energy'&&!Number.isInteger(v))))throw Error('请检查睡眠、精力和运动时长的范围。');
+   if(v!==base[f]){
+    if(current.values[f]!==base[f]&&current.values[f]!==v)throw Error('同一天的状态已在其他页面修改。你的填写仍保留，请复制后刷新查看最新记录。');
+    patch[f]=v;
+   }
+  }
+  if(!Object.values(values).some(v=>typeof v==='string'?v.trim():hasNumber(v))&&!current.saved)throw Error('先填写至少一项，再保存当天状态。');
+  const next=structuredClone(db);next.records[date]={...next.records[date],...patch,date};
+  const clean=validate(next);
+  if(!persist(clean))throw Error('保存失败，请保留填写内容，检查浏览器存储或先导出备份。');
+  renderToday();if(!$('page-week').hidden)renderWeek();
+  return {ok:true,snapshot:fitnessStatusSnapshot(date)};
+ }catch(err){return {ok:false,error:err.message||'保存失败，填写内容仍保留。'};}
+}
+window.addEventListener('message',e=>{
+ const frame=$('fitness-frame'),m=e.data;
+ if(e.origin!==location.origin||e.source!==frame.contentWindow||!m||!['fitness-status-load','fitness-status-save','fitness-records-changed'].includes(m.type))return;
+ const reply=data=>e.source.postMessage({...data,requestId:m.requestId},location.origin);
+ if(m.type==='fitness-records-changed'){renderToday();if(!$('page-week').hidden)renderWeek();return;}
+ if(m.type==='fitness-status-save'){reply({type:'journal-status-saved',date:m.date,...saveFitnessStatus(m.date,m.values,m.base)});return;}
+ try{if(!validDate(m.date)||m.date>today())throw Error('请选择有效日期，且不晚于今天。');refreshJournalForStatus();reply({type:'journal-status-loaded',ok:true,snapshot:fitnessStatusSnapshot(m.date)});}catch(err){reply({type:'journal-status-loaded',ok:false,error:err.message||'读取失败，请先备份。'});}
+});
+
