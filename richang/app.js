@@ -53,8 +53,8 @@ function fitnessDay(date){
 }
 function effectiveRecord(date){const h=fitnessDay(date),base=db.records[date];if(!base&&!Object.keys(h).length)return null;const out={...base,...h,date};if(base?.exercise&&h.exercise&&base.exercise!==h.exercise)out.exercise=h.exercise+'\n感受与补充：'+base.exercise;return out}
 function allRecordDates(){const s=fitnessState();return [...new Set([...Object.keys(db.records),...Object.keys(s.logs||{}),...Object.keys(s.exercises||{}),...Object.keys(s.water||{}),...Object.keys(s.checkins||{}),...Object.keys(s.workouts||{}),...(Array.isArray(s.body)?s.body:[]).map(x=>x.date)])].filter(d=>validDate(d)&&effectiveRecord(d))}
-function renderHealth(date){const r=effectiveRecord(date)||{},h=fitnessDay(date);$('health-metrics').innerHTML=metric('饮食热量',hasNumber(r.calories)?fmt(r.calories):'—','kcal','已登记食物的估算值','◷')+metric('蛋白质',hasNumber(r.protein)?fmt(r.protein):'—','g','已登记食物的估算值','♡')+metric('当日体重',hasNumber(r.weight)?fmt(r.weight):'—','kg','仅显示当天实测','▥')+metric('今日饮水',hasNumber(r.water)?fmt(r.water):'—','ml','与健身助手同步','◉');$('health-source').textContent=Object.keys(h).length?'已关联健身助手记录。进入健身减脂修改后，这里会自动更新。'+(r.workoutDetails?' '+r.workoutDetails.split('\n')[0]:''):'还没有关联的健康记录。进入健身减脂，添加饮食、运动或体重。'}
-function openFitness(){const frame=$('fitness-frame');if(!frame.getAttribute('src'))frame.src='./fitness.html?v=health-status-1'+(QA?'&qa=1':'')}
+function renderHealth(date){const r=effectiveRecord(date)||{},h=fitnessDay(date);$('health-metrics').innerHTML=metric('饮食热量',hasNumber(r.calories)?fmt(r.calories):'—','kcal','已登记食物的估算值','◷')+metric('蛋白质',hasNumber(r.protein)?fmt(r.protein):'—','g','已登记食物的估算值','♡')+metric('当日体重',hasNumber(r.weight)?fmt(r.weight):'—','kg','仅显示当天实测','▥')+metric('今日饮水',hasNumber(r.water)?fmt(r.water):'—','ml','与健身助手同步','◉');$('health-source').textContent=Object.keys(h).length?'已关联健身助手记录。进入健身减脂修改后，这里会自动更新。'+(r.workoutDetails?' '+r.workoutDetails.split('\n')[0]:''):db.records[date]?'当天状态已保存。饮食、运动、体重与饮水可以到健身减脂详细登记。':'还没有关联的健康记录。进入健身减脂，添加饮食、运动或体重。'}
+function openFitness(){const frame=$('fitness-frame');if(!frame.getAttribute('src'))frame.src='./fitness.html?v=health-status-2'+(QA?'&qa=1':'')}
 window.addEventListener('storage',e=>{if(e.key===FITNESS_KEY||e.key===null){renderToday();if(!$('page-week').hidden)renderWeek();if(!$('page-record').hidden)loadDaily($('record-date').value)}if(e.key===KEY){try{db=validate(JSON.parse(e.newValue));renderToday();if(!$('page-week').hidden)renderWeek()}catch(e){}}});
 window.addEventListener('focus',()=>{renderToday();if(!$('page-week').hidden)renderWeek()});
 // Backups explicitly whitelist record fields. Credentials and cloud sessions never enter the journal backup.
@@ -80,7 +80,7 @@ function restoreFitness(snapshot){
 }
 
 function metric(label,value,unit,note,icon){return `<article class="metric"><div class="metric-label">${label}<span class="metric-icon">${icon}</span></div><div class="metric-value">${value}<small>${unit}</small></div><div class="metric-note">${note}</div></article>`}
-function setPage(page){if(!['today','health','record','week','explore','backup'].includes(page))page='today';document.querySelectorAll('.page').forEach(el=>el.hidden=el.id!==`page-${page}`);document.querySelectorAll('nav button').forEach(el=>el.classList.toggle('active',el.dataset.page===page));$('breadcrumb').textContent=`我的日常 / ${{today:'今日概览',health:'健身减脂',record:'每日记录',week:'每周复盘',explore:'职业探索',backup:'目标与备份'}[page]}`;document.body.classList.toggle('health-mode',page==='health');if(page==='today')renderToday();if(page==='health')openFitness();if(page==='record')loadDaily($('record-date').value||today());if(page==='week')renderWeek();if(page==='explore')renderExplore();if(page==='backup')loadGoal();window.scrollTo({top:0});}
+function setPage(page){if(!['today','health','record','week','explore','backup'].includes(page))page='today';document.querySelectorAll('.page').forEach(el=>el.hidden=el.id!==`page-${page}`);document.querySelectorAll('nav button').forEach(el=>el.classList.toggle('active',el.dataset.page===page));$('breadcrumb').textContent=`我的日常 / ${{today:'今日概览',health:'健身减脂',record:'每日记录',week:'每周复盘',explore:'职业探索',backup:'目标与备份'}[page]}`;document.body.classList.toggle('health-mode',page==='health');if(page==='today')renderToday();if(page==='health'){openFitness();notifyFitnessStatus();}if(page==='record')loadDaily($('record-date').value||today());if(page==='week')renderWeek();if(page==='explore')renderExplore();if(page==='backup')loadGoal();window.scrollTo({top:0});}
 function route(page){if(location.hash===`#${page}`)setPage(page);else location.hash=page}
 document.addEventListener('click',e=>{const b=e.target.closest('[data-page]');if(b)route(b.dataset.page)});
 window.addEventListener('hashchange',()=>setPage(location.hash.slice(1)));
@@ -149,6 +149,7 @@ $('fitness-frame').addEventListener('load',syncFitnessTheme);$('theme').addEvent
 
 // Fitness status edits share the journal record, without copying detailed exercise totals.
 const FITNESS_STATUS_FIELDS=['sleep','energy','movement','exercise'];
+function notifyFitnessStatus(){const frame=$('fitness-frame');if(frame.contentWindow&&frame.getAttribute('src'))frame.contentWindow.postMessage({type:'journal-records-changed'},location.origin);}
 function refreshJournalForStatus(){
  if(storageBroken)throw Error('已有记录读取异常，请先导出备份，暂时不能保存。');
  const raw=localStorage.getItem(KEY);db=raw?validate(JSON.parse(raw)):blankState();
