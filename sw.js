@@ -1,4 +1,4 @@
-var CACHE='fatloss-v4';
+var CACHE='fatloss-v4-separated';
 var ASSETS=['./','./index.html','./manifest.json','./manifest.webmanifest','./icons/icon-192.png','./icons/icon-512.png'];
 self.addEventListener('install',function(e){
  e.waitUntil(caches.open(CACHE).then(function(c){return c.addAll(ASSETS);}));
@@ -14,6 +14,8 @@ self.addEventListener('fetch',function(e){
  if(e.request.method!=='GET')return;
  var u=new URL(e.request.url);
  if(u.origin!==self.location.origin)return;
+ // Keep the independent daily journal outside the fitness app cache.
+ if(u.pathname.indexOf(new URL('./richang/',self.location.href).pathname)===0)return;
  if(e.request.mode==='navigate'){
   e.respondWith(
    fetch(e.request).then(function(res){
