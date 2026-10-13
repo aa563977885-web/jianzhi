@@ -1,4 +1,4 @@
-var CACHE='fatloss-v5-progress-1';
+var CACHE='fatloss-v5-training-videos-2';
 var ASSETS=['./','./index.html','./progress-core.js','./progress-ui.js','./manifest.json','./manifest.webmanifest','./icons/icon-192.png','./icons/icon-512.png'];
 self.addEventListener('install',function(e){
  e.waitUntil(caches.open(CACHE).then(function(c){return c.addAll(ASSETS);}));
