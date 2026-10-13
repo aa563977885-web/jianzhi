@@ -54,7 +54,7 @@ function fitnessDay(date){
 function effectiveRecord(date){const h=fitnessDay(date),base=db.records[date];return base||Object.keys(h).length?{...base,...h,date}:null}
 function allRecordDates(){const s=fitnessState();return [...new Set([...Object.keys(db.records),...Object.keys(s.logs||{}),...Object.keys(s.exercises||{}),...Object.keys(s.water||{}),...Object.keys(s.checkins||{}),...Object.keys(s.workouts||{}),...(Array.isArray(s.body)?s.body:[]).map(x=>x.date)])].filter(d=>validDate(d)&&effectiveRecord(d))}
 function renderHealth(date){const r=effectiveRecord(date)||{},h=fitnessDay(date);$('health-metrics').innerHTML=metric('饮食热量',hasNumber(r.calories)?fmt(r.calories):'—','kcal','已登记食物的估算值','◷')+metric('蛋白质',hasNumber(r.protein)?fmt(r.protein):'—','g','已登记食物的估算值','♡')+metric('当日体重',hasNumber(r.weight)?fmt(r.weight):'—','kg','仅显示当天实测','▥')+metric('今日饮水',hasNumber(r.water)?fmt(r.water):'—','ml','与健身助手同步','◉');$('health-source').textContent=Object.keys(h).length?'已关联健身助手记录。进入健身减脂修改后，这里会自动更新。'+(r.workoutDetails?' '+r.workoutDetails.split('\n')[0]:''):'还没有关联的健康记录。进入健身减脂，添加饮食、运动或体重。'}
-function openFitness(){const frame=$('fitness-frame');if(!frame.getAttribute('src'))frame.src='./fitness.html'+(QA?'?qa=1':'')}
+function openFitness(){const frame=$('fitness-frame');if(!frame.getAttribute('src'))frame.src='./fitness.html?v=health-ui-1'+(QA?'&qa=1':'')}
 window.addEventListener('storage',e=>{if(e.key===FITNESS_KEY||e.key===null){renderToday();if(!$('page-week').hidden)renderWeek();if(!$('page-record').hidden)loadDaily($('record-date').value)}if(e.key===KEY){try{db=validate(JSON.parse(e.newValue));renderToday();if(!$('page-week').hidden)renderWeek()}catch(e){}}});
 window.addEventListener('focus',()=>{renderToday();if(!$('page-week').hidden)renderWeek()});
 // Backups explicitly whitelist record fields. Credentials and cloud sessions never enter the journal backup.
@@ -143,3 +143,6 @@ $('confirm-import').addEventListener('click',()=>{if(!pendingImport)return;const
 document.body.classList.toggle('dark',db.theme==='dark');renderToday();renderExplore();setPage(location.hash.slice(1)||'today');
 if(QA)document.querySelector('.top-right').firstChild.textContent='测试空间 ';
 if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.getRegistration(new URL('../',location.href).href).then(reg=>{if(reg)return reg.update()}).catch(()=>{});
+
+function syncFitnessTheme(){const frame=$('fitness-frame');if(frame.contentWindow&&location.protocol==='https:')frame.contentWindow.postMessage({type:'journal-theme',dark:document.body.classList.contains('dark')},location.origin)}
+$('fitness-frame').addEventListener('load',syncFitnessTheme);$('theme').addEventListener('click',syncFitnessTheme);
