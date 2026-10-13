@@ -6,6 +6,27 @@ var FitnessProgressUI=(function(){
   A:[['腿举','8–12次','使用熟悉的器械，膝盖沿脚尖方向移动'],['器械推胸','8–12次','肩背稳定，控制下放'],['坐姿划船','8–12次','不靠后仰甩动重量'],['腿弯举','10–15次','用可控制的重量完成'],['绳索卷腹','10–15次','腹部收缩，避免只用手臂拉绳']],
   B:[['臀桥','8–12次','髋部伸展，避免腰部过度后仰'],['高位下拉','8–12次','拉向胸前，不做颈后下拉'],['上斜哑铃卧推','8–12次','哑铃按单只重量记录'],['分腿蹲','每侧8–12次','左右各完成，次数按单侧记录；负重按总重量'],['反向卷腹','10–15次','缓慢卷起骨盆，避免甩腿']]
  };
+ // Original Bilibili pages checked 2026-10-13; embed on demand, retain source links.
+ var tutorials={
+  '腿举':['BV1gs4y167gt','ALEX健身频道','倒蹬机使用方法','本视频为倒蹬腿举机。先请场馆人员说明安全挡位；背和臀贴靠垫，膝盖沿脚尖方向移动，不弹震、不猛锁膝。'],
+  '器械推胸':['BV1Zf4y1T7QA','倪华香Yoki','坐姿推胸器教学','调整座椅，让握把接近胸部高度；背部贴靠垫，手腕保持稳定，缓慢推起和还原。'],
+  '坐姿划船':['BV1UG411k7ZM','凯圣王','坐姿划船详解','本视频为坐姿绳索划船。脚踩稳，躯干保持稳定，把手拉向腹部附近，避免靠后仰甩动重量。'],
+  '腿弯举':['BV1Hx4y1Y7TN','ALEX健身频道','坐姿腿弯举教学','本视频为坐姿版本。调整靠背和压腿垫，膝关节对准器械转轴；缓慢屈膝和还原，避免抬臀借力。'],
+  '绳索卷腹':['BV18E421P7Rg','Luke爱健身','跪姿绳索卷腹','绳索放在头部两侧并固定手臂位置；用躯干卷曲带动动作，缓慢还原，避免只拉手臂或反复折髋。'],
+  '臀桥':['BV1fc411G7VC','锐博运动康复','如何正确做臀桥','先学地面双腿臀桥：仰卧屈膝、脚掌踩稳，收紧腹部，抬髋到肩髋膝大致成线，避免过度挺腰。'],
+  '高位下拉':['BV1dC4y1r7nQ','凯圣王','高位下拉详解','调好压腿垫，脚踩地；握紧把手，向胸前下拉，控制还原；不要拉到颈后或用身体摆动甩重。'],
+  '上斜哑铃卧推':['BV1aa4y1o7XA','凯圣王','上斜哑铃卧推详解','先用轻哑铃练习上下凳，双脚踩稳，肩背贴凳；缓慢下放，在可控、无痛的幅度内推起，重量按单只记录。'],
+  '分腿蹲':['BV1Bu411z7fp','言鼎动作学苑','标准的原地分腿蹲','本计划是双脚在地面的原地分腿蹲。前后分开站稳，屈膝下蹲再起身；先徒手练平衡，左右各做，次数按单侧记录。'],
+  '反向卷腹':['BV1Sm4y1Z7wi','贾周亮','如何正确做反向卷腹','仰卧屈膝，缓慢将骨盆卷离地面，再控制放回；幅度可以小，避免甩腿和靠惯性抬起。']
+ };
+ function tutorial(name,prefix){
+  var t=tutorials[name];if(!t)return '';
+  var id=prefix+'-'+t[0];
+  return '<details class="workout-tutorial" style="margin:10px 0"><summary>🎬 动作教学 · '+esc(name)+'</summary><p class="note">'+esc(t[3])+'</p><p class="note">视频：'+esc(t[2])+' · '+esc(t[1])+'</p><div class="row"><button type="button" class="btn small ghost" data-wvideo="'+esc(name)+'" aria-expanded="false" aria-controls="'+id+'">▶ 看视频教程</button><a class="btn small ghost" href="https://www.bilibili.com/video/'+t[0]+'/" target="_blank" rel="noopener noreferrer">B站打开</a></div><div class="video-holder" id="'+id+'" hidden style="margin-top:8px"></div><p class="note">播放空白或受限时，请点“B站打开”。视频用于学习动作，组数和次数按本页计划；器械型号不同时先确认调节方式。</p></details>';
+ }
+ function preview(){
+  return '<details id="workout-preview" style="margin:14px 0"><summary>查看 A / B 两套训练与教学</summary><p class="note">这里只预览，不改变今日训练和完成记录。完整版本前4个动作各3组，腹部动作2组；精简版跳过第4个动作，其余各2组。</p>'+['A','B'].map(function(kind){return '<details><summary>预览 '+kind+' 训练</summary>'+plans[kind].map(function(ex,i){return '<div class="workout-ex"><b>'+esc(ex[0])+'</b> · '+(i===4?2:3)+'组 × '+esc(ex[1])+(i===3?'（精简版跳过）':'')+tutorial(ex[0],'preview-'+kind)+'</div>';}).join('')+'</details>';}).join('')+'</details>';
+ }
  function signed(n){return (n>0?'+':'')+n.toFixed(1);}
  function field(id){return document.getElementById(id);}
  function stamp(w){w.updatedAt=Math.max(Date.now(),(Number(w.updatedAt)||0)+1);}
@@ -18,6 +39,7 @@ var FitnessProgressUI=(function(){
   ['pv-home','pv-gym'].forEach(function(id){field(id).className='btn small ghost';});
   field('pv-flex').className='btn small on';
   var h='<div class="focus-banner"><b>每周2次为基础 · 第3次选做</b><p>本周已完成 '+done+' 次'+(done>=2?' · 基础目标已完成':' · 距基础目标还差 '+(2-done)+' 次')+'。按 A / B 接着练，错过一天不跳过训练。</p></div>';
+  h+='<p class="note">完成并保存 A 后，下一个训练日练 B，再下次练 A；当天保留已完成记录。整套计划可先执行4–6周再复盘，这是检查进度的时间，不是必须换动作的期限。</p>'+preview();
   h+='<div class="row"><b>'+ (w.completed?'今日已完成 ':'本次全身训练 ')+esc(w.kind)+'</b><button class="btn small ghost" id="workout-mode"'+(w.completed?' disabled':'')+'>'+(w.mode==='busy'?'切换完整训练':'忙碌模式：减少组数')+'</button></div>';
   h+='<p class="note">'+(w.mode==='busy'?'精简版：4个动作，每个2组。':'完整版本：前4个动作各3组，腹部动作2组。')+' 热身组不计入；初次恢复训练可选精简版。每组结束时保留约2–3次余力，组间休息到能稳定完成下一组。相邻全身训练日之间安排恢复日。</p>';
   h+='<p class="note">填写实际完成的数据；自重填0，器械记录标示重量。这里只比较同一动作、同一器械和相同记录方式。</p>';
@@ -27,6 +49,7 @@ var FitnessProgressUI=(function(){
     if(group!==-1)h+='</div>';
     group=r.group;var last=previous(r.exercise);
     h+='<div class="workout-ex"><h4>'+esc(r.exercise)+' <span class="dim">'+esc(r.range)+'</span></h4><p class="note">'+esc(r.tip)+'</p>';
+    h+=tutorial(r.exercise,'current');
     h+='<p class="workout-last">'+(last?'上次 '+esc(last.date)+'：'+last.sets.filter(function(s){return s&&s.exercise===r.exercise&&P.validSet(s);}).map(function(s){return s.weight+'kg × '+s.reps;}).join(' / '):'还没有这个动作的历史记录，从能控制的重量开始。')+'</p>';
     h+='<div class="workout-set workout-label"><span>组</span><span>负重 kg</span><span>次数</span></div>';
    }
@@ -59,6 +82,10 @@ var FitnessProgressUI=(function(){
  }
  function changed(){if(save()===false)return false;overview();safeRender('report-box',renderReport);return true;}
  function init(){
+  field('training').addEventListener('toggle',function(e){
+   if(e.target.tagName!=='DETAILS'||e.target.open)return;
+   e.target.querySelectorAll('[data-wvideo]').forEach(function(b){var holder=b.ownerDocument.getElementById(b.getAttribute('aria-controls'));if(holder){holder.innerHTML='';holder.hidden=true;}b.setAttribute('aria-expanded','false');b.textContent='▶ 看视频教程';});
+  },true);
   field('pv-flex').addEventListener('click',function(){state.settings.trainingMode='flex';save();field('plan-editor').style.display='none';renderTraining();renderTarget();});
   field('training').addEventListener('change',function(e){
    var el=e.target;if(!el.hasAttribute('data-ws'))return;
@@ -71,6 +98,12 @@ var FitnessProgressUI=(function(){
   });
   field('training').addEventListener('click',function(e){
    var b=e.target.closest('button');if(!b)return;
+   if(b.hasAttribute('data-wvideo')){
+    var t=tutorials[b.dataset.wvideo],holder=field(b.getAttribute('aria-controls'));if(!t||!holder)return;
+    if(!holder.hidden){holder.innerHTML='';holder.hidden=true;b.setAttribute('aria-expanded','false');b.textContent='▶ 看视频教程';return;}
+    field('training').querySelectorAll('[data-wvideo][aria-expanded="true"]').forEach(function(other){var old=field(other.getAttribute('aria-controls'));old.innerHTML='';old.hidden=true;other.setAttribute('aria-expanded','false');other.textContent='▶ 看视频教程';});
+    var frame=document.createElement('iframe');frame.src='https://player.bilibili.com/player.html?bvid='+encodeURIComponent(t[0])+'&autoplay=0&danmaku=0';frame.title=b.dataset.wvideo+' 视频教程';frame.setAttribute('allowfullscreen','');frame.setAttribute('sandbox','allow-scripts allow-same-origin allow-presentation');holder.appendChild(frame);holder.hidden=false;b.setAttribute('aria-expanded','true');b.textContent='✕ 收起视频';return;
+   }
    if(!['workout-mode','workout-finish','workout-reset'].includes(b.id))return;
    var w=current();
    if(b.id==='workout-reset'){

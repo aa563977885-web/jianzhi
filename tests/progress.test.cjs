@@ -94,3 +94,36 @@ test('service worker includes every new runtime file and only clears this app ca
  const sw=fs.readFileSync(path.join(__dirname,'../sw.js'),'utf8');for(const name of ['progress-core.js','progress-ui.js']){assert.ok(sw.includes(name));assert.ok(fs.existsSync(path.join(__dirname,'..',name)));}
  assert.match(sw,/k.indexOf\('fatloss-'\)/);
 });
+test('A/B previews and all ten tutorials work without changing a draft or rotation',()=>{
+ const d=page(),w=d.window;try{
+ input(w,'[data-wfield="weight"]','20');input(w,'[data-wfield="reps"]','9');
+ const before=JSON.stringify(w.state.workouts),saved=w.localStorage.getItem(w.LS_KEY);
+ const preview=w.document.getElementById('workout-preview');preview.open=true;
+ assert.equal(preview.querySelectorAll('[data-wvideo]').length,10);
+ assert.equal(w.document.querySelectorAll('#training iframe').length,0);
+ for(const b of preview.querySelectorAll('[data-wvideo]')){
+  b.closest('.workout-tutorial').open=true;b.click();
+  const f=w.document.querySelector('#training iframe');assert.ok(f);assert.match(f.src,/player\.bilibili\.com\/player\.html\?bvid=BV/);assert.match(f.src,/autoplay=0/);
+  assert.equal(f.title,b.dataset.wvideo+' 视频教程');assert.equal(w.document.querySelectorAll('#training iframe').length,1);
+  assert.equal(b.getAttribute('aria-expanded'),'true');
+ }
+ assert.equal(JSON.stringify(w.state.workouts),before);assert.equal(w.localStorage.getItem(w.LS_KEY),saved);
+ assert.equal(w.document.querySelector('[data-wfield="weight"]').value,'20');
+ preview.open=false;preview.dispatchEvent(new w.Event('toggle'));
+ assert.equal(w.document.querySelectorAll('#training iframe').length,0);
+ for(const a of preview.querySelectorAll('a')){assert.match(a.href,/^https:\/\/www\.bilibili\.com\/video\/BV\w+\/$/);assert.match(a.rel,/noopener/);}
+ }finally{w.close();}
+});
+test('B follows a previous-day completed A and keeps tutorials in busy and completed modes',()=>{
+ const d=page(),w=d.window;try{
+ const yesterday=w.FitnessProgress.shift(w.todayStr(),-1);
+ w.state.workouts[yesterday]={date:yesterday,kind:'A',completed:true,sets:[]};w.renderTraining();
+ assert.match(w.document.getElementById('training').textContent,/本次全身训练 B/);
+ const current=()=>[...w.document.querySelectorAll('[data-wvideo]')].filter(b=>b.getAttribute('aria-controls').startsWith('current-'));
+ assert.equal(current().length,5);w.document.getElementById('workout-mode').click();assert.equal(current().length,4);
+ for(const el of w.document.querySelectorAll('[data-wfield]')){el.value=el.dataset.wfield==='weight'?'0':'10';el.dispatchEvent(new w.Event('change',{bubbles:true}));}
+ w.document.getElementById('workout-finish').click();assert.equal(w.state.workouts[w.todayStr()].kind,'B');assert.equal(w.state.workouts[w.todayStr()].completed,true);
+ current()[0].click();assert.ok(w.document.querySelector('#training iframe'));assert.equal(w.state.workouts[w.todayStr()].completed,true);
+ assert.equal(w.FitnessProgress.nextKind(w.state.workouts,w.todayStr()),'A');
+ }finally{w.close();}
+});
