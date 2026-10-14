@@ -15,6 +15,7 @@
  more.appendChild(heading('TOOLS & SETTINGS','需要时，再多看一步','计划、教练和个人设置集中在这里。'));
  more.appendChild(el('div','fitness-tools','<button data-tab="coach"><span>↗</span><b>AI 教练</b><small>提问与训练、饮食反馈</small></button><button data-tab="profile"><span>⚙</span><b>个人与设置</b><small>档案、AI 配置、同步与备份</small></button><button data-tab="out"><span>◷</span><b>外食参考</b><small>外卖、便利店和聚餐</small></button><button data-tab="report"><span>▥</span><b>健身周报与徽章</b><small>查看原助手的统计与成就</small></button>'));
  more.appendChild(group('三餐建议与自选计划',[meals]));more.appendChild(group('热量目标与计算方式',[target]));more.appendChild(group('更多进度参考',[progress]));
+ var weeklyDiet=q('weekly-diet');
  // Move the existing nodes so their inputs, handlers and saved data keep working.
  today.replaceChildren();today.appendChild(heading('ONE DAY AT A TIME','先记下今天','饮食、运动、体重，记一项也算开始。'));
  var quick=el('div','fitness-quick','<button data-tab="log"><span>＋</span><b>记饮食</b><small>吃了什么</small></button><button data-tab="training"><span>↗</span><b>记运动</b><small>练了多久</small></button><button data-tab="body"><span>◷</span><b>记体重</b><small>今天的测量</small></button>');today.appendChild(quick);
@@ -22,7 +23,7 @@
  var compact=el('div','fitness-stats');compact.id='fitness-compact';today.appendChild(compact);today.appendChild(water);today.appendChild(group('生活打卡与今日提示',[checkin,tip]));
  var log=q('tab-log'),foodCard=card('food-search'),photo=log.querySelector('[data-tab="photo"]'),outside=log.querySelector('[data-tab="out"]'),nutrition=card('log-summary'),history=card('log-list');
  outside.remove();log.replaceChildren();log.appendChild(heading('FOOD LOG','记下今天吃了什么','搜索食物、填写份量，再添加到对应的一餐。'));
- foodCard.querySelector('h3').textContent='添加食物';photo.querySelector('b').textContent='拍照识别';photo.querySelector('.etxt span').textContent='使用已配置的 AI 估算食物';log.appendChild(photo);log.appendChild(foodCard);log.appendChild(history);log.appendChild(group('查看今日营养进度',[nutrition]));
+ foodCard.querySelector('h3').textContent='添加食物';photo.querySelector('b').textContent='拍照识别';photo.querySelector('.etxt span').textContent='使用已配置的 AI 估算食物';log.appendChild(photo);log.appendChild(foodCard);log.appendChild(history);log.appendChild(group('查看今日营养进度',[nutrition]));if(weeklyDiet)log.appendChild(weeklyDiet);
  var body=q('tab-body'),measure=card('b-date'),summary=card('b-summary'),chart=card('chart'),photos=card('shape-input'),bodyHistory=card('b-list'),heatmap=card('heatmap'),poster=card('poster-gen');
  body.replaceChildren();body.appendChild(heading('BODY & TRENDS','用记录，看见变化','先保存测量，再看连续记录中的趋势。'));body.appendChild(measure);body.appendChild(chart);body.appendChild(summary);body.appendChild(group('对比照片与测量历史',[photos,bodyHistory]));body.appendChild(group('坚持日历与分享图',[heatmap,poster]));
  q('tabs').innerHTML='<button data-tab="today" class="on">今日</button><button data-tab="log">饮食</button><button data-tab="training">训练</button><button data-tab="body">趋势</button><button data-tab="more">更多</button>';
