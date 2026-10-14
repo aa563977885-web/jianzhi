@@ -485,7 +485,8 @@ body.dark .hm-cell.lvl3{color:#06281f}
       <div class="card"><h3>📌 今日小贴士</h3><p id="tip" style="font-size:13.5px"></p></div>
     </div>
     <div class="td-col">
-      <div class="card">
+      <div class="card" id="weekly-diet"></div>
+      <div class="card" id="standard-meal-card">
         <h3>🍱 今日三餐建议 <button class="btn small ghost" id="meal-gen-toggle">🥗 自选生成</button><button class="btn small ghost" id="swap-plan">换一套</button></h3>
         <div id="plan-list"></div>
         <p class="note" id="plan-note"></p>
@@ -854,6 +855,7 @@ body.dark .hm-cell.lvl3{color:#06281f}
 
 <script src="progress-core.js"></script>
 <script src="progress-ui.js"></script>
+<script src="meal-plan.js"></script>
 <script>
 'use strict';
 var LS_KEY='fatloss_app_v1';
@@ -1342,6 +1344,7 @@ function normalizeState(s){
   d.settings.planVersion=st.planVersion==='gym'?'gym':'home';
   d.settings.mealPool=(st.mealPool&&st.mealPool.length)?st.mealPool:[];
   d.settings.customMealPlan=(st.customMealPlan&&st.customMealPlan.days&&st.customMealPlan.days.length)?st.customMealPlan:null;
+  d.settings.dietSchedule=DietPlan.normalize(st.dietSchedule);
   var sb=s.supabase||{};d.supabase={url:sb.url||'',anonKey:sb.anonKey||''};
   if(!d.supabase.url&&d.settings.sync.url){d.supabase.url=d.settings.sync.url;d.supabase.anonKey=d.settings.sync.key;}
   var au=s.auth||null;
@@ -1409,6 +1412,8 @@ function calc(p){
  intake=Math.round(intake+adj.kcal);
  var carbs=Math.round((intake-protein*4-fat*9)/4);
  if(adj.type==='rest'){carbs=Math.max(0,carbs-30);fat=fat+Math.round(120/9);}
+ var ds=DietPlan.normalize(state.settings.dietSchedule);
+ if(DietPlan.active(ds,todayStr())&&ds.applyTargets){intake=2100;protein=140;fat=65;carbs=239;def=Math.round(tdee-intake);adj={type:'diet',kcal:0,carbs:0,msg:'采用饮食计划参考目标，结合连续体重、腰围与训练状态复核；不自动吃回运动热量。'};}
  var bmi=p.weight/Math.pow(p.height/100,2);
  return {bmr:Math.round(bmr),tdee:Math.round(tdee),intake:intake,protein:protein,fat:fat,carbs:carbs,bmi:bmi,def:def,adj:adj};
 }
@@ -1421,6 +1426,7 @@ function weekDelta(){return FitnessProgress.trend(state.body,todayStr()).delta;}
 
 function renderTarget(){
  var t=calc(state.profile);
+ $('target-card').querySelector('h3').textContent=t.adj.type==='diet'?'🎯 每日目标（饮食计划参考值）':'🎯 每日目标（公式估算，待趋势校准）';
  var c=consumed();
  var pct=Math.min(100,Math.round(c.k/t.intake*100));
  var R=56,C=2*Math.PI*R,off=C*(1-pct/100);
@@ -1443,6 +1449,8 @@ function renderTarget(){
 }
 
 function renderPlan(){
+ DietPlan.render();
+ if(DietPlan.active(state.settings.dietSchedule,todayStr()))return;
  var t=calc(state.profile);
  var custom=state.settings.customMealPlan&&state.settings.customMealPlan.days.length;
  var plan,di=0,n=0;
@@ -2444,6 +2452,7 @@ function mergeState(local,remote,remoteNewer){
   if(remote.planIndex!=null)out.planIndex=remote.planIndex;
   if(remote.ai&&remote.ai.key)out.ai.key=remote.ai.key;
  }
+ out.settings.dietSchedule=DietPlan.merge(local.settings&&local.settings.dietSchedule,remote.settings&&remote.settings.dietSchedule);
  return out;
 }
 function scheduleAutoPush(){
@@ -4055,6 +4064,6 @@ if('serviceWorker' in navigator&&location.protocol.indexOf('http')===0){
   <button class="btn" id="ex-video-btn" style="display:none">▶ 看视频教程</button>
   <div class="ex-video-wrap" id="ex-video-wrap" style="display:none"></div>
 </div>
-<script>FitnessProgressUI.init();</script>
+<script>FitnessProgressUI.init();DietPlan.init();</script>
 </body>
 </html>
