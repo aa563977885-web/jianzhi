@@ -62,3 +62,14 @@
  window.addEventListener('message',function(e){var m=e.data;if(e.origin!==location.origin||e.source!==parent||!m||!['journal-status-loaded','journal-status-saved'].includes(m.type)||m.requestId!==statusPending)return;clearTimeout(statusTimer);statusPending=null;statusBusy(false);if(m.ok){applyStatusSnapshot(m.snapshot);if(m.type==='journal-status-saved'){statusMessage('已保存 ✓ · '+m.snapshot.date);showToast('当天状态已保存，概览与周报已更新 ✓');}}else{statusMessage(m.error||'保存失败，填写仍保留。');if(statusSnapshot)statusDate.value=statusSnapshot.date;}});
  renderCompact();switchTab('today');requestStatus(todayStr());
 })();
+
+
+(function(){
+ if(window.parent===window)return;
+ ['account-card','sync-card'].forEach(function(id){var n=document.getElementById(id);if(n)n.style.setProperty('display','none','important');});
+ var card=document.createElement('article');card.className='card';card.innerHTML='<h3>手机与电脑同步</h3><p class="note">日常与健身共用同一个同步账号，在目标与备份中统一管理。</p><button class="btn">打开设备同步</button>';card.querySelector('button').addEventListener('click',function(){parent.postMessage({type:'journal-open-sync'},location.origin);});document.getElementById('tab-profile').prepend(card);
+ // Keep unfinished fields when records arrive from another device.
+ var drafts=new Map();function remember(e){var n=e.target;if(n.id&&['INPUT','TEXTAREA','SELECT'].includes(n.tagName)&&!['password','file'].includes(n.type))drafts.set(n.id,{value:n.value,checked:n.checked});}document.addEventListener('input',remember);document.addEventListener('change',remember);
+ var saveWithDrafts=save;save=function(){var ok=saveWithDrafts();if(ok!==false)drafts.forEach(function(v,id){if(!/^p-(sex|age|height|weight|target|activity)$/.test(id)||String(state.profile[id.slice(2)])===v.value)drafts.delete(id);});return ok;};
+ window.addEventListener('storage',function(e){if(e.key!=='fatloss_app_v1'+(FITNESS_QA?'-qa':''))return;drafts.forEach(function(v,id){var n=document.getElementById(id);if(n){n.value=v.value;if(typeof v.checked==='boolean')n.checked=v.checked;}});});
+})();

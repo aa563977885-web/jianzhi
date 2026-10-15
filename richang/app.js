@@ -54,7 +54,7 @@ function fitnessDay(date){
 function effectiveRecord(date){const h=fitnessDay(date),base=db.records[date];if(!base&&!Object.keys(h).length)return null;const out={...base,...h,date};if(base?.exercise&&h.exercise&&base.exercise!==h.exercise)out.exercise=h.exercise+'\n感受与补充：'+base.exercise;return out}
 function allRecordDates(){const s=fitnessState();return [...new Set([...Object.keys(db.records),...Object.keys(s.logs||{}),...Object.keys(s.exercises||{}),...Object.keys(s.water||{}),...Object.keys(s.checkins||{}),...Object.keys(s.workouts||{}),...(Array.isArray(s.body)?s.body:[]).map(x=>x.date)])].filter(d=>validDate(d)&&effectiveRecord(d))}
 function renderHealth(date){const r=effectiveRecord(date)||{},h=fitnessDay(date);$('health-metrics').innerHTML=metric('饮食热量',hasNumber(r.calories)?fmt(r.calories):'—','kcal','已登记食物的估算值','◷')+metric('蛋白质',hasNumber(r.protein)?fmt(r.protein):'—','g','已登记食物的估算值','♡')+metric('当日体重',hasNumber(r.weight)?fmt(r.weight):'—','kg','仅显示当天实测','▥')+metric('今日饮水',hasNumber(r.water)?fmt(r.water):'—','ml','与健身助手同步','◉');$('health-source').textContent=Object.keys(h).length?'已关联健身助手记录。进入健身减脂修改后，这里会自动更新。'+(r.workoutDetails?' '+r.workoutDetails.split('\n')[0]:''):db.records[date]?'当天状态已保存。饮食、运动、体重与饮水可以到健身减脂详细登记。':'还没有关联的健康记录。进入健身减脂，添加饮食、运动或体重。'}
-function openFitness(){const frame=$('fitness-frame');if(!frame.getAttribute('src'))frame.src='./fitness.html?v=health-status-2'+(QA?'&qa=1':'')}
+function openFitness(){const frame=$('fitness-frame');if(!frame.getAttribute('src'))frame.src='./fitness.html?v=device-sync-1'+(QA?'&qa=1':'')}
 window.addEventListener('storage',e=>{if(e.key===FITNESS_KEY||e.key===null){renderToday();if(!$('page-week').hidden)renderWeek();if(!$('page-record').hidden)loadDaily($('record-date').value)}if(e.key===KEY){try{db=validate(JSON.parse(e.newValue));renderToday();if(!$('page-week').hidden)renderWeek()}catch(e){}}});
 window.addEventListener('focus',()=>{renderToday();if(!$('page-week').hidden)renderWeek()});
 // Backups explicitly whitelist record fields. Credentials and cloud sessions never enter the journal backup.
@@ -192,3 +192,5 @@ window.addEventListener('message',e=>{
  try{if(!validDate(m.date)||m.date>today())throw Error('请选择有效日期，且不晚于今天。');refreshJournalForStatus();reply({type:'journal-status-loaded',ok:true,snapshot:fitnessStatusSnapshot(m.date)});}catch(err){reply({type:'journal-status-loaded',ok:false,error:err.message||'读取失败，请先备份。'});}
 });
 
+
+window.addEventListener('message',e=>{if(e.origin===location.origin&&e.source===$('fitness-frame').contentWindow&&e.data?.type==='journal-open-sync')route('backup');});

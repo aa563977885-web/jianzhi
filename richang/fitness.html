@@ -2459,6 +2459,7 @@ function mergeState(local,remote,remoteNewer){
  return out;
 }
 function scheduleAutoPush(){
+ if(window.parent!==window)return; // Unified journal owns cloud synchronization.
  if(syncGuard)return;
  if(state.settings.sync.auto===false)return;
  if(!syncCfg()&&!(authState()&&sbCfg()))return;
@@ -2499,6 +2500,7 @@ function syncPushSilent(){
  }).catch(function(){doPush();});
 }
 function autoPullOnce(){
+ if(window.parent!==window)return; // Unified journal owns cloud synchronization.
  if(state.settings.sync.auto===false)return;
  if(authState()&&sbCfg()){
   if(Date.now()-state.settings.sync.lastSync<60*1000)return;
@@ -4067,6 +4069,6 @@ if('serviceWorker' in navigator&&location.protocol.indexOf('http')===0){
   <div class="ex-video-wrap" id="ex-video-wrap" style="display:none"></div>
 </div>
 <script>FitnessProgressUI.init();DietPlan.init();</script>
-<script src="richang/fitness-ui.js?v=weekly-diet-3"></script></body>
+<script src="richang/fitness-ui.js?v=device-sync-1"></script></body>
 </html>
 
