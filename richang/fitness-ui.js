@@ -66,6 +66,7 @@
 
 (function(){
  if(window.parent===window)return;
+ var syncStyle=document.createElement('style');syncStyle.textContent='#account-card,#sync-card{display:none!important}';document.head.appendChild(syncStyle);
  ['account-card','sync-card'].forEach(function(id){var n=document.getElementById(id);if(n)n.style.setProperty('display','none','important');});
  var card=document.createElement('article');card.className='card';card.innerHTML='<h3>手机与电脑同步</h3><p class="note">日常与健身共用同一个同步账号，在目标与备份中统一管理。</p><button class="btn">打开设备同步</button>';card.querySelector('button').addEventListener('click',function(){parent.postMessage({type:'journal-open-sync'},location.origin);});document.getElementById('tab-profile').prepend(card);
  // Keep unfinished fields when records arrive from another device.
